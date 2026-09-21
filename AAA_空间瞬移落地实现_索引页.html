@@ -996,6 +996,12 @@ footer li{margin:5px 0;font-size:12.9px}
           <tr><td class="k">B5</td><td>过夜运行减少热瞬变；<b>每天先测一次环境温度</b></td><td>稳态比瞬态可预测；环境量必须每次记录而非假设。球壳温度系数 −150 ppm/K 比一切待测效应大几个量级</td></tr>
           <tr><td class="k">B6</td><td>把每个系统误差<b>换算成等效频移</b>，列成表管理</td><td>只有统一量纲才能判断「谁是瓶颈」。这就是 §8 误差预算表（1 mK → 1.65×10⁻⁸…）的直接来源</td></tr>
           <tr><td class="k">B7</td><td>先做「两台<b>同样的</b>钟并置」的零差测试</td><td><b>sham 假处理</b>：球原地拿起放下 N 次；传感器换位而球不动；完整空跑一遍流程</td></tr>
+
+          <tr><td colspan="3" style="background:var(--hover);color:var(--cyan);font-weight:700">C · 从 Harmonograph 学（读数器：把「比频率」换成「数时间」）</td></tr>
+          <tr><td class="k">C1</td><td><b>近同频拍的两个信号叠成 Lissajous 图，图形进动的周期 = 1/Δf</b></td><td>读数方式升级：从「比频谱峰位」改成「<b>数进动周期与回卷数</b>」。这与 B1 的 Schawlow 原则同源——<b>时间是唯一能被测到最准的量</b>，把频率差换成时间来数</td></tr>
+          <tr style="background:rgba(255,114,114,.05)"><td class="k">C2</td><td>「放大」有上限，不是任意小都看得见</td><td>🔴 <b>差值的可用区间要事先写死</b>：进动法约到 <b>10⁻⁶ 相对频差</b>为止，再小必须换手段（相位锁定／频率计数器）。<b>先写死上限，才不会拿伪影去填那段看不见的区间</b></td></tr>
+          <tr><td class="k">C3</td><td>先证「这一阶模」，再比频率</td><td>建 <b>8×6 模态灵敏度矩阵</b>，做模态识别、盲点检查、秩检查。<b>盲点上的点测不到那一阶模；秩不够必须补点挪点，不能靠信号处理补</b></td></tr>
+          <tr><td class="k">C4</td><td>伪影有三种固定「图形签名」</td><td>判伪口诀：<b>固定畸变 = 校准；单向漂移 = 温度／接触；同向同步 = 参考源</b>。真效应必定是<b>位置相关</b>的——换个位置才出现，换回来就消失</td></tr>
         </tbody>
       </table>
     </div>
@@ -1305,6 +1311,13 @@ X 无、Z 有　→　属引力／支撑类效应，不是「位置签名」</di
       <div class="t">🧭 把顺序摆对</div>
       <p>所以正确的前后顺序是：<b>① 底部加软环 → ② 恒温 → ③ 隔振隔声 → ④ 再谈扫描与位置</b>。跳过前三步直接去测「A 点 vs B 点」，测到的一定是环境，不是位置。</p>
       <p style="color:var(--dim);font-size:13.8px">误差量级与预算见 <a href="#err">第 8 章</a>；「球做多大、多厚、怎么造、花在哪」见 <a href="#spec">第 7 章 7.1b–7.1d</a>。</p>
+    </div>
+
+    <div class="tip bad reveal">
+      <div class="t">🧭 第四道门槛（最容易被忽略）：读数器本身有上限</div>
+      <p>前三道门槛都在「装置」上，第四道在<b>读数方式</b>上：即使装置做得完美，任何一把尺也只在<b>一段有限的量程</b>内有效。</p>
+      <p>本项目选用的 Harmonograph 进动法（见 <a href="#spec">7.5</a>），有效区间<b>到约 10⁻⁶ 相对频差为止</b>——再小的差，它给出的只会是漂移，不是读数。所以开工前必须先回答：<b>「我要找的那个效应，落在这一格之内还是之外？」</b>落在之外，就得换尺，而不是加倍努力。</p>
+      <p style="color:var(--amber)"><b>把可测范围事先写死，是这套实验与 Allais 那 70 年最本质的区别</b>——它让「测不到」成为一个<b>可发表的结果</b>，而不是一段永远说不清的争议。</p>
     </div>
   </div>
 </section>
@@ -1952,6 +1965,139 @@ X 无、Z 有　→　属引力／支撑类效应，不是「位置签名」</di
         <p>八点阵列采到的 8 路信号，可以合成一张 <b>harmonograph（谐音图）</b>——一个随时间缓慢进动的复杂曲线。</p>
         <p><b>它的用处</b>：如果 A 点和 B 点的 harmonograph <b>形状／进动速率不同</b>，那是比单点频率更丰富的指纹；如果有 T₂ 劈裂（模态简并分裂），图上会出现可识别的<b>进动花瓣</b>。</p>
         <p style="color:var(--dim);font-size:13.6px">相关图见下一页图库的 <code>图02_harmonograph与T2劈裂进动</code>。</p>
+        <p style="font-size:14.2px;margin-top:12px"><b>⚠️ 这一块只回答「图怎么画」。</b>回答<b>「图怎么用」</b>——怎么靠它把 8 路之间 10⁻⁶ 量级的微小频差读出来——见下一节 <b>7.5</b>。</p>
+      </div>
+    </details>
+
+    <h3 class="reveal">7.5 Harmonograph 进动读数器：把「差」画出来<span class="tag t-ok" style="margin-left:8px">可直接照做</span></h3>
+    <p class="reveal">7.4 那个折起来的公式块只说了<b>图怎么画</b>；这一节说<b>图怎么用</b>。核心只有一句：<b>两个接近同频的信号叠在一起，图形会缓慢进动，转完一整圈的时间恰好等于一个拍——于是「频差」被换成了「时间」，而时间是可以数出来的。</b></p>
+    <p class="reveal">这是全案里<b>唯一一个「今天就能搭起来」的读数器</b>：8 路同步声卡 + 一台参考源就能起步。下面每一张表、每一个数字都可以直接抄进实验记录本。</p>
+
+    <div class="tw reveal">
+      <table>
+        <thead><tr><th>信号情形</th><th>是否适用</th><th>做法</th></tr></thead>
+        <tbody>
+          <tr><td class="k">球壳机械弯曲模<br>（100–400 Hz）</td><td><span class="tag t-ok">✅ 直接适用</span></td><td>Ø80 × 0.4 薄壳的低阶弯曲模正落在这个频段——<b>整套协议原样上</b></td></tr>
+          <tr><td class="k">结构振动／支座共振<br>（同频段）</td><td><span class="tag t-mid">⚠️ 需分离</span></td><td>先做模态识别（见下「模态灵敏度矩阵」），确认<b>转的不是支座</b></td></tr>
+          <tr><td class="k">电磁腔模／谐振峰<br>（MHz–GHz）</td><td><span class="tag t-no">❌ 不可直接用</span></td><td>先用 NanoVNA 测 S21 取峰，<b>下混频到音频／中频</b>后再送进 harmonograph</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card reveal">
+      <h4 style="margin-top:0">信号链：8 路线圈 → 进动图</h4>
+      <div class="fml">8 路近场线圈
+   │
+   ├─ 8 路同步 ADC ───────── 同一时基，≥48 kHz／通道，≥16 bit
+   ├─ 数字带通（锁定主模态 f₀）─ 8 路必须同一组滤波器参数（群延迟才一致）
+   ├─ 与参考振荡器混频 ───── 得拍频 f_b = f₀ − f_ref
+   └─ 数字 harmonograph／进动提取</div>
+      <p style="font-size:13.6px;color:var(--dim);margin:0">这条链上没有昂贵器件，但它有<b>七个必须守住的细节</b>——下面这张表里任一格没做到，图上出现的就全是伪影。</p>
+    </div>
+
+    <div class="tw reveal">
+      <table>
+        <thead><tr><th>#</th><th>必须守住的细节</th><th>理由（可直接抄进实验记录）</th></tr></thead>
+        <tbody>
+          <tr><td class="k">1</td><td><b>8 路必须同一时基</b></td><td>分开采样再对齐，相位关系不可信——而<b>相位差正是本协议唯一的信息来源</b></td></tr>
+          <tr><td class="k">2</td><td><b>8 路必须同一组滤波器参数</b></td><td>带通中心取 f₀、带宽约 ±5%·f₀、阶数 ≥4；任何一路参数不同，都会在图上<b>造出一段假的进动</b></td></tr>
+          <tr style="background:rgba(255,181,69,.06)"><td class="k">3</td><td><b>先混到「几 Hz」，不要直接混到目标拍频</b></td><td>想看 0.001 Hz 的差，<b>不要</b>直接混到 0.001 Hz——这个频段的 1/f 漂移、温漂、积分器漏电会把它整个吃掉。正确做法：<b>先混到 2–10 Hz 的中间频段，再用解调／相关算法把相位差提出来</b></td></tr>
+          <tr><td class="k">4</td><td><b>参考源稳定度优于目标分辨力的 1/10</b></td><td>要分辨 3×10⁻⁴ Hz，参考源短期稳定度要好于 3×10⁻⁵ Hz（约 10⁻⁷ 相对稳定度）；达不到就改用<b>双通道互比</b>——不用绝对参考，直接比两路之差</td></tr>
+          <tr><td class="k">5</td><td><b>阻尼项不是装饰</b></td><td>薄壳振动本来就是衰减的。不写 e^(−dt) 去拟合，<b>进动周期会被系统性读短</b></td></tr>
+          <tr><td class="k">6</td><td><b>采样前先静息 10 分钟</b></td><td>先确认 8 路本底噪声一致；不一致先查线圈与前置放大，别急着测</td></tr>
+          <tr><td class="k">7</td><td><b>存原始 8 路时序，不要只存图形</b></td><td>图形是给人看的，<b>时序才是用来复算的</b></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="grid2 reveal">
+      <div class="card">
+        <h4 style="margin-top:0">进动读数：Δf = 1 / T</h4>
+        <div class="fml">Δf = 1 / T_precess　＝　|f₂ − f₁|
+<span class="n">图形按 圆 → 椭圆 → 直线 → 椭圆 → 圆 循环，循环一周的时间就是进动周期 T</span></div>
+        <div class="fml">δ(Δf) = δT / T²　；　δ(Δf)/Δf = δN / N ≈ 0.1 / N
+<span class="n">用整周数 N 表达更好用：数到 10 周 → 1%；数到 100 周 → 0.1%</span></div>
+        <p style="font-size:13.6px;color:var(--dim);margin-top:8px"><b>这条式子把「要多准」变成了「要数多久」</b>——这是本协议唯一需要在现场决策的事。</p>
+      </div>
+      <div class="card" style="border-color:var(--violet)">
+        <h4 style="margin-top:0">回卷数是硬读数</h4>
+        <p style="font-size:14px">8 点是立方体的 8 个顶点，可分成两组对映正四面体（A 组 v₁v₂v₃v₄／B 组 v₅v₆v₇v₈）。按 <b>A₁ ⊕ T₂</b> 分解，每组 4 路合成一组 rotary 三轴分量。</p>
+        <div class="fml">x  = (s₁ + s₂ − s₃ − s₄) / 2
+y  = (s₁ − s₂ + s₃ − s₄) / 2
+z  = (s₁ − s₂ − s₃ + s₄) / 2
+A₁ = (s₁ + s₂ + s₃ + s₄) / 2</div>
+        <p style="font-size:14px">两组图并列后，<b>中心回卷数</b>就是读数：<b>并发（同转向）→ b − a；反并发（反转向）→ a + b</b>。</p>
+        <p style="font-size:13.6px;color:var(--dim)"><b>回卷数是一个整数</b>——可数、可复算、可写进判定矩阵，比「图形好不好看」硬得多。</p>
+      </div>
+    </div>
+
+    <h4 class="reveal" style="margin:28px 0 6px;font-size:16px;color:var(--t-strong)">🔴 可测性红线（本节最重要的一张表）</h4>
+    <p class="reveal" style="font-size:14.3px">取载波 f₀ = 300 Hz（Ø80 × 0.4 薄壳弯曲模量级），把「进动法到底能分辨多小」算到底：</p>
+    <div class="tw reveal">
+      <table>
+        <thead><tr><th>相对频差 Δf/f₀</th><th>绝对频差 Δf</th><th>进动周期 T = 1/Δf</th><th>工程可行性</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">10⁻⁵</td><td class="mono">3×10⁻³ Hz</td><td class="mono">333 s（约 5.6 分钟）</td><td><span class="tag t-ok">✅ 轻松</span> 单轮测量内可完成</td></tr>
+          <tr><td class="mono">10⁻⁶</td><td class="mono">3×10⁻⁴ Hz</td><td class="mono">3 333 s（约 56 分钟）</td><td><span class="tag t-ok">✅ 可行</span> 但一个数据点要一小时</td></tr>
+          <tr><td class="mono">10⁻⁷</td><td class="mono">3×10⁻⁵ Hz</td><td class="mono">9.3 小时</td><td><span class="tag t-mid">⚠️ 勉强</span> 必须过夜且压住漂移</td></tr>
+          <tr style="background:rgba(255,114,114,.05)"><td class="mono">10⁻⁸</td><td class="mono">3×10⁻⁶ Hz</td><td class="mono">3.9 天</td><td><span class="tag t-no">❌ 不现实</span> 改用相位锁定／频率计数器</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="tip warn reveal">
+      <div class="t">⚠️ 进动法不是「无限灵敏的放大器」，它是一把刚好够用的尺</div>
+      <p>这张表给「位置效应」划了一条<b>可测性红线</b>：本协议的有效区间是<b>约 10⁻⁶ 相对频差为止</b>——与本项目在其他手段下给出的最佳分辨力量级<b>恰好接得上，也恰好到此为止</b>。</p>
+      <p>说它「放大频差」可以，但<b>绝不能理解成「放大到任意小都能看见」</b>。再小必须换手段（相位锁定／频率计数器）。<b>这条边界本身就是一项成果</b>：它告诉后来者，用这把尺量到哪一格就该停手换工具。</p>
+    </div>
+
+    <div class="card reveal">
+      <h4 style="margin-top:0">模态灵敏度矩阵：先确认「转的是哪一阶」，再比频率</h4>
+      <div class="fml">M[i][n] = 第 i 个传感点在第 n 阶弯曲模下的归一化幅度系数
+<span class="n">8 个传感点 × 前 6 阶弯曲模 = 8×6 矩阵。优先用有限元（FEM）算，再用实测点校准；没有 FEM 就用「单模激励扫描」标定</span></div>
+      <div class="grid3" style="margin-top:16px">
+        <div>
+          <div class="tag t-info">用途一 · 模态识别</div>
+          <p style="font-size:13.9px;margin-top:9px">给定 8 路幅度向量 s，求 <code>n* = argmin ‖M[:,n] − s‖</code>，判定当前激发的是第几阶模。<b>先确认模态，再比较不同地点的同模态频移</b>——否则就是拿 A 阶模的频率去比 B 阶模的频率。</p>
+        </div>
+        <div>
+          <div class="tag t-mid">用途二 · 盲点检查</div>
+          <p style="font-size:13.9px;margin-top:9px">逐个检查 <code>M[i][n] ≈ 0</code> 的点-模对，标为「第 i 点对第 n 阶模盲」。立方体顶点对部分 l=2/3 球谐本来就是盲点。<b>盲点上的点，图画得再漂亮也测不到那个模态。</b></p>
+        </div>
+        <div>
+          <div class="tag t-no">用途三 · 秩检查</div>
+          <p style="font-size:13.9px;margin-top:9px">若 <code>rank(M) &lt; 6</code>，说明当前 8 点阵列对某些模态<b>不可区分</b>——必须<b>补点或挪点，不能靠信号处理补</b>。</p>
+        </div>
+      </div>
+    </div>
+
+    <h4 class="reveal" style="margin:28px 0 6px;font-size:16px;color:var(--t-strong)">接入实验流程：三处改法（本节对实验最直接的改进）</h4>
+    <div class="tw reveal">
+      <table>
+        <thead><tr><th>接入点</th><th>原来的做法</th><th>改为</th></tr></thead>
+        <tbody>
+          <tr><td class="k">Track C 闭环</td><td>直接读频谱峰位，比较 A／B 两次峰位差</td><td>作为「<b>差值读取器</b>」：读进动周期与回卷数，把两路之差变成<b>时间量</b></td></tr>
+          <tr><td class="k">Track O 开环</td><td>用<b>幅度阈值</b>判命中</td><td>用「<b>进动周期异常</b>」判命中——幅度最容易被伪影冒充，而进动周期是一个时间读数</td></tr>
+          <tr><td class="k">第 6 章多站点采集</td><td>环境通道作协变量事后回归</td><td>环境通道也做进动分析：<b>若环境通道也出现同向进动，命中即被解释为环境伪影</b></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="tip bad reveal">
+      <div class="t">🔎 判伪口诀（背下来，比任何软件都管用）</div>
+      <p><b>固定畸变 = 校准。</b>图形出现<b>每次都在同一相位</b>的畸变 → 重做 7.7.1 的幅相校准，别去解释物理。</p>
+      <p><b>单向漂移 = 温度／接触。</b>进动周期<b>单向单调变化</b>（像在慢慢转，实为漂移）→ 压住第 3 章条件，并做「假移动」对照（只动支座不动球）。</p>
+      <p><b>同向同步 = 参考源。</b>7 对信号<b>同向、同速率</b>进动 → 是参考源不稳定，改用双通道互比。</p>
+      <p style="color:var(--amber)">真效应应当是<b>位置相关</b>的——<b>换个位置才出现，换回来就消失。</b></p>
+    </div>
+
+    <details class="reveal">
+      <summary>🚧 本协议不能做什么（四条边界，动手前先读这个）</summary>
+      <div class="body">
+        <p><b>1 · 不提高信噪比。</b>全书方法是<b>差值可视化</b>，不是前端放大。8 路增益不一致、线缆相位不同、线圈耦合差异会直接变成图形畸变——而且<b>伪影往往比真效应更漂亮</b>（更整齐、更可重复）。</p>
+        <p><b>2 · 不替代温度／接触／气压控制。</b>薄壳弯曲模对温度、接触点极敏感。本协议只负责「把残余差画出来」；第 3 章没压住，画出来的进动<b>全是伪影</b>。</p>
+        <p><b>3 · 不绕过模态盲点。</b>盲点上的传感器，进动图再完美也测不到那一阶模态（见上「模态灵敏度矩阵」）。</p>
+        <p><b>4 · 不是无限灵敏的放大器。</b>有效区间到约 10⁻⁶ 相对频差为止，再小必须换手段。</p>
+        <p style="color:var(--dim);font-size:13.6px">完整操作版（7.1–7.8，含每路幅相校准的参考注入法）见 <code>产出文档/第07章_Harmonograph八路微小频差检测协议.md</code>。</p>
       </div>
     </details>
   </div>
@@ -1998,6 +2144,23 @@ X 无、Z 有　→　属引力／支撑类效应，不是「位置签名」</di
         <div class="tag t-info">第三风险</div>
         <p style="font-size:14px;margin-top:10px">环境振动、清洁度、人员操作差异、<b>供应商质量波动</b>——工程性风险，靠 SOP 与检查清单控制。</p>
       </div>
+    </div>
+
+    <h3 class="reveal">8.1 三项「带着图形签名」的伪影来源</h3>
+    <p class="reveal">上一张表列的是<b>物理混淆源</b>。还有三个来源会主动<b>伪装成信号</b>——它们各自的图形长相是固定的，所以可以照长相认出来、照着办法压下去。（读数器本身见 <a href="#spec">第 7 章 7.5</a>。）</p>
+    <div class="tw reveal">
+      <table>
+        <thead><tr><th>伪影来源</th><th>表现形式（图形签名）</th><th>抑制手段</th></tr></thead>
+        <tbody>
+          <tr><td class="k">校准残差</td><td>图形出现<b>固定不变</b>的畸变——<b>每次都在同一相位</b></td><td>重做 7.5 的每路幅相校准（参考信号注入法）；提高注入信号的信噪比</td></tr>
+          <tr><td class="k">温度与接触漂移</td><td>进动周期<b>单向单调变化</b>（像在慢慢转，实为漂移）</td><td>压住第 3 章条件；做「<b>假移动</b>」对照——只动支座、不动球</td></tr>
+          <tr><td class="k">参考源不稳定</td><td>7 对信号<b>同向、同速率</b>进动</td><td>改用<b>双通道互比</b>；或换更高稳定度的参考源</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="tip bad reveal">
+      <div class="t">🔎 判伪口诀 —— 固定畸变 = 校准；单向漂移 = 温度／接触；同向同步 = 参考源</div>
+      <p>真效应应当是<b>位置相关</b>的——<b>换个位置才出现，换回来就消失</b>。三句口诀的完整版与「本协议不能做什么」见 7.5。</p>
     </div>
 
     <div class="tip warn reveal">
