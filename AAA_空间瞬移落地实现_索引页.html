@@ -323,6 +323,36 @@ footer li{margin:5px 0;font-size:12.9px}
 .lb img{max-width:96vw;max-height:90vh;border-radius:10px;box-shadow:0 0 70px var(--sh-1)}
 .lb .cap{position:absolute;bottom:20px;left:0;right:0;text-align:center;color:var(--dim);font-size:13.5px}
 
+/* ===== 七彩艺术字 · 集体共愿 ===== */
+.wish{margin:6px auto 0;max-width:860px;text-align:center}
+.wish-k{
+  font-size:13.5px;letter-spacing:.24em;color:var(--dim2);margin-bottom:24px
+}
+.wish-k::before,.wish-k::after{
+  content:"";display:inline-block;width:38px;height:1px;vertical-align:middle;margin:0 12px;
+  background:linear-gradient(90deg,transparent,var(--line2))
+}
+.wish-k::after{background:linear-gradient(270deg,transparent,var(--line2))}
+.wish-lines{display:flex;flex-direction:column;gap:4px}
+.wish-lines .wl{display:block;white-space:nowrap}
+.wish-lines .ch{
+  font-size:clamp(20px,2.7vw,28px);font-weight:800;font-style:normal;
+  letter-spacing:.16em;
+  color:hsl(var(--h) 86% 46%);
+  filter:drop-shadow(0 3px 12px hsla(var(--h),86%,46%,.3))
+}
+@supports ((-webkit-background-clip:text) or (background-clip:text)){
+  .wish-lines .ch{
+    background:linear-gradient(180deg,hsl(var(--h) 92% 70%),hsl(var(--h) 88% 42%));
+    -webkit-background-clip:text;background-clip:text;
+    color:transparent;-webkit-text-fill-color:transparent
+  }
+}
+@media(max-width:760px){
+  .wish-k{letter-spacing:.14em;font-size:12.5px}
+  .wish-k::before,.wish-k::after{width:18px;margin:0 7px}
+  .wish-lines .ch{letter-spacing:.1em}
+}
 .reveal{opacity:0;transform:translateY(20px);transition:opacity .65s cubic-bezier(.2,.7,.3,1),transform .65s cubic-bezier(.2,.7,.3,1)}
 .reveal.in{opacity:1;transform:none}
 
@@ -2402,6 +2432,13 @@ X 无、Z 有　→　属引力／支撑类效应，不是「位置签名」</di
       <p>市场数字取自 2025–2026 年的公开研报，只用于<b>量级参照</b>；不同机构口径相差可达 30% 以上，不作精确引用。</p>
     </div>
 
+    <div class="tip good reveal">
+      <div class="t">🌏 本章的定位：这是全人类的公共量，不是谁的私产</div>
+      <p>先把立场写清楚：<b>这项技术的源头，是 Bashar 的通灵信息</b>。它不属于某个实验室、某家公司或某个国家——它是<b>递交给整个人类的一份公共知识</b>。</p>
+      <p>因此本项目始终把「位置频率」当作一项<b>应当向所有人开放的公共量</b>：像米、秒、开尔文那样，由全人类共同定义、共同使用，而<b>不该被谁抢先注册成私产去收租</b>。它是一个<b>公益项目</b>——<b>参与的人越多，验证越快、误差越小、落地越早</b>。</p>
+      <p>它真正要兑现的不是市场份额，而是那句话：<b>当「距离」从成本表里消失，地球村才第一次真正成为现实。</b>本章接下来算的这笔账，量的是这件事有多大，<b>而不是它能被谁占有</b>。</p>
+    </div>
+
     <h3 class="reveal">12.1　把账算在同一个坐标系里：那个从来不会归零的「b」</h3>
     <p>凡是「把东西从这里弄到那里」的行业，成本都能拆成两项——这一条对快递、外卖、航空、手术耗材，甚至对给病人插一根胃管，都同样成立：</p>
 
@@ -2608,8 +2645,10 @@ X 无、Z 有　→　属引力／支撑类效应，不是「位置签名」</di
         <p style="font-size:14px">换句话说：<b>这不需要新增大科学装置，只需要在存量装置上换一个问题。</b>成本曲线与新建一台完全不同。</p>
       </div>
       <div class="card">
-        <h4 style="margin-top:0">② 标准的窗口期</h4>
-        <p style="font-size:14px">「位置频率」如果成为一项可计量的量纲，<b>定义它的一方长期收租</b>——如同米、秒、开尔文的历史。这类基础量纲的窗口期通常只有 <b>5–10 年</b>：一旦国际计量体系定稿，后来者只能付费使用。</p>
+        <h4 style="margin-top:0">② 全人类的公共量，不是谁的私产</h4>
+        <p style="font-size:14px">「位置频率」如果成为一项可计量的量纲，它应当像米、秒、开尔文一样，<b>由全人类共同定义、共同使用</b>，而<b>不该被谁抢先注册成私产去收租</b>。</p>
+        <p style="font-size:14px">这不是一句姿态，而是它的来源决定的：<b>这项技术源自 Bashar 的通灵信息</b>——它从来不是某个实验室、某家公司或某个国家的发明，而是<b>递交给整个人类的一份公共知识</b>。所以它天然是一个<b>公益项目</b>：<b>参与的人越多，验证越快、误差越小、落地越早</b>。</p>
+        <p style="font-size:14px">它要兑现的也不是市场份额，而是那句话——<b>当「距离」从成本表里消失，地球村才第一次真正成为现实。</b></p>
       </div>
       <div class="card">
         <h4 style="margin-top:0">③ 不可及 → 可及</h4>
@@ -2642,6 +2681,34 @@ X 无、Z 有　→　属引力／支撑类效应，不是「位置签名」</di
       <p style="font-size:15px">本章不画饼。它做的是<b>给「一张桌子、一只球、三十分钟基线」这件事，配上一个量级足够大的理由</b>。</p>
       <p style="font-size:15px">如果那只球真的会在不同位置给出不同频率——那么<b>被改写的东西，比这只球本身大得多</b>：焊接、营养、手术、物流、通勤、航天，所有账本里含 b·d 的成本结构都要重算一遍。</p>
       <p style="font-size:15px;color:var(--dim)">但如果它不会呢？那也只是<b>一张桌子、一只球、三十分钟</b>。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 结尾图 · 瞬移星门 ================= -->
+<section id="stargate">
+  <div class="wrap">
+    <figure class="hero-fig reveal" style="max-width:620px;margin:56px auto 8px" data-zoom="瞬移星门 · 从「读一个点」到「跨一段距离」">
+      <div class="frame">
+        <img src="图/瞬移星门.png" width="728" height="546" alt="瞬移星门概念图" loading="lazy">
+        <div class="tip">点击放大查看全图</div>
+      </div>
+      <figcaption>瞬移星门 ｜ 从「读一个点」到「跨一段距离」的远景图景<br>728×546 · 第三层叙事配图，不进入任何验收标准</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ================= 七彩艺术字 · 集体共愿 ================= -->
+<section id="common-wish">
+  <div class="wrap">
+    <div class="wish reveal">
+      <div class="wish-k">这是中华民族作为一个集体的共愿</div>
+      <div class="wish-lines">
+        <span class="wl"><span class="ch" style="--h:0">恢</span><span class="ch" style="--h:51">复</span><span class="ch" style="--h:103">中</span><span class="ch" style="--h:154">华</span><span class="ch" style="--h:206">文</span><span class="ch" style="--h:257">化</span></span>
+        <span class="wl"><span class="ch" style="--h:309">平</span><span class="ch" style="--h:0">衡</span><span class="ch" style="--h:51">种</span><span class="ch" style="--h:103">族</span><span class="ch" style="--h:154">利</span><span class="ch" style="--h:206">益</span></span>
+        <span class="wl"><span class="ch" style="--h:257">推</span><span class="ch" style="--h:309">进</span><span class="ch" style="--h:0">人</span><span class="ch" style="--h:51">类</span><span class="ch" style="--h:103">文</span><span class="ch" style="--h:154">明</span></span>
+        <span class="wl"><span class="ch" style="--h:206">实</span><span class="ch" style="--h:257">现</span><span class="ch" style="--h:309">世</span><span class="ch" style="--h:0">界</span><span class="ch" style="--h:51">大</span><span class="ch" style="--h:103">同</span></span>
+      </div>
     </div>
   </div>
 </section>
@@ -2686,6 +2753,10 @@ X 无、Z 有　→　属引力／支撑类效应，不是「位置签名」</di
       <b style="color:var(--txt)">在线阅读</b>：<a href="https://awakeninglanxin.github.io/bashar-sphere-experiment/" target="_blank" rel="noopener">awakeninglanxin.github.io/bashar-sphere-experiment</a>
       　·　<b style="color:var(--txt)">GitHub 仓库</b>：<a href="https://github.com/awakeninglanxin/bashar-sphere-experiment" target="_blank" rel="noopener">awakeninglanxin / bashar-sphere-experiment</a>
       　·　本页文件：<code>AAA_空间瞬移落地实现_索引页.html</code>
+    </p>
+    <p style="margin-top:12px">
+      <b style="color:var(--txt)">⚖️ 使用方式</b>：本仓库供<b>查阅与下载</b>，不供改动——欢迎阅读、保存，并在<b>注明来源</b>后原样引用；
+      <b>修改、改编、衍生、未注明来源的转载、商业用途一律不允许</b>。修改权限仅归作者本人与持有访问密钥者。完整条款见仓库根目录 <code>LICENSE</code>。
     </p>
   </div>
 </footer>
