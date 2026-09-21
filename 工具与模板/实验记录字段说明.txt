@@ -1,0 +1,34 @@
+字段说明（实验记录模板.csv）
+
+trial_id        试验编号，如 MOVE-0013
+timestamp_iso   采集时刻（ISO8601，本地时区+偏移）
+experiment_id   E0_baseline / E1_sham / E2_move / E3_env / E4_balls / E5_flip
+config          交换配置：I = 球1@A 球2@B ；II = 已交换
+ball1_location  球1实际所在位置 A 或 B
+ball2_location  球2实际所在位置 A 或 B
+operator_blind_label  操作员看到的盲化标签（如 "位置1"/"位置2"），不带语义
+true_condition  真实条件（解盲后填写）：static / sham / real / env_perturb / ball_set_2 / flip_in_place
+f_TE011_ball1_Hz  球1 的 TE011 腔模洛伦兹拟合峰位（Hz）
+f_TE011_ball2_Hz  球2 的 TE011 腔模洛伦兹拟合峰位（Hz）
+delta_f_Hz      = f_ball1 - f_ball2（配置 I 时为 Δ1，配置 II 时为 Δ2）
+f_mech_ball1_Hz  球1 机械模态拟合峰位（Hz）
+f_mech_ball2_Hz  球2 机械模态拟合峰位（Hz）
+delta_f_mech_Hz  机械通道差频
+T_ball1_C      球1 球壁温度（°C，至少 0.005 分辨率）
+T_ball2_C      球2 球壁温度（°C）
+T_ambient_A_C  A 点环境温度（°C）
+T_ambient_B_C  B 点环境温度（°C）
+pressure_hPa   气压
+humidity_pct   相对湿度 %
+accel_rms_mg   三轴加速度计 RMS（milli-g）
+rf_field_dBuV_m  宽频场强读数
+mains_V        市电电压监测
+shielding      none / faraday / thermal / vibration / triple
+contact_marker_aligned  球上标记是否与支座对齐（1=是 0=否）
+cable_moved    本轮线缆是否被移动（1=是 0=否，正常应为 0）
+operator_id    操作员代号
+notes          任何异常（关门、空调启停、手机来电等）
+
+关键派生量：
+  位置效应 P_A - P_B = (Δ1 - Δ2) / 2
+  Δ1 = 配置 I 的 delta_f_Hz；Δ2 = 配置 II 的 delta_f_Hz

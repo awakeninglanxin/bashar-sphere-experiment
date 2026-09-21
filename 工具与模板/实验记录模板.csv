@@ -1,0 +1,7 @@
+﻿trial_id,timestamp_iso,experiment_id,config,ball1_location,ball2_location,operator_blind_label,true_condition,f_TE011_ball1_Hz,f_TE011_ball2_Hz,delta_f_Hz,f_mech_ball1_Hz,f_mech_ball2_Hz,delta_f_mech_Hz,T_ball1_C,T_ball2_C,T_ambient_A_C,T_ambient_B_C,pressure_hPa,humidity_pct,accel_rms_mg,rf_field_dBuV_m,mains_V,shielding,contact_marker_aligned,cable_moved,operator_id,notes
+BASE-0001,,E0_baseline,I,A,B,,static,,,,,,,,,,,,,,,,none,,,,
+SHAM-0001,,E1_sham,I,A,B,,sham,,,,,,,,,,,,,,,,none,,,,
+MOVE-0001,,E2_move,I,A,B,,real,,,,,,,,,,,,,,,,none,,,,
+ENV-0001,,E3_env,I,A,B,,env_perturb,,,,,,,,,,,,,,,,none,,,,
+SWAP-0001,,E4_balls,I,A,B,,ball_set_2,,,,,,,,,,,,,,,,none,,,,
+FLIP-0001,,E5_flip,I,A,B,,flip_in_place,,,,,,,,,,,,,,,,none,,,,

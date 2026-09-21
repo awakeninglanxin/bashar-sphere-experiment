@@ -1,0 +1,156 @@
+{
+ "files": [
+  {
+   "title": "金属球位置频率实验方案.md",
+   "fileType": "md",
+   "fileSize": 18798,
+   "downloaded": true,
+   "downloadUrl": "https://userassets.yuanbao.tencent.com/artifacts/1345/ec039430216a4099bbe1cc3f1ddeac1a/0QaLPSlap0a/task-095c66318eb5f286a4414bee453958bd/%E9%87%91%E5%B1%9E%E7%90%83%E4%BD%8D%E7%BD%AE%E9%A2%91%E7%8E%87%E5%AE%9E%E9%AA%8C%E6%96%B9%E6%A1%88.md?q-sign-algorithm=sha1&q-ak=AKID_REDACTED&q-sign-time=1789875925%3B2105235925&q-key-time=1789875925%3B2105235925&q-header-list=&q-url-param-list=&q-signature=REDACTED",
+   "resourceUrl": "https://yuanbao.tencent.com/api/resource/download?resourceId=dc76ed49301e09d5c35278f82ed30fb0"
+  },
+  {
+   "title": "实验记录模板.csv",
+   "fileType": "csv",
+   "fileSize": 744,
+   "downloaded": true,
+   "downloadUrl": "https://userassets.yuanbao.tencent.com/artifacts/1345/ec039430216a4099bbe1cc3f1ddeac1a/0QaLPSlap0a/task-095c66318eb5f286a4414bee453958bd/%E5%AE%9E%E9%AA%8C%E8%AE%B0%E5%BD%95%E6%A8%A1%E6%9D%BF.csv?q-sign-algorithm=sha1&q-ak=AKID_REDACTED&q-sign-time=1789875926%3B2105235926&q-key-time=1789875926%3B2105235926&q-header-list=&q-url-param-list=&q-signature=REDACTED",
+   "resourceUrl": "https://yuanbao.tencent.com/api/resource/download?resourceId=4ff0eef0eeb3f9957e4f06153715d063"
+  },
+  {
+   "title": "实验记录字段说明.txt",
+   "fileType": "txt",
+   "fileSize": 1782,
+   "downloaded": true,
+   "downloadUrl": "https://userassets.yuanbao.tencent.com/artifacts/1345/ec039430216a4099bbe1cc3f1ddeac1a/0QaLPSlap0a/task-095c66318eb5f286a4414bee453958bd/%E5%AE%9E%E9%AA%8C%E8%AE%B0%E5%BD%95%E5%AD%97%E6%AE%B5%E8%AF%B4%E6%98%8E.txt?q-sign-algorithm=sha1&q-ak=AKID_REDACTED&q-sign-time=1789875926%3B2105235926&q-key-time=1789875926%3B2105235926&q-header-list=&q-url-param-list=&q-signature=REDACTED",
+   "resourceUrl": "https://yuanbao.tencent.com/api/resource/download?resourceId=1bd383ce7cac624ca689dbca645d151b"
+  },
+  {
+   "title": "八点立方体传感阵列设计分析.md",
+   "fileType": "md",
+   "fileSize": 10749,
+   "downloaded": true,
+   "downloadUrl": "https://userassets.yuanbao.tencent.com/artifacts/1345/ec039430216a4099bbe1cc3f1ddeac1a/0QaLPSlap0a/task-a7f781c0029a6c06c68058689bda70d9/%E5%85%AB%E7%82%B9%E7%AB%8B%E6%96%B9%E4%BD%93%E4%BC%A0%E6%84%9F%E9%98%B5%E5%88%97%E8%AE%BE%E8%AE%A1%E5%88%86%E6%9E%90.md?q-sign-algorithm=sha1&q-ak=AKID_REDACTED&q-sign-time=1789876468%3B2105236468&q-key-time=1789876468%3B2105236468&q-header-list=&q-url-param-list=&q-signature=REDACTED",
+   "resourceUrl": "https://yuanbao.tencent.com/api/resource/download?resourceId=23628505635c70091e634eb15a76cda5"
+  },
+  {
+   "title": "Harmonograph公式与四点一组.md",
+   "fileType": "md",
+   "fileSize": 10107,
+   "downloaded": true,
+   "downloadUrl": "https://userassets.yuanbao.tencent.com/artifacts/1345/ec039430216a4099bbe1cc3f1ddeac1a/0QaLPSlap0a/task-4f13bc4064669cc62c5a988054df10bd/Harmonograph%E5%85%AC%E5%BC%8F%E4%B8%8E%E5%9B%9B%E7%82%B9%E4%B8%80%E7%BB%84.md?q-sign-algorithm=sha1&q-ak=AKID_REDACTED&q-sign-time=1789877094%3B2105237094&q-key-time=1789877094%3B2105237094&q-header-list=&q-url-param-list=&q-signature=REDACTED",
+   "resourceUrl": "https://yuanbao.tencent.com/api/resource/download?resourceId=491e9e987e2534a414a4ee00312f4843"
+  },
+  {
+   "title": "灵敏度提升方法清单.md",
+   "fileType": "md",
+   "fileSize": 10643,
+   "downloaded": true,
+   "downloadUrl": "https://userassets.yuanbao.tencent.com/artifacts/1345/ec039430216a4099bbe1cc3f1ddeac1a/0QaLPSlap0a/task-c1ce9c76bdef5d619f8f1bbec66e063d/%E7%81%B5%E6%95%8F%E5%BA%A6%E6%8F%90%E5%8D%87%E6%96%B9%E6%B3%95%E6%B8%85%E5%8D%95.md?q-sign-algorithm=sha1&q-ak=AKID_REDACTED&q-sign-time=1789877461%3B2105237461&q-key-time=1789877461%3B2105237461&q-header-list=&q-url-param-list=&q-signature=REDACTED",
+   "resourceUrl": "https://yuanbao.tencent.com/api/resource/download?resourceId=e224ae352b2b840feeeb83be56075a06"
+  },
+  {
+   "title": "超薄导电球共振实验分析.md",
+   "fileType": "md",
+   "fileSize": 8951,
+   "downloaded": true,
+   "downloadUrl": "https://userassets.yuanbao.tencent.com/artifacts/1345/ec039430216a4099bbe1cc3f1ddeac1a/0QaLPSlap0a/task-96fdb9342153f1663d4029b70ceb970f/%E8%B6%85%E8%96%84%E5%AF%BC%E7%94%B5%E7%90%83%E5%85%B1%E6%8C%AF%E5%AE%9E%E9%AA%8C%E5%88%86%E6%9E%90.md?q-sign-algorithm=sha1&q-ak=AKID_REDACTED&q-sign-time=1789878640%3B2105238640&q-key-time=1789878640%3B2105238640&q-header-list=&q-url-param-list=&q-signature=REDACTED",
+   "resourceUrl": "https://yuanbao.tencent.com/api/resource/download?resourceId=e50d15429f04724743d66bad498679ca"
+  },
+  {
+   "title": "铜球实验完整教程.md",
+   "fileType": "md",
+   "fileSize": 21522,
+   "downloaded": true,
+   "downloadUrl": "https://userassets.yuanbao.tencent.com/artifacts/1345/ec039430216a4099bbe1cc3f1ddeac1a/0QaLPSlap0a/task-535f11c5ece4b0c2422dd729beaa75b9/%E9%93%9C%E7%90%83%E5%AE%9E%E9%AA%8C%E5%AE%8C%E6%95%B4%E6%95%99%E7%A8%8B.md?q-sign-algorithm=sha1&q-ak=AKID_REDACTED&q-sign-time=1789879097%3B2105239097&q-key-time=1789879097%3B2105239097&q-header-list=&q-url-param-list=&q-signature=REDACTED",
+   "resourceUrl": "https://yuanbao.tencent.com/api/resource/download?resourceId=fc2eff6f10804130cde62229ca7882e9"
+  },
+  {
+   "title": "铜球实验分析工具.py",
+   "fileType": "py",
+   "fileSize": 15062,
+   "downloaded": true,
+   "downloadUrl": "https://userassets.yuanbao.tencent.com/artifacts/1345/ec039430216a4099bbe1cc3f1ddeac1a/0QaLPSlap0a/task-3cabd767b6dab2051ae3ea64d019769f/%E9%93%9C%E7%90%83%E5%AE%9E%E9%AA%8C%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7.py?q-sign-algorithm=sha1&q-ak=AKID_REDACTED&q-sign-time=1789880041%3B2105240041&q-key-time=1789880041%3B2105240041&q-header-list=&q-url-param-list=&q-signature=REDACTED",
+   "resourceUrl": "https://yuanbao.tencent.com/api/resource/download?resourceId=b6003d34791cdbb6392b82487a629df9"
+  },
+  {
+   "title": "开环扫描协议.md",
+   "fileType": "md",
+   "fileSize": 14191,
+   "downloaded": true,
+   "downloadUrl": "https://userassets.yuanbao.tencent.com/artifacts/1345/ec039430216a4099bbe1cc3f1ddeac1a/0QaLPSlap0a/task-3cabd767b6dab2051ae3ea64d019769f/%E5%BC%80%E7%8E%AF%E6%89%AB%E6%8F%8F%E5%8D%8F%E8%AE%AE.md?q-sign-algorithm=sha1&q-ak=AKID_REDACTED&q-sign-time=1789880041%3B2105240041&q-key-time=1789880041%3B2105240041&q-header-list=&q-url-param-list=&q-signature=REDACTED",
+   "resourceUrl": "https://yuanbao.tencent.com/api/resource/download?resourceId=8eff1cd7a6fa596ddab6b4127bba2de1"
+  },
+  {
+   "title": "铜球实验完整工艺规范.md",
+   "fileType": "md",
+   "fileSize": 22273,
+   "downloaded": true,
+   "downloadUrl": "https://userassets.yuanbao.tencent.com/artifacts/1345/ec039430216a4099bbe1cc3f1ddeac1a/0QaLPSlap0a/task-bb8db72a8c08bed53c4c0d06aa576875/%E9%93%9C%E7%90%83%E5%AE%9E%E9%AA%8C%E5%AE%8C%E6%95%B4%E5%B7%A5%E8%89%BA%E8%A7%84%E8%8C%83.md?q-sign-algorithm=sha1&q-ak=AKID_REDACTED&q-sign-time=1789880490%3B2105240490&q-key-time=1789880490%3B2105240490&q-header-list=&q-url-param-list=&q-signature=REDACTED",
+   "resourceUrl": "https://yuanbao.tencent.com/api/resource/download?resourceId=d79a6a7a59da262d3a54763a00c94bbf"
+  },
+  {
+   "title": "工艺检查清单.csv",
+   "fileType": "csv",
+   "fileSize": 3515,
+   "downloaded": true,
+   "downloadUrl": "https://userassets.yuanbao.tencent.com/artifacts/1345/ec039430216a4099bbe1cc3f1ddeac1a/0QaLPSlap0a/task-bb8db72a8c08bed53c4c0d06aa576875/%E5%B7%A5%E8%89%BA%E6%A3%80%E6%9F%A5%E6%B8%85%E5%8D%95.csv?q-sign-algorithm=sha1&q-ak=AKID_REDACTED&q-sign-time=1789880491%3B2105240491&q-key-time=1789880491%3B2105240491&q-header-list=&q-url-param-list=&q-signature=REDACTED",
+   "resourceUrl": "https://yuanbao.tencent.com/api/resource/download?resourceId=7f65bb5c532c21e8c63799926aa1cab9"
+  }
+ ],
+ "images": [
+  {
+   "file": "img01_四面板图：八点几何（两个对映正四面体）、模态可见性盲区、harmonog.png",
+   "desc": "四面板图：八点几何（两个对映正四面体）、模态可见性盲区、harmonograph 静止与进动对比",
+   "url": "https://userassets.yuanbao.tencent.com/outputs/1345/ec039430216a4099bbe1cc3f1ddeac1a/0QaLPSlap0a/%E5%85%AB%E7%82%B9%E9%98%B5%E5%88%97%E4%B8%8Eharmonograph%E5%88%86%E6%9E%90.png?q-sign-algorithm=sha1&q-ak=AKID_REDACTED&q-sign-time=1789876468%3B2105236468&q-key-time=1789876468%3B2105236468&q-header-list=&q-url-param-list=&q-signature=REDACTED",
+   "size": 365031
+  },
+  {
+   "file": "img02_四面板图：2D_harmonograph、3D_圆盘合成、T2_三重简并.png",
+   "desc": "四面板图：2D harmonograph、3D 圆盘合成、T2 三重简并静止态、C3v 劈裂后的部分进动",
+   "url": "https://userassets.yuanbao.tencent.com/outputs/1345/ec039430216a4099bbe1cc3f1ddeac1a/0QaLPSlap0a/harmonograph_%E5%85%AC%E5%BC%8F%E4%B8%8E%E5%9B%9B%E9%9D%A2%E4%BD%93%E9%98%B5.png?q-sign-algorithm=sha1&q-ak=AKID_REDACTED&q-sign-time=1789877093%3B2105237093&q-key-time=1789877093%3B2105237093&q-header-list=&q-url-param-list=&q-signature=REDACTED",
+   "size": 1358221
+  },
+  {
+   "file": "img03_拍频放大判据：失谐_0_0.2%_1%_三种情形的进动速率对比.png",
+   "desc": "拍频放大判据：失谐 0 / 0.2% / 1% 三种情形的进动速率对比",
+   "url": "https://userassets.yuanbao.tencent.com/outputs/1345/ec039430216a4099bbe1cc3f1ddeac1a/0QaLPSlap0a/%E6%8B%8D%E9%A2%91%E6%94%BE%E5%A4%A7%E5%88%A4%E6%8D%AE.png?q-sign-algorithm=sha1&q-ak=AKID_REDACTED&q-sign-time=1789877093%3B2105237093&q-key-time=1789877093%3B2105237093&q-header-list=&q-url-param-list=&q-signature=REDACTED",
+   "size": 235033
+  },
+  {
+   "file": "img04_四面板图：读数方式灵敏度对比、积分时间收益、切换周期与温漂残余、系统误差.png",
+   "desc": "四面板图：读数方式灵敏度对比、积分时间收益、切换周期与温漂残余、系统误差 vs 灵敏度",
+   "url": "https://userassets.yuanbao.tencent.com/outputs/1345/ec039430216a4099bbe1cc3f1ddeac1a/0QaLPSlap0a/%E7%81%B5%E6%95%8F%E5%BA%A6%E6%8F%90%E5%8D%87%E8%B7%AF%E5%BE%84.png?q-sign-algorithm=sha1&q-ak=AKID_REDACTED&q-sign-time=1789877460%3B2105237460&q-key-time=1789877460%3B2105237460&q-header-list=&q-url-param-list=&q-signature=REDACTED",
+   "size": 266478
+  },
+  {
+   "file": "img05_四面板图：皮肤深度_vs_频率、频段对照、弯曲模随_t_R_进入音频段、.png",
+   "desc": "四面板图：皮肤深度 vs 频率、频段对照、弯曲模随 t/R 进入音频段、ring-down 时间 vs Q",
+   "url": "https://userassets.yuanbao.tencent.com/outputs/1345/ec039430216a4099bbe1cc3f1ddeac1a/0QaLPSlap0a/%E8%B6%85%E8%96%84%E7%90%83%E5%A3%B3%E7%89%A9%E7%90%86%E5%88%86%E6%9E%90.png?q-sign-algorithm=sha1&q-ak=AKID_REDACTED&q-sign-time=1789878640%3B2105238640&q-key-time=1789878640%3B2105238640&q-header-list=&q-url-param-list=&q-signature=REDACTED",
+   "size": 315052
+  },
+  {
+   "file": "img06_写实摄影风：暗色实验室中的超平金属平台、抛光紫铜球与八点立方体阵列探头.png",
+   "desc": "写实摄影风：暗色实验室中的超平金属平台、抛光紫铜球与八点立方体阵列探头",
+   "url": "https://userassets.yuanbao.tencent.com/multimedia/5d413de06454c7aab060a82eb1710b43/20260920130851url_20260920130712_h1_nq7l_a8e8c113354cc89ee17f5c7d52402a29?q-sign-algorithm=sha1&q-ak=AKID_REDACTED&q-sign-time=1789880931%3B2105240931&q-key-time=1789880931%3B2105240931&q-header-list=&q-url-param-list=&q-signature=REDACTED",
+   "size": 2573578
+  },
+  {
+   "file": "img07_极简产品渲染风：浅色影棚布光，苹果发布会级质感.png",
+   "desc": "极简产品渲染风：浅色影棚布光，苹果发布会级质感",
+   "url": "https://userassets.yuanbao.tencent.com/multimedia/5d413de06454c7aab060a82eb1710b43/20260920130853url_20260920130812_h1_aH8o_ef7d78e58e8bcd2ec07369164182295f?q-sign-algorithm=sha1&q-ak=AKID_REDACTED&q-sign-time=1789880934%3B2105240934&q-key-time=1789880934%3B2105240934&q-header-list=&q-url-param-list=&q-signature=REDACTED",
+   "size": 2405785
+  },
+  {
+   "file": "img08_等轴测工程制图风：铜球剖面示意、立方体八点与星形八面体几何、激励链路与尺.png",
+   "desc": "等轴测工程制图风：铜球剖面示意、立方体八点与星形八面体几何、激励链路与尺寸标注",
+   "url": "https://userassets.yuanbao.tencent.com/multimedia/5d413de06454c7aab060a82eb1710b43/20260920130856url_20260920130743_h1_4gEy_ed96361a189d63b7e4ff540fa07103df?q-sign-algorithm=sha1&q-ak=AKID_REDACTED&q-sign-time=1789880937%3B2105240937&q-key-time=1789880937%3B2105240937&q-header-list=&q-url-param-list=&q-signature=REDACTED",
+   "size": 2938381
+  },
+  {
+   "file": "img09_深色科幻概念风：铜球自发光，青蓝与琥珀双色八点阵列，能量丝线勾勒几何.png",
+   "desc": "深色科幻概念风：铜球自发光，青蓝与琥珀双色八点阵列，能量丝线勾勒几何",
+   "url": "https://userassets.yuanbao.tencent.com/multimedia/5d413de06454c7aab060a82eb1710b43/20260920130858url_20260920130838_h1_aTU4_44a152f5bb8ba08e6564565f6df27102?q-sign-algorithm=sha1&q-ak=AKID_REDACTED&q-sign-time=1789880939%3B2105240939&q-key-time=1789880939%3B2105240939&q-header-list=&q-url-param-list=&q-signature=REDACTED",
+   "size": 2749094
+  }
+ ]
+}
