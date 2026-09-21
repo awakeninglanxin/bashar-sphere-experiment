@@ -397,6 +397,7 @@ footer li{margin:5px 0;font-size:12.9px}
       <a href="#edge">边界</a>
       <a href="#fut">展望</a>
       <a href="#strat">这笔账</a>
+      <a href="#upgrade">升级实验</a>
     </div>
     <button class="tgl" id="tgl" type="button" title="切换到暗黑模式" aria-label="切换到暗黑模式">
       <span class="ti">&#9790;</span><span class="tt">暗黑</span>
@@ -1122,6 +1123,11 @@ footer li{margin:5px 0;font-size:12.9px}
           <tr><td class="k">E2 <b>换传感通道</b></td><td>同一次位置移动，用<b>光学/声学</b>通道同时测（§7.2）</td><td>位置、球</td><td>三条链路给出同一频移 → 交叉验证成立</td><td>单一仪器的耦合假象（<b>这是最有力的排除</b>）</td></tr>
           <tr><td class="k">W1 自转状态</td><td>让球缓慢自转 / 保持静止</td><td>位置、材料、支撑</td><td>若与角动量有关 → 应有差异</td><td>残留磁矩与自转的耦合</td></tr>
           <tr><td class="k">R1 回到原位</td><td>全部回到 x₀, h₀（<b>与 X1 同一位置</b>）</td><td>—</td><td>应复现 X1 的读数</td><td>漂移 vs 真实位置依赖（<b>这条是 X1 能否成立的前提</b>）</td></tr>
+
+          <tr><td colspan="5" style="background:var(--hover);color:var(--green);font-weight:700">第五层 · 几何与尺度（后期升级实验，完整设计见 <a href="#upgrade">第 13 章</a>）</td></tr>
+          <tr><td class="k">G1 几何形状</td><td>铜球 → <b>空心铜正方体／正四面体／不规则体</b>（同材质、等体积 R_V、同壁厚）</td><td>材质、等效尺寸、壁厚、位置</td><td>按某一等效半径归一后，ε_loc 坍缩到同一条线</td><td>「位置频率」是物体的<b>普遍属性</b>，还是<b>球对称专属</b>——命题的边界</td></tr>
+          <tr><td class="k">G2 尺寸标度</td><td>Ø40 ／ Ø80 ／ Ø160（<b>保持 t/R 不变</b>）</td><td>材质、形状、薄度、位置</td><td class="mono">f ∝ 1/R；Δf 的幂律指数 p 定出加性 or 乘性</td><td>位置项是「<b>加性常数 δf_loc</b>」还是「<b>比例因子 1+ε_loc</b>」</td></tr>
+          <tr><td class="k">I1 表面导电性</td><td>同一只绝缘薄壳球<b>贴铜箔 ／ 不贴</b>（A-B-A 自身对照，几何与质量全不变）</td><td>几何、质量、材质、位置</td><td>贴与不贴给出同一 ε_loc</td><td>机制是否含<b>导电路径</b>（涡流／镜像电流）</td></tr>
         </tbody>
       </table>
     </div>
@@ -2844,6 +2850,313 @@ A₁ = (s₁ + s₂ + s₃ + s₄) / 2</div>
       <p style="font-size:15px">本章不画饼。它做的是<b>给「一张桌子、一只球、三十分钟基线」这件事，配上一个量级足够大的理由</b>。</p>
       <p style="font-size:15px">如果那只球真的会在不同位置给出不同频率——那么<b>被改写的东西，比这只球本身大得多</b>：焊接、营养、手术、物流、通勤、航天，所有账本里含 b·d 的成本结构都要重算一遍。</p>
       <p style="font-size:15px;color:var(--dim)">但如果它不会呢？那也只是<b>一张桌子、一只球、三十分钟</b>。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 13 后期升级实验 ================= -->
+<section id="upgrade">
+  <div class="wrap">
+    <div class="shead reveal">
+      <span class="snum">13 / UPGRADE · 后期升级实验</span>
+      <h2>把「球」这个前提逐条撤掉<span class="s">换尺寸 · 换材质 · 换几何 · 换导电性，以及方程该怎么改</span></h2>
+      <p class="sdesc">前面十二章都在回答「那只铜球会不会在不同位置给出不同频率」。这一章问一个更狠的问题：<b>凭什么一定是球？</b>把「尺寸、材质、几何形状、是否导电」四个变量逐个放开，命题的边界才会露出来——而<b>方程必须跟着改</b>。本章与 <a href="#prior">§4.7 变量矩阵</a>互补：那里已有 M1 材质 / M2 非导电球 / T1 壁厚 / Z 高度四轴，这里补的是<b>几何形状、尺寸标度、导电性扩展</b>三条新轴。</p>
+    </div>
+
+    <div class="tip warn reveal">
+      <div class="t">📐 本章性质声明：全部是<b>升级实验设计</b>，不是已验证结论</div>
+      <p>与 §11 同级：本章的用途是<b>规划下一步测什么、怎么测、看到什么算什么</b>。所有标度律都是<b>可检验的预言</b>。任何一条与实测冲突，以实测为准。</p>
+    </div>
+
+    <h3 class="reveal">13.1　把「地点频率」拆成四个因子：方程第一步该怎么改</h3>
+    <p class="reveal">本页 <a href="#spec">7.4</a> 给的是<b>球的专用式</b>。要让它对任何几何体都成立，只需要一步：把「半径」换成两个量——<b>一个等效特征长度</b>，<b>一个无量纲形状因子</b>。</p>
+
+    <div class="card reveal">
+      <h4 style="margin-top:0">通用式（球只是它取 Σ ≡ 1 的一个特例）</h4>
+      <div class="fml">f_n = ( c_s / L_eff ) · Σ_n
+<span class="n">f_n = 第 n 阶本征频率　c_s = 材料波速　L_eff = 等效特征长度　Σ_n = 无量纲「形状·模态因子」</span></div>
+      <div class="fml">c_s = √( E / (ρ(1−ν²)) )     ← 只由材料决定（E 弹性模量、ρ 密度、ν 泊松比）
+
+球：  L_eff = 2πR，Σ_ring = 1   →   f_ring = c_s / (2πR)     ← 与本页 7.4 完全一致</div>
+      <p style="font-size:14px">四个因子各管一件事，<b>一次实验只准动一个</b>：</p>
+      <div class="kv" style="margin:12px 0 6px">
+        <span>材料因子 <b>c_s</b></span>
+        <span>尺寸因子 <b>1/L_eff</b></span>
+        <span>形状因子 <b>Σ_n</b></span>
+        <span>微扰项 <b>1+Σε</b></span>
+      </div>
+      <div class="fml">f = f_n( L_eff, c_s, Σ_n ) · ( 1 + ε_温 + ε_撑 + ε_loc )
+<span class="n">位置项是「乘性」时写成 1+ε_loc；是「加性」时写成 f_n + δf_loc —— 这两种情况必须由实验分开（见 13.6）</span></div>
+      <p style="font-size:13.8px;color:var(--dim)">注意：<b>「位置」不在 L_eff 里，也不在 c_s 里</b>——它只能待在微扰项。这句看着是废话，但它决定了整个升级实验怎么设计：<b>要看清微扰项，就必须把另外三个因子按住不动。</b></p>
+    </div>
+
+    <h3 class="reveal">13.1b　比较之前先统一「模态类型」：薄壳型 vs 体波型</h3>
+    <p class="reveal">这是最容易毁掉整组对比的一个坑：<b>空心薄壳的本征谱是「弯曲模」，实心块的本征谱是「体波共振」</b>。两者差的不只是数值高低，而是<b>对整个表面／界面的敏感度</b>——弯曲模对边界条件、接触点、气流极敏感（这正是信号所在），体波模几乎不敏感。</p>
+    <p class="reveal">所以：<b>拿一只空心铜球去比一块实心铜正方体，测到的差异里绝大部分来自「模态类型」，而不是「形状」。</b></p>
+
+    <div class="tw reveal">
+      <table>
+        <thead><tr><th>形态</th><th>归一化式</th><th>Ø80 铜的量级</th><th>对表面／边界</th><th>适不适合做位置实验</th></tr></thead>
+        <tbody>
+          <tr><td class="k">薄壳型<br>（空心，t/R ≤ 0.05）</td><td class="mono">f_n = (c_s/2πR)·η·Φ_n<br>η = t / ( R·√(12(1−ν²)) )</td><td class="mono">60–230 Hz</td><td><b>极敏感</b></td><td><span class="tag t-ok">✅ 首选</span></td></tr>
+          <tr><td class="k">体波型<br>（实心／厚壳）</td><td class="mono">f_n = (c_s/2L)·λ_n</td><td class="mono">kHz–MHz 级</td><td>不敏感</td><td><span class="tag t-no">✗ 只作对照</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="tip reveal">
+      <div class="t">🎯 所以「换成铜正方体」有两种做法，含义完全不同</div>
+      <p><b>做法 A（推荐）：空心铜正方体壳</b>，壁厚与等效尺寸都对齐铜球——「模态类型」不变，<b>只动了形状</b>，差异可以直接归给几何。</p>
+      <p><b>做法 B：实心铜正方体</b>——频率跳 2–5 个数量级，进入体波区。它回答的是另一个问题：「位置效应是否普遍地作用于任何振子」，<b>而不是「形状有没有影响」</b>。两者都值得做，但<b>结论不许混着说</b>。</p>
+      <p style="font-size:13.7px;color:var(--dim)">另外提醒：正方体薄壳是激光焊 <b>12 条棱</b>，比球的赤道环缝难得多，而且<b>棱线本身是刚度奇点</b>，会额外带来一组劈裂谱线——它既是我们要测的几何效应，也是新的伪影源。</p>
+    </div>
+
+    <h3 class="reveal">13.2　形状怎么折算成「一个数」：三种等效半径</h3>
+    <p class="reveal">方程里的 <code>L_eff</code> 对球是 2πR，对正方体是什么？<b>没有唯一答案——而这正是可以利用的地方。</b>取三种不同的等效半径各做一遍分析，<b>哪一种能把数据收拢成一条曲线，就说明效应走的是哪条长度尺度。</b></p>
+
+    <div class="tw reveal">
+      <table>
+        <thead><tr><th>等效半径</th><th>定义</th><th>若数据按它坍缩，说明效应的长度尺度是</th><th>怎么得到</th></tr></thead>
+        <tbody>
+          <tr><td class="k">R_V　等体积</td><td class="mono">(3V/4π)^(1/3)</td><td>与<b>体积／质量</b>同尺度（惯性、引力类）</td><td>称重 ＋ 排水法测 V</td></tr>
+          <tr><td class="k">R_S　等表面积</td><td class="mono">(S/4π)^(1/2)</td><td>与<b>表面／界面</b>同尺度（声辐射、表面耦合）</td><td>3D 扫描或解析式（规则体）</td></tr>
+          <tr><td class="k">R_e　等电容<br>（静电半径）</td><td class="mono">C/(4πε₀)</td><td>与<b>电磁近场耦合</b>同尺度（涡流、镜像电流、极化）</td><td><b>LCR 表 1 kHz 实测，不必硬算</b></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="tw reveal">
+      <table>
+        <thead><tr><th>形状</th><th>V</th><th>S</th><th>R_V</th><th>R_S</th><th>R_S / R_V</th><th>R_e</th><th>点群</th></tr></thead>
+        <tbody>
+          <tr><td class="k">球（径 d）</td><td class="mono">πd³/6</td><td class="mono">πd²</td><td class="mono">0.500 d</td><td class="mono">0.500 d</td><td class="mono"><b>1.000</b></td><td class="mono">0.500 d（严格）</td><td class="mono">O(3) 连续</td></tr>
+          <tr><td class="k">正方体（棱 a）</td><td class="mono">a³</td><td class="mono">6a²</td><td class="mono">0.620 a</td><td class="mono">0.691 a</td><td class="mono"><b>1.114</b></td><td class="mono">≈0.655 a</td><td class="mono">O_h</td></tr>
+          <tr><td class="k">正四面体（棱 a）</td><td class="mono">0.1179 a³</td><td class="mono">1.732 a²</td><td class="mono">0.304 a</td><td class="mono">0.371 a</td><td class="mono"><b>1.220</b></td><td class="mono">实测</td><td class="mono">T_d</td></tr>
+          <tr><td class="k">不规则体</td><td class="mono">排水法</td><td class="mono">3D 扫描</td><td class="mono">算</td><td class="mono">算</td><td class="mono">—</td><td class="mono"><b>LCR 实测</b></td><td class="mono">仅恒等</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="tip reveal">
+      <div class="t">🔎 R_S / R_V 的比值本身就是形状签名，而且这三个形状天然给了三档</div>
+      <p>球 <b>1.000</b>　正方体 <b>1.114</b>　正四面体 <b>1.220</b>。几何越「尖」，两个半径分得越开。<b>如果效应只认其中一种尺度，三个形状的排序会立刻显出来</b>——这就是为什么形状组必须选这三个规则体：它们把 R_V/R_S 均匀地分成了三档。</p>
+      <p style="color:var(--dim);font-size:13.6px">R_e 一栏：球为 d/2（严格）；正方体 ≈0.655a 为文献常用值，<b>本实验一律以 LCR 实测为准，不用算的</b>；正四面体与不规则体一律实测。</p>
+    </div>
+
+    <h3 class="reveal">13.3　换形状 = 简并解除：谱线会变多，盲点会移位</h3>
+    <p class="reveal">球是唯一「所有方向都等价」的形体，所以它的模态带着 (2l+1) 重简并。换成正方体、正四面体，对称性降低，<b>原本重合的谱线会劈开</b>——而劈裂方式由点群唯一决定，不是随机噪声。</p>
+    <div class="tw reveal">
+      <table>
+        <thead><tr><th>形状</th><th>对称群</th><th>球谐 l=1（原本 3 重）</th><th>球谐 l=2（原本 5 重）</th><th>对本项目的后果</th></tr></thead>
+        <tbody>
+          <tr><td class="k">球</td><td class="mono">O(3)</td><td class="mono">不劈裂（3 重）</td><td class="mono">不劈裂（5 重）</td><td>谱最简；轮 04 的 <b>A₁ ⊕ T₂</b> 分解正是 l=0 ⊕ l=1 的体现</td></tr>
+          <tr><td class="k">正方体</td><td class="mono">O_h（48 阶）</td><td class="mono">→ T₁u</td><td class="mono">→ E_g(2) + T₂g(3)</td><td>5 重劈成 2+3，<b>谱线多一组</b>；有反演中心 → 出现 g/u 之分</td></tr>
+          <tr><td class="k">正四面体</td><td class="mono">T_d（24 阶）</td><td class="mono">→ T₂</td><td class="mono">→ E(2) + T₂(3)</td><td>劈裂数与正方体相同，但<b>无反演中心 → 没有 g/u</b>，模态归属规则不同</td></tr>
+          <tr><td class="k">不规则体</td><td class="mono">仅恒等</td><td class="mono">全解除</td><td class="mono">全解除</td><td>谱最密；<b>模态归属只能靠 8 点阵列的振幅热力图 ＋ FEM</b></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="tip bad reveal">
+      <div class="t">⚠️ 一个必须写进 SOP 的操作后果：模态灵敏度矩阵 M 要「一个形状一份」</div>
+      <p><a href="#spec">7.5</a> 的 <code>M[i][n]</code> 是「第 i 个传感点在第 n 阶模下的归一化幅度」——它<b>依赖物体在各传感点处的振型</b>。形状一变，M 全部作废，<b>连盲点位置都会移位</b>。</p>
+      <p>所以每引入一个新几何体，必须重做三件事：<b>① FEM（或单模激励扫描）重标 M 矩阵；② 重做盲点检查；③ 重做秩检查。</b>跳过任何一步，比出来的「形状差异」都可能只是「我恰好站在了节点线上」。</p>
+      <p style="font-size:13.7px;color:var(--dim)">还有一条容易漏的：同一形状还要记录<b>它相对 8 点阵列的朝向</b>。正方体至少做三种朝向（面心、棱心、体对角线分别对齐阵列主轴），否则「朝向」会混进「形状」。</p>
+    </div>
+
+    <h3 class="reveal">13.4　四组升级实验：一次只放开一个变量</h3>
+    <div class="tw reveal">
+      <table>
+        <thead><tr><th>编号</th><th>改什么</th><th>按住不动的</th><th>方程里只动哪一项</th><th>可检验的预言</th></tr></thead>
+        <tbody>
+          <tr><td class="k">E1　尺寸标度</td><td>Ø40 / Ø80 / Ø160（<b>同 t/R</b>）</td><td>材质、形状、薄度、位置</td><td><b>L_eff</b>（1/R）</td><td class="mono">f ∝ 1/R；三点连成斜率 −1 的直线</td></tr>
+          <tr><td class="k">E2　材质</td><td>铜 → 铝 → 不锈钢 → 黄铜（同尺寸同形状）</td><td>尺寸、形状、位置</td><td><b>c_s</b></td><td class="mono">f ∝ c_s；<b>ε_loc 应与材质无关</b></td></tr>
+          <tr><td class="k">E3　几何形状</td><td>球 → 正方体 → 正四面体 → 不规则（同材质、等 R_V、同壁厚）</td><td>材质、等效尺寸、壁厚、位置</td><td><b>Σ_n</b>（形状因子）</td><td>按某一种等效半径归一后，ε_loc 坍缩到一条线</td></tr>
+          <tr><td class="k">E4　导电性</td><td>铜 → 绝缘薄壳；同一只球<b>涂导电层 / 不涂</b>；再扩展到「穿导电服的动物 vs 穿棉衣的动物」</td><td>尺寸、几何、质量（配平）</td><td>是否出现电磁项 <b>δf_EM</b></td><td>若绝缘体清零 → 机制含导电路径；若同量级 → 排除涡流／镜像电流</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4 class="reveal" style="margin:28px 0 6px;font-size:16px;color:var(--t-strong)">E1　同形状、不同尺寸：用三个点定一条幂律</h4>
+    <div class="grid2 reveal">
+      <div class="card">
+        <h4 style="margin-top:0">怎么改方程</h4>
+        <div class="fml">f ∝ R^(−1)        （同 t/R、同材料、同形状）
+<span class="n">把三只球的 f 与 R 取双对数，斜率应为 −1</span></div>
+        <div class="fml">ln(Δf) = ln A + p · ln R
+<span class="n">p = 0 → 位置项是加性常数　|　p = +1 → 比例项（ε_loc 恒定）　|　其他 p → 另有机制</span></div>
+        <p style="font-size:13.9px"><b>要点</b>：必须保持 <code>t/R</code> 不变（Ø40 配 0.2 mm、Ø160 配 0.8 mm），否则尺寸与薄度两个变量会混在一起。<b>0.2 mm 与 0.8 mm 的加工难度差得极远——这一组的真实瓶颈是工艺，不是物理。</b></p>
+      </div>
+      <div class="card" style="border-color:var(--violet)">
+        <h4 style="margin-top:0">这一组能回答什么</h4>
+        <ul style="font-size:13.9px">
+          <li>若 <b>ε_loc = Δf/f 与尺寸无关</b>（p=+1）→ 位置效应作用于<b>相对量</b>，它改的是无量纲因子</li>
+          <li>若 <b>Δf 是固定绝对值</b>（p=0）→ 位置效应是<b>加性常数 δf_loc</b>，方程写成 <code>f = f_n + δf_loc</code></li>
+          <li>若偏离 −1 幂律 → 小尺寸端边界／支撑效应开始主导，说明已超出生效区间</li>
+        </ul>
+        <p style="font-size:13.7px;color:var(--dim)">三个点是<b>最低</b>要求；四点以上才能谈「幂律成立」，而不是「三点连成一条线」。</p>
+      </div>
+    </div>
+
+    <h4 class="reveal" style="margin:28px 0 6px;font-size:16px;color:var(--t-strong)">E2　同尺寸同形状、不同材质：这一组是「材料无关性」判据</h4>
+    <p class="reveal">材料在方程里只通过一个数进入——<code>c_s = √(E/(ρ(1−ν²)))</code>。<b>所以这一组的预言是可以直接算出来的</b>：同尺寸薄壳球的弯曲模频率，应当正比于 c_s。</p>
+    <div class="tw reveal">
+      <table>
+        <thead><tr><th>材质</th><th>E（GPa）</th><th>ρ（kg/m³）</th><th>ν</th><th>c_s = √(E/(ρ(1−ν²)))</th><th>相对铜</th><th>能否做薄壳</th></tr></thead>
+        <tbody>
+          <tr><td class="k">铜 Cu（基准）</td><td class="mono">117</td><td class="mono">8960</td><td class="mono">0.34</td><td class="mono">3843 m/s</td><td class="mono"><b>1.00</b></td><td><span class="tag t-ok">✅</span></td></tr>
+          <tr><td class="k">黄铜 H62</td><td class="mono">110</td><td class="mono">8500</td><td class="mono">0.34</td><td class="mono">≈3825 m/s</td><td class="mono">1.00</td><td><span class="tag t-ok">✅</span></td></tr>
+          <tr><td class="k">铝 Al</td><td class="mono">69</td><td class="mono">2700</td><td class="mono">0.33</td><td class="mono">≈5355 m/s</td><td class="mono">1.39</td><td><span class="tag t-ok">✅</span></td></tr>
+          <tr><td class="k">不锈钢 304</td><td class="mono">193</td><td class="mono">7900</td><td class="mono">0.29</td><td class="mono">≈5165 m/s</td><td class="mono">1.34</td><td><span class="tag t-ok">✅</span></td></tr>
+          <tr><td class="k">钠钙玻璃</td><td class="mono">70</td><td class="mono">2500</td><td class="mono">0.22</td><td class="mono">≈5424 m/s</td><td class="mono">1.41</td><td><span class="tag t-no">✗ 脆，只能厚壁／实心</span></td></tr>
+          <tr><td class="k">实木（顺纹）</td><td class="mono">≈11</td><td class="mono">≈700</td><td class="mono">—</td><td class="mono">≈3960 m/s<br>（<b>仅顺纹</b>）</td><td class="mono">≈1.03</td><td><span class="tag t-no">✗ 吸湿＋各向异性</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="tip warn reveal">
+      <div class="t">🔴 这一组的关键不是「频率变了」，而是「ε_loc 变不变」</div>
+      <p><b>绝对频率一定会变</b>——那是 c_s 在起作用，属已知物理，不是发现。真正要问的是：<b>相对频移 ε_loc = Δf/f 会不会随材质改变？</b></p>
+      <p><b>若 ε_loc 与材质无关</b> → 位置项不经过任何材料参数，它在方程里只能待在最外层（乘性因子或加性项）——<b>这是一个很强的结构性结论</b>。</p>
+      <p><b>若 ε_loc 随材质单调变化</b> → 位置项与 E、ρ、ν 中至少一个耦合 → 机制方向立刻被限定。</p>
+      <p style="font-size:13.7px;color:var(--dim)">⚠️ 铝（1.39）与不锈钢（1.34）的 c_s 几乎相同，但一个是轻金属、一个是重金属——<b>这一对是天然的「同 c_s、异 ρ」对照</b>，能额外分离出「密度／质量」这条通道。建议把这一对单独列出来分析。</p>
+    </div>
+
+    <h4 class="reveal" style="margin:28px 0 6px;font-size:16px;color:var(--t-strong)">E3　同材质同尺寸、不同几何形状：核心那一组</h4>
+    <div class="grid2 reveal">
+      <div class="card">
+        <h4 style="margin-top:0">尺寸怎么对齐：两种约定，含义不同</h4>
+        <ul style="font-size:13.9px">
+          <li><b>等 R_V（等体积，推荐）</b>：球 Ød ↔ 正方体棱 <code>a = 0.806 d</code>（V 相等）。质量自然配平，<b>差异可直接归给形状</b>。</li>
+          <li><b>等外接尺寸</b>：球 Ød ↔ 正方体棱 <code>a = d/√3 = 0.577 d</code>。但这样正方体体积只有球的 <b>36.8%</b>，质量差 2.7 倍 → <b>必须额外做质量对照，否则质量效应会冒充形状效应</b>。</li>
+        </ul>
+        <p style="font-size:13.9px"><b>做法</b>：两套都做。等 R_V 那套用来问形状；等外接那套用来验证「质量是不是独立通道」。</p>
+      </div>
+      <div class="card" style="border-color:var(--violet)">
+        <h4 style="margin-top:0">怎么读结果：三种归一化各算一遍</h4>
+        <div class="fml">ε_loc = A · (R*/R₀)^p ，R* ∈ { R_V, R_S, R_e }
+<span class="n">分别在三种归一化下做双对数拟合，取残差最小的那一种</span></div>
+        <p style="font-size:13.9px">残差最小的那条即<b>效应的长度尺度</b>：</p>
+        <ul style="font-size:13.9px">
+          <li>按 <b>R_V</b> 坍缩 → 走体积／质量通道</li>
+          <li>按 <b>R_S</b> 坍缩 → 走表面／界面通道（声辐射类）</li>
+          <li>按 <b>R_e</b> 坍缩 → 走电磁近场通道</li>
+          <li><b>三种都不坍缩</b> → 形状因子 Σ_n 无法提公共尺度，命题被收窄（见 13.6）</li>
+        </ul>
+      </div>
+    </div>
+
+    <h4 class="reveal" style="margin:28px 0 6px;font-size:16px;color:var(--t-strong)">E4　导电性：从绝缘薄壳球，到穿衣服的动物</h4>
+    <div class="tip good reveal">
+      <div class="t">💡 最干净的一招：同一只球「贴铜箔 / 不贴」的自身对照</div>
+      <p>做一只<b>树脂或陶瓷空心球</b>（尺寸、壁厚、质量全部按铜球配平），然后<b>一半实验贴满导电铜箔、一半不贴，做 A-B-A</b>。</p>
+      <p><b>几何、质量、材质、支撑点全部不变，唯一变的是表面导电性</b>——这比「换一只球」干净一个量级，因为它把所有个体差异一次性消掉了。这和 <a href="#spec">7.4</a> 的双球交换法是同一个思路：<b>让想改的变量成为唯一变了的那个。</b></p>
+      <p style="font-size:13.7px;color:var(--dim)">注意：贴铜箔会同时改变质量分布与表面阻尼，所以还要做一个「贴等质量绝缘膜」的平行对照，把「贴东西」这个动作本身的影响扣掉。</p>
+    </div>
+
+    <div class="grid3 reveal">
+      <div class="card" style="border-left:3px solid var(--green)">
+        <div class="tag t-ok">E4a · 绝缘薄壳球</div>
+        <p style="font-size:13.9px;margin-top:10px"><b>最干净的导电性对照。</b>与铜球同模态类型（都是薄壳弯曲模），尺寸与质量配平。若它给出零、铜球给出非零 → <b>机制含导电路径</b>。</p>
+        <p style="font-size:13.7px;color:var(--dim)">这就是 <a href="#prior">§4.7</a> 表里 M2 的升级版：从「换一只球」升级为「同一只球双向切换」。</p>
+      </div>
+      <div class="card" style="border-left:3px solid var(--amber)">
+        <div class="tag t-mid">E4b · 木块</div>
+        <p style="font-size:13.9px;margin-top:10px"><b>只作定性对照，不能当定量基准。</b>木材是<b>正交各向异性</b>：顺纹与横纹的 c_s 差 10 倍以上 → <code>c_s</code> 必须写成张量 <code>c_s(θ)</code>，θ 是木纹与阵列主轴夹角。</p>
+        <p style="font-size:13.9px">更麻烦的是<b>吸湿膨胀</b>：湿度一变频率就漂，量级比 §8 表里的 1 mK 温漂更大。<b>必须先密封覆膜并恒湿</b>。</p>
+        <p style="font-size:13.7px;color:var(--amber)">⚠️ <b>旋转木块（不换位置）就会改变频率</b>——所以「旋转」本身必须作为一个对照写进协议，否则正交各向异性会直接冒充成位置效应。</p>
+      </div>
+      <div class="card" style="border-left:3px solid var(--red)">
+        <div class="tag t-no">E4c · 活体</div>
+        <p style="font-size:13.9px;margin-top:10px">见下方专项。这一族<b>最后做</b>，且必须先用假体把衣物与质量效应清干净。</p>
+      </div>
+    </div>
+
+    <div class="tip bad reveal">
+      <div class="t">🐾 活体那一族：先把「不适用的规则」列清楚</div>
+      <p><b>① 生理通道会冒充信号。</b>心率（1–4 Hz 基频＋谐波）、呼吸（0.2–0.5 Hz）、肌颤（8–12 Hz）必然出现在谱里，而且它们<b>对位置的依赖可以严格为零</b>——正因如此，它们是最好的<b>内部对照</b>。必须与 8 路<b>同步记录</b>，并套用 <a href="#spec">7.5</a> 的接入流程第三行：<b>若这些通道也出现同向进动，命中即被解释为生理／环境伪影。</b></p>
+      <p><b>② 几何不是常数。</b>呼吸与姿势让体表形状连续变化 → R_eff 在漂移。必须：姿势固定（约束或麻醉）＋ 姿态监测 ＋ 同步胸围／体表位移 ＋ 称重（质量是守恒量的代理）。</p>
+      <p><b>③ 体温是热源。</b>37 ℃ 体表在 20 ℃ 环境里会产生稳定上升气流，而这股气流的扰动正好落在薄壳弯曲模最敏感的频段——<b>这一项的抑制难度高于 §8 表里任何一行</b>。</p>
+      <p><b>④ 伦理与剂量必须先过关。</b>活体 ＋ 声／电磁激励需要伦理审查与安全剂量上限；原话里的 <code>isolated chamber</code> 对活体意味着额外的氧、温、应激约束，<b>不能照搬</b>。</p>
+      <p style="color:var(--amber)"><b>⑤ 所以顺序是：先假体，后活体。</b>用「等质量水袋 ＋ 同一件衣服」把<b>「导电服 vs 棉衣」</b>这层先做完——它把衣物效应、质量效应、几何效应全部分离干净，活体实验就只剩「生理」这一项不确定性。</p>
+      <p style="font-size:13.6px;color:var(--dim)">补充一句物理上的细节：<b>「绝缘」≠「不参与电磁」</b>。木头与棉衣仍然有介电常数 ε_r，位移电流照样存在。所以绝缘体清零（若有）排除的是<b>导电路径</b>（涡流／镜像电流），而不是整个电磁机制。</p>
+    </div>
+
+    <h3 class="reveal">13.5　「瞬移」的判据必须按几何改写——别把球的标准照搬</h3>
+    <p class="reveal">这是本章最实用的一条：<b>球会滚，正方体不会滚。</b>同一套「净位移 &gt; 2 mm ＋ 速度衰减」的判据，放到面接触物体上会直接失效——静摩擦把起步门槛抬了一到两个数量级，而一旦起步，它的运动是<b>翻面</b>或<b>滑移</b>，不是连续平移。</p>
+    <div class="tw reveal">
+      <table>
+        <thead><tr><th>几何</th><th>接触方式</th><th>预期运动模式</th><th>判据该怎么写</th></tr></thead>
+        <tbody>
+          <tr><td class="k">球</td><td>点接触（理论）／Ø6 mm 微平面</td><td>连续滚动</td><td>净位移 <b>&gt; 2 mm</b> ＋ 30 s 内速度 &lt; 0.05 mm/s ＋ 60 s 不返回（沿用 §6 的 H3 窗口）</td></tr>
+          <tr><td class="k">正方体／正四面体</td><td><b>面接触</b>（大面积 → 静摩擦锁定）</td><td><b>翻面</b>或整体滑移</td><td>位移量化成<b>面宽／棱长的分数或整数倍</b>；先单独测「起动力阈值」；主判据改为「<b>面序改变</b>」＋ 重心位移（由 8 点阵列的 A₁ 通道反推）</td></tr>
+          <tr><td class="k">不规则体</td><td>多点离散接触</td><td>摇摆／绕偏心轴转动</td><td>用<b>姿态变化</b>（IMU／双目）＋ 质心位移；「停在原位但转过一个角」也构成事件，必须单独定义</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="tip warn reveal">
+      <div class="t">⚠️ 判据一改，以球为基准的门槛就全部失效</div>
+      <p>§6 的 H3 停止窗口里「目标区 = 5 倍球径」是以<b>球的滚动尺度</b>定义的。换成面接触物体后，<b>必须改用以「该物体最短特征尺寸」为基准的相对门槛</b>，而且每个几何体各写一份，<b>不能共用一个数</b>。</p>
+      <p>还有一条球上没有的混淆源：<b>面接触的接触刚度是随机分布的</b>。同一个正方体换个朝向放，接触状态就变，频率也跟着变。<b>这就是为什么正方体必须做三种朝向——朝向既是变量，也是噪声源。</b></p>
+    </div>
+
+    <h3 class="reveal">13.6　看到什么算什么：结果 → 结论对照表</h3>
+    <p class="reveal">这一组实验的价值在于：<b>每一种结果都直接改写方程的形式。</b>事先把对照表写死，才能避免事后解释（这正是 §4.6b 里 Allais 缺的那件事）。</p>
+    <div class="tw reveal">
+      <table>
+        <thead><tr><th>观察到的结果</th><th>方程该怎么改</th><th>对命题的含义</th></tr></thead>
+        <tbody>
+          <tr><td class="k">各形状在某一等效半径归一后<br><b>ε_loc 坍缩到同一条线</b></td><td class="mono">ε_loc = A·(R*/R₀)^p<br>（R* 为坍缩的那一种半径）</td><td><span class="tag t-ok">位置是与形状无关的量</span>——命题被<b>普遍化</b>：任何物体都「本有」地点频率</td></tr>
+          <tr><td class="k">只有球有效，正方体／四面体为零</td><td class="mono">f = (c_s/L)·Σ_n(shape)<br>·(1 + ε_loc(shape))<br><span class="n">不能提公共尺度</span></td><td><span class="tag t-mid">位置频率是球对称专属</span>——与 l=0 呼吸模同源，命题被<b>收窄</b></td></tr>
+          <tr><td class="k">只有导电体有效，<br>绝缘体（含贴铜箔自身对照）为零</td><td class="mono">f = f_mech + δf_EM(σ, ε_r, C)</td><td><span class="tag t-info">机制含导电路径</span>——指向涡流／镜像电流</td></tr>
+          <tr><td class="k">绝缘体也有同量级效应</td><td class="mono">去掉 σ 通道，保留极化通道：<br>δf_EM(ε_r, C)</td><td><span class="tag t-ok">排除导电路径</span>——位置作用于机械模态本身</td></tr>
+          <tr><td class="k"><b>Δf 是固定绝对值</b>（与尺寸无关，p = 0）</td><td class="mono">f = f_n(形状) + δf_loc<br><span class="n">加性形态</span></td><td>位置像一个「偏置」，加在任何振子上</td></tr>
+          <tr><td class="k"><b>ε_loc = Δf/f 恒定</b>（Δf ∝ R，p = +1）</td><td class="mono">f = f_n(形状)·(1 + ε_loc)<br><span class="n">乘性形态</span></td><td>位置改的是<b>无量纲因子</b>——最省的一种解释</td></tr>
+          <tr><td class="k">旋转木块（不换位置）即改变频率</td><td class="mono">c_s → c_s(θ)<br><span class="n">θ = 木纹与阵列主轴夹角</span></td><td><span class="tag t-no">伪影</span>——正交各向异性，必须先扣掉再谈位置</td></tr>
+          <tr><td class="k">动物的心跳／呼吸通道也出现同向进动</td><td class="mono">无需改方程——命中已被解释</td><td><span class="tag t-no">伪影</span>——套用 7.5 第三行判定</td></tr>
+          <tr><td class="k">所有形状、所有材质、所有导电性<b>全部为零</b></td><td class="mono">方程保持原形，ε_loc ≡ 0</td><td><span class="tag t-mid">命题被拒假</span>——<b>这也是一个可发表的结果</b>（§6 判据④）</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="reveal">13.7　优先级：先做哪一组，为什么</h3>
+    <div class="steps reveal">
+      <div class="step">
+        <div class="h">① E3　铜球 vs 空心铜正方体（同材质 · 等 R_V · 同壁厚）</div>
+        <div class="d">最干净的一组——<b>只动形状因子 Σ_n</b>，材质与尺寸都按住。它直接回答最核心的问题：「位置频率」是物体的<b>普遍属性</b>，还是<b>球这个形体的专属现象</b>？<em>成本最低，信息量最大。</em></div>
+      </div>
+      <div class="step">
+        <div class="h">② E4a　同一只球「贴铜箔 / 不贴」的自身对照</div>
+        <div class="d">几何、质量、材质全不变，<b>唯一变的是表面导电性</b>——一次 A-B-A 就能把导电路径切开或留下。<em>本组里最优雅的一招，与 §7.4 双球交换法同源。</em></div>
+      </div>
+      <div class="step">
+        <div class="h">③ E1　Ø40 / Ø80 / Ø160（同 t/R）</div>
+        <div class="d">三点定一条幂律，把「<b>加性还是乘性</b>」这个根本形态分清。<em>真实瓶颈是 0.2 mm 与 0.8 mm 薄壳的工艺，不是物理。</em></div>
+      </div>
+      <div class="step">
+        <div class="h">④ E2　铜 → 铝 → 不锈钢 → 黄铜（同尺寸同形状）</div>
+        <div class="d">验「材料无关性」：若 <b>ε_loc 与材质无关</b>，位置项就不经过任何材料参数，在方程里只能待在最外层。<em>铝／不锈钢那一对 c_s 几乎相同而 ρ 相差 3 倍，可额外分离质量通道。</em></div>
+      </div>
+      <div class="step">
+        <div class="h">⑤ E4b / E4c　绝缘体与活体：树脂球 → 木块 → 假体 → 活体</div>
+        <div class="d">风险与成本最高，<b>必须最后做</b>。木块只作定性对照（各向异性＋吸湿本身就是两重伪影源）。活体先过伦理，并用「等质量水袋＋同一件衣服」把衣物与质量效应清干净。</div>
+      </div>
+    </div>
+
+    <div class="tip bad reveal">
+      <div class="t">🚫 三条「不要做」</div>
+      <p><b>① 不要拿实心块去比空心壳</b>，再谈形状差异——那是<b>模态类型</b>差异，不是几何差异（见 13.1b）。</p>
+      <p><b>② 不要在没重标 M 矩阵的情况下比较新形状</b>——盲点移位会让你把「站在节点线上」读成「效应消失」（见 13.3）。</p>
+      <p><b>③ 不要沿用一个「五倍球径」式的门槛</b>——面接触物体的运动学完全不同，判据必须逐几何重写（见 13.5）。</p>
+    </div>
+
+    <div class="kv reveal">
+      <span>新增实验族 <b>4 组</b></span>
+      <span>新增变量轴 <b>3 条</b><span style="color:var(--dim)">（几何／尺寸／导电性扩展）</span></span>
+      <span>需重标 M 矩阵的几何体 <b>≥5 个</b></span>
+      <span>方程形态 <b>3 种</b><span style="color:var(--dim)">（加性／乘性／含电磁项）</span></span>
+      <span>每条判据都要<b>预注册</b></span>
+    </div>
+
+    <div class="tip reveal">
+      <div class="t">🔗 与本章配套的文件</div>
+      <p>本章是<b>设计层</b>。落到纸面的操作协议见 <code>产出文档/第07章_Harmonograph八路微小频差检测协议.md</code>（读数器与可测性红线）与 <code>产出文档/铜球实验完整工艺规范.md</code>（第 7 章＝进动检测、第 8 章＝总体流程、第 9 章＝判定矩阵）。<b>升级实验的判据，最终要合并进第 9 章判定矩阵的第二版。</b></p>
     </div>
   </div>
 </section>
