@@ -4,6 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>空间瞬移 · 落地实现路径 ｜ 金属球位置频率实验索引页</title>
+<meta name="theme-color" content="#ffffff">
+<script>
+/* 主题初始化：必须放在样式表之前执行，否则首屏会闪一下深色 */
+(function(){try{
+  var t = localStorage.getItem("bashar-theme");
+  document.documentElement.setAttribute("data-theme", t === "dark" ? "dark" : "light");
+}catch(e){document.documentElement.setAttribute("data-theme", "light");}})();
+</script>
 <style>
 :root{
   --bg:#070b14; --bg2:#0b1220; --card:#101a2b; --card2:#0d1524;
@@ -11,8 +19,57 @@
   --txt:#e2e9f5; --dim:#8ea0bb; --dim2:#6c7f9b;
   --cyan:#3ce0cf; --cyan2:#1b8f86; --amber:#ffb545; --violet:#a78bfa;
   --red:#ff7272; --green:#54d98c; --blue:#5ba3ff;
+  /* ---- 语义扩展：浅色主题需单独反色（暗色值 = 原硬编码值，暗色外观零变化）---- */
+  --t-body:#c3cfe1; --t-strong:#ffffff; --t-lede:#b8c6dc;
+  --t-quote:#cfd9e8; --t-card:#dfe8f6;
+  --nav-bg:rgba(7,11,20,.82); --hover:rgba(255,255,255,.05); --row-hover:rgba(255,255,255,.017);
+  --hr:rgba(29,43,66,.6); --td-line:rgba(29,43,66,.65); --grid:rgba(255,255,255,.025);
+  --fade:rgba(7,11,20,.9); --sh-1:rgba(0,0,0,.9); --sh-2:rgba(0,0,0,.8);
+  --glow:rgba(60,224,207,.7);
+  --code-bg:rgba(60,224,207,.1); --code-fg:#8ff0e4;
+  --fml-bg:#080d17; --fml-fg:#d7c8ff;
+  --img-ph:#060a12; --lb-bg:rgba(3,6,11,.94); --swatch:#1b2b42;
+  color-scheme:dark;
   --r:14px; --mx:1180px;
 }
+
+/* ==================== 白天模式（默认）====================
+   右上角按钮切换；选择记忆在 localStorage["bashar-theme"]
+   反色规则：底色/面板 → 白与浅灰；文字 → 深墨色；强调色 → 同色系深色版
+   （亮青 #3ce0cf 在白底上几乎不可见，必须换成 #0d7f76 这类） */
+html[data-theme="light"]{
+  --bg:#ffffff; --bg2:#f5f8fc; --card:#ffffff; --card2:#f7fafc;
+  --line:#e2e8f0; --line2:#cbd5e1;
+  --txt:#0f1a2b; --dim:#4b5c74; --dim2:#64748b;
+  --t-body:#26364e; --t-strong:#0b1220; --t-lede:#3c4e68;
+  --t-quote:#334155; --t-card:#1e293b;
+  --cyan:#0d7f76; --cyan2:#0f766e; --amber:#a15c07; --violet:#6d28d9;
+  --red:#c92a2a; --green:#15803d; --blue:#1d4ed8;
+  --nav-bg:rgba(255,255,255,.88); --hover:rgba(15,23,42,.06); --row-hover:rgba(15,23,42,.03);
+  --hr:rgba(15,23,42,.1); --td-line:rgba(15,23,42,.08); --grid:rgba(15,23,42,.05);
+  --fade:rgba(255,255,255,.93); --sh-1:rgba(15,23,42,.15); --sh-2:rgba(15,23,42,.12);
+  --glow:rgba(13,127,118,.45);
+  --code-bg:rgba(13,127,118,.09); --code-fg:#0f766e;
+  --fml-bg:#eef2f7; --fml-fg:#5b21b6;
+  --img-ph:#e2e8f0; --lb-bg:rgba(255,255,255,.95); --swatch:#eef2f7;
+  color-scheme:light;
+}
+/* 白天模式下：亮色半透明底在白纸上几乎不可见 → 换成深色版同透明度 */
+html[data-theme="light"] .kicker,
+html[data-theme="light"] .tip{background:rgba(13,127,118,.07)}
+html[data-theme="light"] .tip.warn{background:rgba(161,92,7,.08)}
+html[data-theme="light"] .tip.bad{background:rgba(201,42,42,.07)}
+html[data-theme="light"] .tip.good{background:rgba(21,128,61,.07)}
+html[data-theme="light"] th{background:rgba(13,127,118,.09)}
+html[data-theme="light"] nav .links a.on{background:rgba(13,127,118,.12)}
+html[data-theme="light"] .quote-hero{background:linear-gradient(90deg,rgba(161,92,7,.09),transparent 78%)}
+html[data-theme="light"] .tag{border-color:currentColor;background:transparent}
+/* 页内少量内联底色（表格分组）也要跟着反色 */
+html[data-theme="light"] tr[style*="255,181,69"],
+html[data-theme="light"] td[style*="255,181,69"]{background:rgba(161,92,7,.08)!important}
+html[data-theme="light"] tr[style*="255,114,114"],
+html[data-theme="light"] td[style*="255,114,114"]{background:rgba(201,42,42,.07)!important}
+html[data-theme="light"] td[style*="84,217,140"]{background:rgba(21,128,61,.07)!important}
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth;scroll-padding-top:74px}
 body{
@@ -29,8 +86,8 @@ body::before{
 }
 body::after{
   content:""; position:fixed; inset:0; z-index:0; pointer-events:none; opacity:.5;
-  background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),
-                   linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),
+                   linear-gradient(90deg,var(--grid) 1px,transparent 1px);
   background-size:64px 64px;
   mask-image:radial-gradient(circle at 50% 30%,#000 0%,transparent 78%);
 }
@@ -40,10 +97,10 @@ a:hover{text-decoration:underline}
 
 /* ---------- 进度条 & 导航 ---------- */
 .prog{position:fixed;top:0;left:0;height:2px;width:100%;background:transparent;z-index:60}
-.prog i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--cyan),var(--violet),var(--amber));box-shadow:0 0 12px rgba(60,224,207,.7)}
+.prog i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--cyan),var(--violet),var(--amber));box-shadow:0 0 12px var(--glow)}
 nav{
   position:fixed;top:0;left:0;right:0;z-index:50;
-  background:rgba(7,11,20,.82);backdrop-filter:blur(14px);
+  background:var(--nav-bg);backdrop-filter:blur(14px);
   border-bottom:1px solid var(--line);
 }
 nav .inner{max-width:var(--mx);margin:0 auto;padding:11px 24px;display:flex;align-items:center;gap:18px}
@@ -51,13 +108,23 @@ nav .brand{font-weight:700;letter-spacing:.5px;white-space:nowrap;font-size:14px
 nav .brand b{color:var(--cyan)}
 nav .dot{width:8px;height:8px;border-radius:50%;background:var(--cyan);box-shadow:0 0 10px var(--cyan);animation:pu 2.6s infinite}
 @keyframes pu{0%,100%{opacity:1}50%{opacity:.35}}
-nav .links{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
+nav .links{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;flex:1 1 auto;min-width:0}
 nav .links::-webkit-scrollbar{display:none}
 nav .links a{
   color:var(--dim);font-size:13px;padding:6px 11px;border-radius:8px;white-space:nowrap;transition:.2s
 }
-nav .links a:hover{color:var(--txt);background:rgba(255,255,255,.05);text-decoration:none}
+nav .links a:hover{color:var(--txt);background:var(--hover);text-decoration:none}
 nav .links a.on{color:var(--cyan);background:rgba(60,224,207,.11)}
+nav .tgl{
+  margin-left:auto;flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;
+  font-family:inherit;font-size:12.5px;font-weight:650;line-height:1;
+  color:var(--dim);background:var(--card);border:1px solid var(--line2);
+  border-radius:999px;padding:7px 13px;cursor:pointer;white-space:nowrap;transition:.2s
+}
+nav .tgl:hover{color:var(--txt);border-color:var(--cyan);transform:translateY(-1px)}
+nav .tgl:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+nav .tgl .ti{font-size:13.5px;line-height:1;display:inline-block;transition:transform .3s}
+nav .tgl:hover .ti{transform:rotate(-18deg)}
 
 /* ---------- Hero ---------- */
 header.hero{padding:132px 0 76px;position:relative}
@@ -68,14 +135,14 @@ header.hero{padding:132px 0 76px;position:relative}
 }
 h1{font-size:clamp(30px,5.2vw,58px);line-height:1.14;font-weight:800;letter-spacing:-.5px}
 h1 .g{background:linear-gradient(100deg,var(--cyan),var(--violet) 55%,var(--amber));-webkit-background-clip:text;background-clip:text;color:transparent}
-.lede{max-width:820px;margin-top:22px;font-size:17px;color:#b8c6dc}
+.lede{max-width:820px;margin-top:22px;font-size:17px;color:var(--t-lede)}
 .lede b{color:var(--txt);font-weight:600}
 .quote-hero{
   margin-top:34px;padding:22px 26px;border-left:3px solid var(--amber);
   background:linear-gradient(90deg,rgba(255,181,69,.09),transparent 78%);
   border-radius:0 var(--r) var(--r) 0;max-width:900px
 }
-.quote-hero .en{font-family:Consolas,"SF Mono",monospace;font-size:13.5px;color:#cfd9e8;line-height:1.7}
+.quote-hero .en{font-family:Consolas,"SF Mono",monospace;font-size:13.5px;color:var(--t-quote);line-height:1.7}
 .quote-hero .zh{margin-top:11px;font-size:16.5px;color:var(--amber);font-weight:600}
 .quote-hero cite{display:block;margin-top:9px;font-size:12.5px;color:var(--dim2);font-style:normal}
 
@@ -95,13 +162,13 @@ h1 .g{background:linear-gradient(100deg,var(--cyan),var(--violet) 55%,var(--ambe
 .hero-fig .frame{
   position:relative;border:1px solid var(--line2);border-radius:16px;overflow:hidden;
   background:var(--card);cursor:zoom-in;transition:.3s;
-  box-shadow:0 26px 64px -24px rgba(0,0,0,.9)
+  box-shadow:0 26px 64px -24px var(--sh-1)
 }
 .hero-fig .frame:hover{border-color:var(--cyan);transform:translateY(-3px)}
 .hero-fig img{width:100%;height:auto;display:block}
 .hero-fig .frame::after{
   content:"";position:absolute;left:0;right:0;bottom:0;height:104px;pointer-events:none;
-  background:linear-gradient(transparent,rgba(7,11,20,.9))
+  background:linear-gradient(transparent,var(--fade))
 }
 .hero-fig .tip{
   position:absolute;left:0;right:0;bottom:13px;text-align:center;pointer-events:none;
@@ -111,7 +178,7 @@ h1 .g{background:linear-gradient(100deg,var(--cyan),var(--violet) 55%,var(--ambe
 
 /* ---------- 通用区块 ---------- */
 section{padding:74px 0;position:relative;z-index:1}
-section+section{border-top:1px solid rgba(29,43,66,.6)}
+section+section{border-top:1px solid var(--hr)}
 .shead{margin-bottom:36px}
 .snum{
   font-family:Consolas,monospace;font-size:12.5px;letter-spacing:2px;color:var(--cyan2);
@@ -123,14 +190,14 @@ h2 .s{color:var(--dim2);font-weight:400;font-size:.62em;margin-left:9px}
 h3{font-size:18.5px;font-weight:700;margin:38px 0 15px;display:flex;align-items:center;gap:10px}
 h3::before{content:"";width:4px;height:17px;border-radius:2px;background:var(--cyan)}
 h4{font-size:15.5px;font-weight:700;color:var(--cyan);margin:26px 0 11px}
-p{margin:11px 0;color:#c3cfe1}
-p b,li b{color:#fff;font-weight:600}
+p{margin:11px 0;color:var(--t-body)}
+p b,li b{color:var(--t-strong);font-weight:600}
 em{color:var(--amber);font-style:normal}
 code{
-  font-family:Consolas,"SF Mono",monospace;font-size:12.8px;background:rgba(60,224,207,.1);
-  color:#8ff0e4;padding:2px 6px;border-radius:5px;word-break:break-word
+  font-family:Consolas,"SF Mono",monospace;font-size:12.8px;background:var(--code-bg);
+  color:var(--code-fg);padding:2px 6px;border-radius:5px;word-break:break-word
 }
-ul,ol{margin:12px 0 12px 22px;color:#c3cfe1}
+ul,ol{margin:12px 0 12px 22px;color:var(--t-body)}
 li{margin:7px 0}
 
 .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:22px}
@@ -156,10 +223,10 @@ th{
   background:rgba(60,224,207,.08);color:var(--cyan);text-align:left;padding:11px 13px;
   font-weight:650;font-size:13px;white-space:nowrap;border-bottom:1px solid var(--line)
 }
-td{padding:10px 13px;border-bottom:1px solid rgba(29,43,66,.65);color:#c3cfe1;vertical-align:top}
+td{padding:10px 13px;border-bottom:1px solid var(--td-line);color:var(--t-body);vertical-align:top}
 tr:last-child td{border-bottom:none}
-tbody tr:hover{background:rgba(255,255,255,.017)}
-td.k{color:#fff;font-weight:600;white-space:nowrap}
+tbody tr:hover{background:var(--row-hover)}
+td.k{color:var(--t-strong);font-weight:600;white-space:nowrap}
 .mono{font-family:Consolas,"SF Mono",monospace;font-size:12.8px}
 
 .tag{
@@ -184,7 +251,7 @@ td.k{color:#fff;font-weight:600;white-space:nowrap}
   font-family:Consolas,monospace;font-size:16px;font-weight:700;color:var(--cyan);
   opacity:.85
 }
-.step .h{font-weight:700;color:#fff;font-size:15px;margin-bottom:5px}
+.step .h{font-weight:700;color:var(--t-strong);font-size:15px;margin-bottom:5px}
 .step .d{font-size:14px;color:var(--dim)}
 .step .d em{color:var(--amber)}
 
@@ -201,7 +268,7 @@ td.k{color:#fff;font-weight:600;white-space:nowrap}
 .tli.red::before{border-color:var(--red);box-shadow:0 0 0 3px rgba(255,114,114,.14)}
 .tli .y{font-family:Consolas,monospace;font-size:12.5px;color:var(--cyan);letter-spacing:1px}
 .tli.amber .y{color:var(--amber)} .tli.violet .y{color:var(--violet)} .tli.red .y{color:var(--red)}
-.tli .h{font-weight:700;font-size:15.5px;color:#fff;margin:2px 0 4px}
+.tli .h{font-weight:700;font-size:15.5px;color:var(--t-strong);margin:2px 0 4px}
 .tli .d{font-size:14px;color:var(--dim)}
 
 /* 图库 */
@@ -209,31 +276,31 @@ td.k{color:#fff;font-weight:600;white-space:nowrap}
 .gi{
   background:var(--card);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;cursor:zoom-in;transition:.25s
 }
-.gi:hover{border-color:var(--cyan2);transform:translateY(-3px);box-shadow:0 12px 32px -14px rgba(0,0,0,.8)}
-.gi img{width:100%;height:158px;object-fit:cover;display:block;background:#060a12}
+.gi:hover{border-color:var(--cyan2);transform:translateY(-3px);box-shadow:0 12px 32px -14px var(--sh-2)}
+.gi img{width:100%;height:158px;object-fit:cover;display:block;background:var(--img-ph)}
 .gi.cover img{object-position:center top}
 .gi .c{padding:11px 13px}
-.gi .n{font-size:13.3px;font-weight:600;color:#dfe8f6}
+.gi .n{font-size:13.3px;font-weight:600;color:var(--t-card)}
 .gi .s{font-size:11.8px;color:var(--dim2);margin-top:3px}
 .gi.poster img{height:300px;object-fit:cover;object-position:top}
 
 /* 公式 */
 .fml{
-  background:#080d17;border:1px solid var(--line2);border-left:3px solid var(--violet);
+  background:var(--fml-bg);border:1px solid var(--line2);border-left:3px solid var(--violet);
   border-radius:0 10px 10px 0;padding:13px 18px;margin:13px 0;
-  font-family:Consolas,"SF Mono",monospace;font-size:14px;color:#d7c8ff;overflow-x:auto
+  font-family:Consolas,"SF Mono",monospace;font-size:14px;color:var(--fml-fg);overflow-x:auto
 }
 .fml .n{display:block;font-size:12.3px;color:var(--dim);margin-top:6px;font-family:inherit}
 
 .kv{display:flex;flex-wrap:wrap;gap:9px;margin:14px 0}
 .kv span{
   background:var(--card2);border:1px solid var(--line);border-radius:9px;
-  padding:7px 12px;font-size:13px;color:#c3cfe1
+  padding:7px 12px;font-size:13px;color:var(--t-body)
 }
 .kv span b{color:var(--cyan);font-family:Consolas,monospace}
 
 details{border:1px solid var(--line);border-radius:var(--r);background:var(--card2);margin:12px 0;overflow:hidden}
-summary{padding:13px 18px;cursor:pointer;font-weight:650;font-size:14.5px;color:#dfe8f6;list-style:none;display:flex;align-items:center;gap:9px}
+summary{padding:13px 18px;cursor:pointer;font-weight:650;font-size:14.5px;color:var(--t-card);list-style:none;display:flex;align-items:center;gap:9px}
 summary::-webkit-details-marker{display:none}
 summary::before{content:"＋";color:var(--cyan);font-family:monospace;font-size:15px}
 details[open] summary::before{content:"－"}
@@ -249,11 +316,11 @@ footer ul{margin:0 0 0 17px}
 footer li{margin:5px 0;font-size:12.9px}
 
 .lb{
-  position:fixed;inset:0;background:rgba(3,6,11,.94);z-index:100;display:none;
+  position:fixed;inset:0;background:var(--lb-bg);z-index:100;display:none;
   align-items:center;justify-content:center;padding:34px;cursor:zoom-out
 }
 .lb.on{display:flex}
-.lb img{max-width:96vw;max-height:90vh;border-radius:10px;box-shadow:0 0 70px rgba(0,0,0,.9)}
+.lb img{max-width:96vw;max-height:90vh;border-radius:10px;box-shadow:0 0 70px var(--sh-1)}
 .lb .cap{position:absolute;bottom:20px;left:0;right:0;text-align:center;color:var(--dim);font-size:13.5px}
 
 .reveal{opacity:0;transform:translateY(20px);transition:opacity .65s cubic-bezier(.2,.7,.3,1),transform .65s cubic-bezier(.2,.7,.3,1)}
@@ -273,6 +340,8 @@ footer li{margin:5px 0;font-size:12.9px}
   nav .inner{padding:9px 17px;gap:11px}
   nav .brand span{display:none}
   section{padding:56px 0}
+  nav .tgl .tt{display:none}
+  nav .tgl{padding:7px 11px}
   .gi img{height:132px}
   .gi.poster img{height:250px}
   .hero-fig{max-width:340px}
@@ -296,7 +365,12 @@ footer li{margin:5px 0;font-size:12.9px}
       <a href="#err">误差</a>
       <a href="#assets">资产</a>
       <a href="#edge">边界</a>
+      <a href="#fut">展望</a>
+      <a href="#strat">这笔账</a>
     </div>
+    <button class="tgl" id="tgl" type="button" title="切换到暗黑模式" aria-label="切换到暗黑模式">
+      <span class="ti">&#9790;</span><span class="tt">暗黑</span>
+    </button>
   </div>
 </nav>
 
@@ -432,7 +506,7 @@ footer li{margin:5px 0;font-size:12.9px}
 
     <h3 class="reveal">原话里最硬的两句</h3>
     <div class="quote-hero reveal" style="border-left-color:var(--cyan);background:linear-gradient(90deg,rgba(60,224,207,.08),transparent 78%)">
-      <div class="en">"See if there is a difference between the two. Double check to make sure that the difference you may find <b style="color:#fff">is not the product of something leaking in</b> that you do not want to be there. That it is <b style="color:#fff">not the product of the vibration of the sphere itself</b>."</div>
+      <div class="en">"See if there is a difference between the two. Double check to make sure that the difference you may find <b style="color:var(--t-strong)">is not the product of something leaking in</b> that you do not want to be there. That it is <b style="color:var(--t-strong)">not the product of the vibration of the sphere itself</b>."</div>
       <div class="zh" style="color:var(--cyan)">看看两者之间有无差异。反复核对，确认你发现的差异<b>不是从外面漏进来的东西</b>造成的，<b>也不是球自身的振动</b>造成的。</div>
       <cite>— 1998-02-28｜这两句就是全部技术难度所在：<b>排除混淆源</b>。巴夏自己要求了「双盲式复核」。</cite>
     </div>
@@ -468,8 +542,9 @@ footer li{margin:5px 0;font-size:12.9px}
     </div>
     <div class="tip warn reveal">
       <div class="t">⚠️ 原话<b>没有</b>规定的（属自由变量，必须自己设计）</div>
-      <p>频率范围 · 声压级 · 模态阶次 · 位置坐标容差 · 停止判据 · 采样率 · 温度 · 场地电磁谱 · 球的自重</p>
+      <p>频率范围 · 声压级 · 模态阶次 · 位置坐标容差 · 停止判据 · 采样率 · 温度 · 场地电磁谱 · 球的自重 · <b style="color:var(--amber)">桌面材料</b></p>
       <p>这些空白不是遗漏，而是<b>必须由工程师补齐的部分</b>——第 7 章「规格」填的就是这些。</p>
+      <p style="color:var(--dim);font-size:13.8px">其中<b>「桌面材料」最容易被误当成巴夏的要求</b>：1998 年提问者专门问过「那块板<b>或底面材料</b>」，而巴夏只答了长度与平整度，<b>一个材料词都没给</b>——专项核查见 <a href="#road">第 6 章</a>。</p>
     </div>
   </div>
 </section>
@@ -491,38 +566,38 @@ footer li{margin:5px 0;font-size:12.9px}
           </linearGradient>
           <radialGradient id="ballg"><stop offset="0" stop-color="#ffd591"/><stop offset=".55" stop-color="#e08d3c"/><stop offset="1" stop-color="#7a4211"/></radialGradient>
           <linearGradient id="wav" x1="1" y1="0" x2="0" y2="0">
-            <stop offset="0" stop-color="#a78bfa" stop-opacity=".1"/><stop offset="1" stop-color="#3ce0cf" stop-opacity=".95"/>
+            <stop offset="0"  stop-opacity=".1" style="stop-color:var(--violet)" /><stop offset="1"  stop-opacity=".95" style="stop-color:var(--cyan)" />
           </linearGradient>
           <marker id="ar" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
-            <path d="M0,0 L7,3 L0,6 z" fill="#3ce0cf"/>
+            <path d="M0,0 L7,3 L0,6 z" style="fill:var(--cyan)" />
           </marker>
           <marker id="ar2" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
-            <path d="M0,0 L7,3 L0,6 z" fill="#ffb545"/>
+            <path d="M0,0 L7,3 L0,6 z" style="fill:var(--amber)" />
           </marker>
         </defs>
 
         <!-- 隔离舱 -->
-        <rect x="34" y="34" width="832" height="262" rx="16" fill="none" stroke="#2a3d5c" stroke-dasharray="9 7" stroke-width="1.6"/>
-        <text x="50" y="24" fill="#6c7f9b" font-size="12.5" font-family="Consolas,monospace">ISOLATED CHAMBER　隔离舱（隔离一切外部电磁振动 · R9）</text>
+        <rect x="34" y="34" width="832" height="262" rx="16" fill="none"  stroke-dasharray="9 7" stroke-width="1.6" style="stroke:var(--line2)" />
+        <text x="50" y="24"  font-size="12.5" font-family="Consolas,monospace" style="fill:var(--dim2)">ISOLATED CHAMBER　隔离舱（隔离一切外部电磁振动 · R9）</text>
 
         <!-- 平桌 -->
         <rect x="86" y="132" width="728" height="70" rx="9" fill="url(#bed)" stroke="#2f4a6d" stroke-width="1.4"/>
-        <text x="450" y="222" text-anchor="middle" fill="#8ea0bb" font-size="12.6" font-family="Consolas,monospace">flat surface　3.048 m (10 ft)　×　~0.9 m (3 ft)　·　水平度与平面度决定成败</text>
+        <text x="450" y="222" text-anchor="middle"  font-size="12.6" font-family="Consolas,monospace" style="fill:var(--dim)">flat surface　3.048 m (10 ft)　×　~0.9 m (3 ft)　·　水平度与平面度决定成败</text>
 
         <!-- A/B 端点刻度 -->
-        <line x1="112" y1="118" x2="112" y2="132" stroke="#3ce0cf" stroke-width="1.6"/>
-        <line x1="788" y1="118" x2="788" y2="132" stroke="#ffb545" stroke-width="1.6"/>
-        <text x="112" y="110" text-anchor="middle" fill="#3ce0cf" font-size="13.5" font-weight="700" font-family="Consolas,monospace">A</text>
-        <text x="788" y="110" text-anchor="middle" fill="#ffb545" font-size="13.5" font-weight="700" font-family="Consolas,monospace">B</text>
-        <line x1="128" y1="100" x2="772" y2="100" stroke="#2a3d5c" stroke-width="1" stroke-dasharray="4 5"/>
-        <text x="450" y="94" text-anchor="middle" fill="#6c7f9b" font-size="12" font-family="Consolas,monospace">3.048 m</text>
+        <line x1="112" y1="118" x2="112" y2="132"  stroke-width="1.6" style="stroke:var(--cyan)" />
+        <line x1="788" y1="118" x2="788" y2="132"  stroke-width="1.6" style="stroke:var(--amber)" />
+        <text x="112" y="110" text-anchor="middle"  font-size="13.5" font-weight="700" font-family="Consolas,monospace" style="fill:var(--cyan)">A</text>
+        <text x="788" y="110" text-anchor="middle"  font-size="13.5" font-weight="700" font-family="Consolas,monospace" style="fill:var(--amber)">B</text>
+        <line x1="128" y1="100" x2="772" y2="100"  stroke-width="1" stroke-dasharray="4 5" style="stroke:var(--line2)" />
+        <text x="450" y="94" text-anchor="middle"  font-size="12" font-family="Consolas,monospace" style="fill:var(--dim2)">3.048 m</text>
 
         <!-- B 端声源 -->
         <g>
-          <rect x="800" y="146" width="34" height="42" rx="7" fill="#1b2b42" stroke="#a78bfa" stroke-width="1.5"/>
-          <text x="817" y="172" text-anchor="middle" fill="#a78bfa" font-size="10.5" font-family="Consolas,monospace">SPK</text>
-          <text x="817" y="206" text-anchor="middle" fill="#a78bfa" font-size="11">声学波束</text>
-          <text x="817" y="221" text-anchor="middle" fill="#6c7f9b" font-size="10">R12 优先</text>
+          <rect x="800" y="146" width="34" height="42" rx="7" stroke-width="1.5" style="fill:var(--swatch);stroke:var(--violet)" />
+          <text x="817" y="172" text-anchor="middle"  font-size="10.5" font-family="Consolas,monospace" style="fill:var(--violet)">SPK</text>
+          <text x="817" y="206" text-anchor="middle"  font-size="11" style="fill:var(--violet)">声学波束</text>
+          <text x="817" y="221" text-anchor="middle"  font-size="10" style="fill:var(--dim2)">R12 优先</text>
         </g>
 
         <!-- 声波（从 B 射向 A） -->
@@ -532,35 +607,35 @@ footer li{margin:5px 0;font-size:12.9px}
           <path d="M750 167 q -90 -38 -180 0"/>
           <path d="M730 167 q -106 -46 -212 0"/>
         </g>
-        <line x1="700" y1="167" x2="190" y2="167" stroke="#3ce0cf" stroke-width="1.5" stroke-dasharray="7 6" marker-end="url(#ar)" opacity=".85"/>
-        <text x="450" y="160" text-anchor="middle" fill="#3ce0cf" font-size="11.8" font-family="Consolas,monospace">施加 B 端特征频率（overwhelm）</text>
+        <line x1="700" y1="167" x2="190" y2="167"  stroke-width="1.5" stroke-dasharray="7 6" marker-end="url(#ar)" opacity=".85" style="stroke:var(--cyan)" />
+        <text x="450" y="160" text-anchor="middle"  font-size="11.8" font-family="Consolas,monospace" style="fill:var(--cyan)">施加 B 端特征频率（overwhelm）</text>
 
         <!-- A 端球 -->
         <g>
           <circle cx="150" cy="167" r="20" fill="url(#ballg)" stroke="#ffd591" stroke-width="1.2"/>
           <circle cx="143" cy="160" r="4.2" fill="#fff8e6" opacity=".55"/>
-          <text x="150" y="212" text-anchor="middle" fill="#ffb545" font-size="11.6" font-family="Consolas,monospace">hollow Cu ball</text>
-          <text x="150" y="227" text-anchor="middle" fill="#6c7f9b" font-size="10.5">Ø80 × 0.4 mm</text>
+          <text x="150" y="212" text-anchor="middle"  font-size="11.6" font-family="Consolas,monospace" style="fill:var(--amber)">hollow Cu ball</text>
+          <text x="150" y="227" text-anchor="middle"  font-size="10.5" style="fill:var(--dim2)">Ø80 × 0.4 mm</text>
         </g>
 
         <!-- B 端虚影球（预期落点） -->
-        <circle cx="758" cy="167" r="20" fill="none" stroke="#ffb545" stroke-width="1.5" stroke-dasharray="5 5" opacity=".8"/>
-        <text x="758" y="212" text-anchor="middle" fill="#6c7f9b" font-size="10.5">预期终点</text>
+        <circle cx="758" cy="167" r="20" fill="none"  stroke-width="1.5" stroke-dasharray="5 5" opacity=".8" style="stroke:var(--amber)" />
+        <text x="758" y="212" text-anchor="middle"  font-size="10.5" style="fill:var(--dim2)">预期终点</text>
 
         <!-- 滚动箭头 -->
-        <path d="M186 143 q 280 -30 552 0" stroke="#ffb545" stroke-width="1.7" fill="none" stroke-dasharray="6 6" marker-end="url(#ar2)" opacity=".9"/>
-        <text x="460" y="120" text-anchor="middle" fill="#ffb545" font-size="11.8" font-family="Consolas,monospace">R13：球滚向 B，轻微波动一下，然后停下</text>
+        <path d="M186 143 q 280 -30 552 0"  stroke-width="1.7" fill="none" stroke-dasharray="6 6" marker-end="url(#ar2)" opacity=".9" style="stroke:var(--amber)" />
+        <text x="460" y="120" text-anchor="middle"  font-size="11.8" font-family="Consolas,monospace" style="fill:var(--amber)">R13：球滚向 B，轻微波动一下，然后停下</text>
 
         <!-- 八点阵列 -->
         <g opacity=".95">
-          <circle cx="150" cy="167" r="34" fill="none" stroke="#5ba3ff" stroke-width="1.2" stroke-dasharray="3 4"/>
-          <circle cx="150" cy="133" r="4" fill="#5ba3ff"/><circle cx="150" cy="201" r="4" fill="#5ba3ff"/>
-          <circle cx="116" cy="167" r="4" fill="#5ba3ff"/><circle cx="184" cy="167" r="4" fill="#5ba3ff"/>
-          <text x="150" y="256" text-anchor="middle" fill="#5ba3ff" font-size="11">八点立方体传感阵列（R5/R6 的读数来源）</text>
+          <circle cx="150" cy="167" r="34" fill="none"  stroke-width="1.2" stroke-dasharray="3 4" style="stroke:var(--blue)" />
+          <circle cx="150" cy="133" r="4" style="fill:var(--blue)" /><circle cx="150" cy="201" r="4" style="fill:var(--blue)" />
+          <circle cx="116" cy="167" r="4" style="fill:var(--blue)" /><circle cx="184" cy="167" r="4" style="fill:var(--blue)" />
+          <text x="150" y="256" text-anchor="middle"  font-size="11" style="fill:var(--blue)">八点立方体传感阵列（R5/R6 的读数来源）</text>
         </g>
 
         <!-- 尺度标注 -->
-        <text x="450" y="286" text-anchor="middle" fill="#6c7f9b" font-size="11.6">整台装置的目标：把一切「能让球自己动」的普通原因压到零</text>
+        <text x="450" y="286" text-anchor="middle"  font-size="11.6" style="fill:var(--dim2)">整台装置的目标：把一切「能让球自己动」的普通原因压到零</text>
       </svg>
       <div class="svgcap">图｜实验装置俯视示意（按 1998-02-28 原话还原）。虚线框＝隔离舱，A/B 相隔 10 英尺，八点阵列贴在 A 端球面外围采集</div>
     </div>
@@ -577,7 +652,7 @@ footer li{margin:5px 0;font-size:12.9px}
 
     <div class="tip reveal">
       <div class="t">🎯 球「为什么该停」——原话的逻辑，不是物理推论</div>
-      <p class="mono" style="color:#8ff0e4;font-size:13px">"an object cannot exist in a space it is not the signature vibration of in matching harmony"</p>
+      <p class="mono" style="color:var(--code-fg);font-size:13px">"an object cannot exist in a space it is not the signature vibration of in matching harmony"</p>
       <p>物体无法存在于一个与它振动特征不匹配谐和的空间，它必须去到它所是振动的那个空间。</p>
       <p style="color:var(--dim)">这是个<b>同义反复式的前提</b>，不是可推导的结论。实验要检验的正是这个前提本身。</p>
     </div>
@@ -795,7 +870,7 @@ footer li{margin:5px 0;font-size:12.9px}
     </div>
 
     <h3 class="reveal">4.5 顺带一个必须知道的警示案例：Betz 神秘球（1974）</h3>
-    <p class="reveal">这是「球自己在平桌上动了」类报告的<b>教科书样本</b>，情节几乎和巴夏实验的民间想象重合——但结局完全不同。</p>
+    <p class="reveal">这是「球自己在平桌上动了」类报告的<b>教科书样本</b>，情节几乎和巴夏实验的民间想象重合。<b>它被列在这里，是因为它记录过的每一类「异常」，在本项目里都能找到一个平凡成因与之对应。</b></p>
     <div class="grid2 reveal">
       <div class="card">
         <h4 style="margin-top:0">当时被报告的「异常」</h4>
@@ -808,17 +883,266 @@ footer li{margin:5px 0;font-size:12.9px}
           <li>1974 年全国报纸报道；海军结论「不是已知地球科技，但无法证明外星来源」</li>
         </ul>
       </div>
-      <div class="card" style="border-color:var(--red)">
-        <h4 style="margin-top:0;color:var(--red)">2012 年的复核结论</h4>
-        <p style="font-size:14px">调查播客 <b>Skeptoid</b> 重新核查后指出：这只球极可能就是 <b>Bell &amp; Howell 公司生产的球阀（ball check valve）</b>——尺寸、重量、材质全部吻合。</p>
-        <p style="font-size:14px">更关键的是关于「自行滚动」的记录：它<b>在 Betz 家安静陈列了近两周，从未被报告自行移动过</b>；所谓异常行为，只出现在<b>有人专门把它拿去做实验、试图证明它会动之后</b>。</p>
-        <p style="font-size:14px;color:var(--amber)"><b>教训</b>：一只「会自己动的神秘金属球」，最后被解释成一颗阀门。<b>「球自己动了」这类报告的默认解释是机械原因或观察者效应，不是新物理。</b></p>
-      </div>
     </div>
     <div class="tip bad reveal">
       <div class="t">🔴 这个故事直接决定了本项目的技术路线</div>
       <p>正因为「球自己动」有太多平凡的成因（桌面微倾、气流、静电、残余磁矩、观察者干预），所以本项目<b>不把「球滚起来」当第一目标</b>，而是先做第 3–5 步：<b>测频率、排除泄漏、报出测量上限</b>。</p>
       <p>顺序不能颠倒。<b>先证明「我们测不出差异，且能说明为什么」，再谈让球滚。</b></p>
+    </div>
+
+    <h3 class="reveal">4.6 前人留下的是一套方法论骨架，不是一套可复制的装置</h3>
+    <p class="reveal">前面三节是「他们做了什么」。这一节是「<b>我们能拿走什么</b>」。先看三方并排——很多看似不相关的差异，其实指向同一个方法学分歧。</p>
+
+    <div class="tw reveal">
+      <table>
+        <thead><tr><th></th><th>Allais 视差摆<br><span class="mono">1954–60</span></th><th>NIST / JILA 光钟<br><span class="mono">2010–22</span></th><th>本项目（巴夏版）</th></tr></thead>
+        <tbody>
+          <tr><td class="k">被测振子</td><td>12 kg 摆 + Ø6.5 mm 钢球支点</td><td>单个 Al⁺ 离子 / 10⁵ 个锶原子</td><td><b>空心导电球壳的机械模态</b></td></tr>
+          <tr><td class="k">「位置」的定义</td><td>相对<b>地轴</b>的方位角</td><td><b>高度</b>（引力势 U = gh）</td><td>相对<b>桌面的水平坐标</b></td></tr>
+          <tr><td class="k">测量量</td><td>摆动椭圆的方位角</td><td>原子跃迁频率 f</td><td>模态频率 f₀、Q、衰减时间 τ</td></tr>
+          <tr><td class="k">位置差量级</td><td>—（效应即观测量）</td><td>33 cm / 1 mm</td><td><b>3.048 m</b>（10 ft）</td></tr>
+          <tr><td class="k">对应的 Δf/f</td><td><span class="tag t-no">无预期值</span></td><td class="mono">3.6×10⁻¹⁷ / 1.1×10⁻¹⁹</td><td><span class="tag t-no">未知</span></td></tr>
+          <tr><td class="k">仪器相对分辨</td><td>~10⁻⁴</td><td><b>10⁻¹⁸ – 10⁻²¹</b></td><td><b>~10⁻⁶</b>（f₀=100 Hz、T=100 s）</td></tr>
+          <tr><td class="k">有无已知机制</td><td><span class="tag t-no">无</span>（他主张新场）</td><td><span class="tag t-ok">有</span>（广义相对论）</td><td><span class="tag t-no">无</span></td></tr>
+          <tr><td class="k">主要污染源</td><td>温度、气流、支点磨损、地质微动</td><td>电磁场、黑体辐射、激光频率漂移</td><td>温度、支撑、声、Q 泄漏、倾斜</td></tr>
+          <tr><td class="k">参照系靠什么稳住</td><td>地下 + 真空 + 恒温</td><td>锁频 + 隔振 + 真空</td><td><b>机械限位（最脆弱的一项）</b></td></tr>
+          <tr><td class="k">最终状态</td><td><span class="tag t-no">争议 70 年，无共识</span></td><td><span class="tag t-ok">已成都市计量基础设施</span></td><td><span class="tag t-mid">未做</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="grid3 reveal">
+      <div class="card" style="border-left:3px solid var(--green)">
+        <h4 style="margin-top:0">共同点 ①　都把「位置」当自变量</h4>
+        <p style="font-size:13.9px">三者问的是同一个问题：<b>同一个振子换个地方，读数是否不同？</b>这是一个可陈述、可设计实验、可被拒假的物理命题——<b>不是信仰问题</b>。这一条是把本项目从「传讯内容」搬进实验室的全部合法性来源。</p>
+      </div>
+      <div class="card" style="border-left:3px solid var(--cyan)">
+        <h4 style="margin-top:0">共同点 ②　都靠差分／比值消共模</h4>
+        <div class="fml">Δ = (A₁ − A₂) / 2
+<span class="n">三者的数学骨架完全相同</span></div>
+        <p style="font-size:13.9px">光钟测的是<b>频率比值</b>而非各自绝对值 → 激光频率、腔漂移、温漂在比值里自动消掉；本项目用<b>双球交换法</b>（§7.4）消掉球的个体差异；Allais 用<b>周期</b>而非绝对值作判据 → 对慢漂移免疫。</p>
+      </div>
+      <div class="card" style="border-left:3px solid var(--blue)">
+        <h4 style="margin-top:0">共同点 ③　都先证明「仪器不漂」</h4>
+        <p style="font-size:13.9px">这是同一个方法学母题：<b>在测量任何物理量之前，先证明「什么都没发生时你的仪器也不动」。</b>NIST 会先测两台同样的钟并置时的频差作为本底；Allais 每轮换球、每周换板，正是为了把「磨损的漂移」与「真实效应」分开。本项目对应的是 <b>sham 假处理</b>——见 4.7。</p>
+      </div>
+    </div>
+
+    <div class="grid3 reveal">
+      <div class="card" style="border-left:3px solid var(--red)">
+        <h4 style="margin-top:0;color:var(--red)">不同点 ①　有没有理论预言<span class="tag t-no" style="margin-left:6px">最根本</span></h4>
+        <p style="font-size:13.9px">光钟有公式 <code>Δf/f = gΔh/c²</code>，实验是「按公式做、必然测到」——<b>他们知道自己要找多大的信号</b>，因此能计算「需要多少积分时间」。本项目<b>没有方程、没有方向、没有量级</b>，所以不能正着做，<b>只能反过来做</b>：先把不确定度压到某个上限，再诚实报告「在此之上未见效应」。</p>
+        <p style="font-size:13.5px;color:var(--dim)">这就是 §5「未检出也是科学结果」那条纪律的出处。</p>
+      </div>
+      <div class="card" style="border-left:3px solid var(--amber)">
+        <h4 style="margin-top:0;color:var(--amber)">不同点 ②　噪声瓶颈不在一个维度</h4>
+        <p style="font-size:13.9px">原子钟怕的是<b>场噪声</b>（电磁场、黑体辐射、激光漂移）→ 屏蔽与锁频能解决。球壳模态怕的是<b>机械与热噪声</b>（温度、支撑、桌面声学、Q 泄漏）→ <b>屏蔽救不了</b>。</p>
+        <p style="font-size:13.9px">关键数字：铜腔 <b>16.5 ppm/K</b>、机械模 <b>−150 ppm/K</b>。1 mK 温漂即 1.65×10⁻⁸ 等效频移，比拍频法灵敏度劣 <b>4 000 倍</b>（§5 那张条形图）。<b>NIST 从不需要面对这个量级的温漂问题。</b></p>
+      </div>
+      <div class="card" style="border-left:3px solid var(--violet)">
+        <h4 style="margin-top:0">不同点 ③　灵敏度差 10–13 个数量级</h4>
+        <p style="font-size:13.9px">光钟 10⁻¹⁸–10⁻²¹（亿元级设备、十年积累）对 本项目 ~10⁻⁶（一张桌子）。<b>所以「用机械球测引力红移」绝无可能</b>——1 m 落差的引力红移只有 1.1×10⁻¹⁶，比我们的分辨能力小 10 个数量级。</p>
+        <p style="font-size:13.9px;color:var(--cyan)"><b>但分界线很清楚</b>：凡是「消除系统误差」的方法论，与灵敏度无关，<b>可以整段继承</b>；凡是依赖极限灵敏度的技术（锁频、超高真空腔），与我们的量级无关，<b>不必模仿</b>。</p>
+      </div>
+    </div>
+
+    <h3 class="reveal">4.6b 可继承清单：从 Allais 学 5 条，从 NIST／JILA 学 7 条</h3>
+    <div class="tw reveal">
+      <table>
+        <thead><tr><th>来源</th><th>他的做法</th><th>本项目的对应动作</th></tr></thead>
+        <tbody>
+          <tr><td colspan="3" style="background:var(--hover);color:var(--green);font-weight:700">A · 从 Allais 学（工程与观测纪律）</td></tr>
+          <tr><td class="k">A1</td><td>每轮<b>换球</b>、每周<b>换承板</b>，排除磨损</td><td>记录球的编号与放置位置；至少第一轮做「换球重复」——把「器材老化」从「位置效应」里剥出来</td></tr>
+          <tr><td class="k">A2</td><td>57 m 深矿坑里<b>并联第二台</b>装置，反「同源故障」</td><td>第二套传感器或第二张桌子放在<b>另一个房间</b>同步运行。<b>两台都看到的，才可能是真的</b></td></tr>
+          <tr><td class="k">A3</td><td>每 20 分钟一次、昼夜不停、<b>连跑一个月</b>成一条连续链</td><td>用长时间连续采集代替「偶然一次的漂亮数据」——统计量只能用时间换</td></tr>
+          <tr><td class="k">A4</td><td>用<b>周期</b>（太阴日 24 h 50 m）而非单点异常作判据</td><td>把 A/B 交替的<b>配对差</b>做成时间序列，看它有没有结构。<b>周期对慢漂移免疫，单点异常对慢漂移毫无抵抗力</b></td></tr>
+          <tr><td class="k">A5</td><td>公开<b>原始记录曲线</b></td><td>原始数据 + 完整误差预算表一起公开——这是唯一能让第三方独立复核的形式</td></tr>
+
+          <tr><td colspan="3" style="background:var(--hover);color:var(--violet);font-weight:700">B · 从 NIST／JILA 学（计量学方法，与灵敏度无关，可整段搬）</td></tr>
+          <tr><td class="k">B1</td><td><b>Schawlow 原则</b>：「永远只测频率」<span class="mono">never measure anything but frequency</span></td><td>频率是唯一能被测到最准的物理量——幅度受增益漂移影响，频率不受。<b>与 §7.4「把灵敏度搬进相位」同源，是本案第一条方法论</b></td></tr>
+          <tr><td class="k">B2</td><td>测<b>比值</b> f_A / f_B，不测各自绝对值</td><td>共模漂移在比值里自动消掉。双球交换法是同一招；更可进一步——<b>同时</b>测两只球（而非轮流）做实时比值</td></tr>
+          <tr><td class="k">B3</td><td><b>self-interleaved</b>（自交替）测量</td><td>🔴 <b>本项目必须用 A-B-B-A，不能用 A-A-B-B</b>。交替使 A、B 的平均采样时刻重合，线性漂移完全抵消（证明见下图）</td></tr>
+          <tr><td class="k">B4</td><td><b>主动调制</b>系统误差（modulating systematics）</td><td>把某个误差源在两次测量之间<b>反向</b>（如反转磁场方向、上下颠倒放置），相减即消——而不是事后修正</td></tr>
+          <tr><td class="k">B5</td><td>过夜运行减少热瞬变；<b>每天先测一次环境温度</b></td><td>稳态比瞬态可预测；环境量必须每次记录而非假设。球壳温度系数 −150 ppm/K 比一切待测效应大几个量级</td></tr>
+          <tr><td class="k">B6</td><td>把每个系统误差<b>换算成等效频移</b>，列成表管理</td><td>只有统一量纲才能判断「谁是瓶颈」。这就是 §8 误差预算表（1 mK → 1.65×10⁻⁸…）的直接来源</td></tr>
+          <tr><td class="k">B7</td><td>先做「两台<b>同样的</b>钟并置」的零差测试</td><td><b>sham 假处理</b>：球原地拿起放下 N 次；传感器换位而球不动；完整空跑一遍流程</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="tip bad reveal">
+      <div class="t">🔴 Allais 缺的三件事，正是他 70 年没能收敛的根因</div>
+      <p><b>① 没有盲测</b>：他自己既是操作者、又是分析者、还是结论的主张者。</p>
+      <p><b>② 没有预注册</b>：判据是事后从数据里「看出来」的，不是事前写死的（对比：JILA 每次比对前会先固定分析流程）。</p>
+      <p><b>③ 没有误差预算表</b>：他从没把「1 ℃ 温漂对应多少方位角」这类换算列成表 → 因此<b>无法排除</b>，只能停留在「有争议」。</p>
+      <p style="color:var(--amber)">所以本项目三条前置纪律是<b>反着他来的</b>：先写死判据（§6）、先列误差预算（§8）、把盲测排进第三阶段。<b>这不是保守，这是前人用 70 年时间买来的教训。</b></p>
+    </div>
+
+    <h3 class="reveal">4.6c 为什么必须「交替」而不能「块测」——一张图与一条证明</h3>
+    <div class="svgbox reveal">
+      <svg viewBox="0 0 760 330" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="块设计与交替设计对线性漂移的抵消效果对比">
+        <defs>
+          <marker id="arvF" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+            <path d="M0 0 L9 4.5 L0 9 z" style="fill:var(--red)"/>
+          </marker>
+          <marker id="arvL" markerWidth="9" markerHeight="9" refX="2" refY="4.5" orient="auto">
+            <path d="M9 0 L0 4.5 L9 9 z" style="fill:var(--red)"/>
+          </marker>
+        </defs>
+
+        <!-- ===== 左：块设计 A-A-B-B ===== -->
+        <text x="60" y="26" font-size="13.6" font-weight="700" style="fill:var(--red)">❌ 块设计　A-A-B-B</text>
+        <text x="60" y="45" font-size="12" style="fill:var(--dim)">先把 A 测完再测 B —— 两个位置的平均时刻错开了</text>
+
+        <!-- 漂移斜线 -->
+        <path d="M70 265 L340 135" stroke-width="1.6" stroke-dasharray="6 4" style="stroke:var(--dim2)"/>
+        <text x="66" y="284" font-size="11" style="fill:var(--dim2)">漂移基线（斜率 a）</text>
+
+        <!-- 采样点 -->
+        <circle cx="90"  cy="255.4" r="6" style="fill:var(--cyan)"/>
+        <circle cx="140" cy="231.3" r="6" style="fill:var(--cyan)"/>
+        <circle cx="250" cy="153.3" r="6" style="fill:var(--amber)"/>
+        <circle cx="320" cy="119.6" r="6" style="fill:var(--amber)"/>
+        <text x="82"  y="246" font-size="12" font-weight="700" style="fill:var(--cyan)">A</text>
+        <text x="132" y="222" font-size="12" font-weight="700" style="fill:var(--cyan)">A</text>
+        <text x="256" y="146" font-size="12" font-weight="700" style="fill:var(--amber)">B</text>
+        <text x="326" y="112" font-size="12" font-weight="700" style="fill:var(--amber)">B</text>
+
+        <!-- 平均时刻 -->
+        <circle cx="115" cy="243.4" r="9" fill="none" stroke-width="2" style="stroke:var(--cyan)"/>
+        <circle cx="285" cy="136.4" r="9" fill="none" stroke-width="2" style="stroke:var(--amber)"/>
+        <line x1="115" y1="243.4" x2="115" y2="300" stroke-width="1" stroke-dasharray="3 3" style="stroke:var(--cyan)"/>
+        <line x1="285" y1="136.4" x2="285" y2="300" stroke-width="1" stroke-dasharray="3 3" style="stroke:var(--amber)"/>
+        <line x1="115" y1="296" x2="285" y2="296" stroke-width="1.6" marker-start="url(#arvL)" marker-end="url(#arvF)" style="stroke:var(--red)"/>
+        <text x="200" y="318" text-anchor="middle" font-size="11.6" font-weight="700" style="fill:var(--red)">Δt ≠ 0 → 差值里混进 a·Δt</text>
+
+        <!-- ===== 右：交替设计 A-B-B-A ===== -->
+        <text x="430" y="26" font-size="13.6" font-weight="700" style="fill:var(--green)">✅ 交替设计　A-B-B-A</text>
+        <text x="430" y="45" font-size="12" style="fill:var(--dim)">每个位置的采样时刻关于中心对称 —— 平均时刻重合</text>
+
+        <path d="M430 265 L700 135" stroke-width="1.6" stroke-dasharray="6 4" style="stroke:var(--dim2)"/>
+
+        <circle cx="450" cy="255.4" r="6" style="fill:var(--cyan)"/>
+        <circle cx="510" cy="201.5" r="6" style="fill:var(--amber)"/>
+        <circle cx="630" cy="143.7" r="6" style="fill:var(--amber)"/>
+        <circle cx="690" cy="139.8" r="6" style="fill:var(--cyan)"/>
+        <text x="440" y="247" font-size="12" font-weight="700" style="fill:var(--cyan)">A</text>
+        <text x="516" y="194" font-size="12" font-weight="700" style="fill:var(--amber)">B</text>
+        <text x="636" y="136" font-size="12" font-weight="700" style="fill:var(--amber)">B</text>
+        <text x="696" y="132" font-size="12" font-weight="700" style="fill:var(--cyan)">A</text>
+
+        <line x1="570" y1="100" x2="570" y2="290" stroke-width="1.6" style="stroke:var(--green)"/>
+        <circle cx="570" cy="197.6" r="9" fill="none" stroke-width="2" style="stroke:var(--cyan)"/>
+        <circle cx="570" cy="172.6" r="9" fill="none" stroke-width="2" style="stroke:var(--amber)"/>
+        <line x1="592" y1="172.6" x2="592" y2="197.6" stroke-width="1.4" marker-start="url(#arvL)" marker-end="url(#arvF)" style="stroke:var(--green)"/>
+        <text x="600" y="190" font-size="12" font-weight="700" style="fill:var(--green)">δ（真实效应）</text>
+        <text x="570" y="312" text-anchor="middle" font-size="11.6" font-weight="700" style="fill:var(--green)">Δt = 0 → 漂移项恒为零</text>
+      </svg>
+      <div class="svgcap">图｜线性漂移下两种测量次序的差别。<b>块设计</b>的两个平均采样时刻被拉开 Δt，漂移按 a·Δt 直接混进差值；<b>交替设计</b>把两个位置的平均时刻压到同一点，漂移项归零——这就是 JILA 反复强调的「自交替（self-interleaved）测量」。</div>
+    </div>
+
+    <div class="tip reveal">
+      <div class="t">📐 一行证明：为什么 A-B-B-A 能完全消掉线性漂移</div>
+      <p>设真实读数 <code>y(t) = y₀ + a·t + δ·[本次在 B]</code>，其中 <code>a</code> 是漂移斜率（未知），<code>δ</code> 是我们要找的位置效应。</p>
+      <p>取四等间隔时刻 t₁=0、t₂=1、t₃=2、t₄=3，则</p>
+      <div class="fml">A 组平均时刻 = (t₁ + t₄)/2 = 1.5　，　B 组平均时刻 = (t₂ + t₃)/2 = 1.5
+<span class="n">两者重合 → 配对差 = δ + a·(1.5 − 1.5) = δ　（漂移项被完全消掉）</span></div>
+      <p>而块设计 A-A-B-B 用 t₁,t₂ 测 A、t₃,t₄ 测 B：</p>
+      <div class="fml">差值 = δ + a·(t_B平均 − t_A平均) = δ + a·(2.5 − 0.5) = δ + 2a
+<span class="n">只要 a ≠ 0，这个差值就是错的 —— 而且你无法从数据本身看出 a 有多大</span></div>
+      <p style="color:var(--green)"><b>推广</b>：任何<b>平衡设计</b>（每个水平的采样时刻关于同一中心对称）都能消掉线性漂移，对更高次的奇数项项也有抑制作用。<b>这就是「控制实验变量」在数学上的确切含义——顺序本身就是变量。</b></p>
+    </div>
+
+    <h3 class="reveal">4.7 变量矩阵：从「同高度、换水平位置」升级到正交对比</h3>
+    <p class="reveal">巴夏原话给的是<b>一个固定实验</b>：同一高度、两个水平位置。但一个实验只能给出<b>一个数</b>，它回答不了「这个数属于哪一类效应」。把变量系统展开，数据才能自己说话。</p>
+
+    <div class="tip warn reveal">
+      <div class="t">⚠️ 先说清一件容易误会的事：升级到「不同高度」不是为了测引力红移</div>
+      <p>引力红移在 <b>1 m</b> 落差上只有 <b>1.1×10⁻¹⁶</b>（g/c² = 1.09×10⁻¹⁶ per metre），而本项目在 Ø80×0.4 球壳上的最佳相对频率分辨约 <b>10⁻⁶</b> 量级——<b>比它小 10 个数量级，绝无可能测到</b>。</p>
+      <p>所以垂直方向那组实验的意义是<b>反过来的</b>：它不提供信号，它提供<b>一个「应该为零」的对照</b>。而这个零，恰恰是整个矩阵里信息量最大的一次测量——理由见下面第 ①② 条。</p>
+    </div>
+
+    <div class="tw reveal">
+      <table>
+        <thead><tr><th>编号</th><th>改动什么</th><th>保持不变</th><th>若命题为真的预期</th><th>它能排除什么</th></tr></thead>
+        <tbody>
+          <tr><td colspan="5" style="background:var(--hover);color:var(--green);font-weight:700">第一层 · 先立本底（0 成本，最重要）</td></tr>
+          <tr><td class="k">S0 sham</td><td>完整走一遍流程，但<b>不换位置</b>（原地拿起→放下；传感器换位而球不动）</td><td>球、板、温度、时间</td><td><b>零</b>（差值应在噪声内）</td><td>流程本身的系统性影响、仪器漂移、搬运扰动 —— <b>没有这一步，后面所有数值都无法解释</b></td></tr>
+
+          <tr><td colspan="5" style="background:var(--hover);color:var(--cyan);font-weight:700">第二层 · 主实验：巴夏原版（同高度，换水平位置）</td></tr>
+          <tr><td class="k">X1 水平位移</td><td>x₀ → x₁（<b>同高度 h₀</b>）</td><td>h₀、球、板、传感器、朝向</td><td><b>Δf ≠ 0（主实验）</b></td><td>—（这是唯一的待检验命题）</td></tr>
+          <tr><td class="k">X2 水平位移·远</td><td>x₀ → x₂（更远，同高度）</td><td>同上</td><td>效应随距离的<b>标度律</b></td><td>区分「阶跃型」（只要换了地方就变）与「渐变型」（随距离单调变化）</td></tr>
+          <tr><td class="k">X3 水平位移·方向</td><td>同一距离，换到另一个<b>方位</b>（如东 → 北）</td><td>距离、高度</td><td>若是各向异性场 → 应有方位依赖</td><td>把「距离依赖」与「方向依赖」分开</td></tr>
+
+          <tr><td colspan="5" style="background:var(--hover);color:var(--amber);font-weight:700">第三层 · 结构对照：只改一个正交变量</td></tr>
+          <tr><td class="k">Z1 高度（同水平位置）</td><td>h₀ → h₀+Δh，<b>x 完全不动</b></td><td>x、y、球、板、朝向</td><td><b>应当为零</b>（引力项仅 1.1×10⁻¹⁶/m，测不到）</td><td>劈开「位置」这个词：见 ① —— <b>本矩阵信息量最大的一步</b></td></tr>
+          <tr><td class="k">Z2 高度·换支撑方式</td><td>用<b>同一块板 + 不同垫块</b>改变高度（而非换桌子）</td><td>板、球、环境</td><td>同上，零</td><td>把「重力方向效应」与「支撑几何效应」分开 —— 这就是「控制变量」的具体含义</td></tr>
+          <tr><td class="k">M1 材料</td><td>铜 → 钢（同尺寸、同位置）</td><td>位置、几何、外径、壁厚</td><td>若依赖导电性 → 应明显减弱</td><td>是否电磁起源（铜 ≥98% IACS，钢导电差得多）</td></tr>
+          <tr><td class="k">M2 <b>非导电球</b></td><td>铜 → <b>同尺寸非导电球</b>（树脂/陶瓷；质量按需配平）</td><td>位置、几何、质量</td><td>若依赖导电 → <b>应消失</b></td><td><b>最干净的一条</b>：把「导电」这个变量从「位置」里拆出来，第一次触到机制方向</td></tr>
+          <tr><td class="k">T1 壁厚</td><td>0.4 → 0.8 mm（同材料、同外径、同位置）</td><td>位置、材料、外径</td><td>若效应改变模态频率 → 应按 f 的比例同步移动</td><td>效应是「改频率标尺」还是「改结构本身」</td></tr>
+
+          <tr><td colspan="5" style="background:var(--hover);color:var(--violet);font-weight:700">第四层 · 环境与通道（查污染源，兼做交叉验证）</td></tr>
+          <tr><td class="k">E1 电磁屏蔽</td><td>加法拉第笼 + 坡莫合金罩</td><td>位置、球、温度</td><td>若效应消失 → 是环境电磁污染</td><td>外部电磁场（STA 类耦合）</td></tr>
+          <tr><td class="k">E2 <b>换传感通道</b></td><td>同一次位置移动，用<b>光学/声学</b>通道同时测（§7.2）</td><td>位置、球</td><td>三条链路给出同一频移 → 交叉验证成立</td><td>单一仪器的耦合假象（<b>这是最有力的排除</b>）</td></tr>
+          <tr><td class="k">W1 自转状态</td><td>让球缓慢自转 / 保持静止</td><td>位置、材料、支撑</td><td>若与角动量有关 → 应有差异</td><td>残留磁矩与自转的耦合</td></tr>
+          <tr><td class="k">R1 回到原位</td><td>全部回到 x₀, h₀（<b>与 X1 同一位置</b>）</td><td>—</td><td>应复现 X1 的读数</td><td>漂移 vs 真实位置依赖（<b>这条是 X1 能否成立的前提</b>）</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="grid2 reveal">
+      <div class="card" style="border-color:var(--amber)">
+        <h4 style="margin-top:0">① 为什么 Z 组（换高度）是最便宜的高信息量实验</h4>
+        <p style="font-size:14px">因为它把「位置」这个词<b>劈成两半</b>，而只需要搬一次：</p>
+        <ul style="font-size:13.9px">
+          <li>若效应<b>只依赖水平坐标 (x,y)</b> → 垂直移动 → <b>应当零</b></li>
+          <li>若效应依赖「离某点的距离」或「高度」→ 垂直移动 → <b>应当有</b></li>
+        </ul>
+        <p style="font-size:13.9px">把 X1 与 Z1 的结果并排，就能反推效应的<b>几何形状</b>：</p>
+        <div class="fml">X 有、Z 无　→　只与水平方向有关
+X 有、Z 也有（同量级）→　只与「到某点的距离」有关，与方向无关
+X 无、Z 有　→　属引力／支撑类效应，不是「位置签名」</div>
+        <p style="font-size:13.5px;color:var(--dim)"><b>三个数，定出效应的几何。</b>这是任何单个实验永远给不出的信息——也是「多组对比」真正的价值所在。</p>
+      </div>
+      <div class="card" style="border-color:var(--violet)">
+        <h4 style="margin-top:0">② Z 组的隐藏价值：分离「支撑效应」</h4>
+        <p style="font-size:14px">球壳的模态频率对<b>支撑条件</b>极度敏感——放桌上的点接触、软接触环、悬挂，给出的是不同的边界条件与不同的 Q。</p>
+        <p style="font-size:14px">而「换高度」这件事，天然会连带改变支撑：</p>
+        <ul style="font-size:13.9px">
+          <li>换到另一张桌子 → 高度变了，<b>桌面材质、平整度、刚度也全变了</b>（混淆）</li>
+          <li>同一块板 + 加垫块 → 高度变了，<b>板与球完全不变</b>（干净）</li>
+        </ul>
+        <p style="font-size:14px">这正是 Z2 存在的理由。<b>「控制变量」不是「尽量少改东西」，而是「让你想改的那个变量，成为唯一变了的那个」。</b></p>
+      </div>
+    </div>
+
+    <h3 class="reveal">4.7b 控制变量的七个具体机制（可直接抄进实验协议）</h3>
+    <div class="tw reveal">
+      <table>
+        <thead><tr><th>#</th><th>机制</th><th>具体做法</th><th>它治什么病</th></tr></thead>
+        <tbody>
+          <tr><td class="k">1</td><td><b>平衡设计</b>（A-B-B-A）</td><td>顺序固定为 A→B→B→A，使每个位置的采样时刻关于同一中心对称</td><td>线性漂移（见 4.6c 的证明）</td></tr>
+          <tr><td class="k">2</td><td><b>随机化</b></td><td>用随机数决定本次搬去 A 还是 B（在满足平衡的前提下打乱块序）</td><td>顺序效应、操作者预期</td></tr>
+          <tr><td class="k">3</td><td><b>盲测</b></td><td>搬运者不看记录；分析者拿到的是编码后的位置标签（K1/K2），解盲在统计完成之后</td><td>观察者偏差 —— <b>Allais 缺的正是这一条</b></td></tr>
+          <tr><td class="k">4</td><td><b>sham 假处理</b></td><td>完整走流程但不换位置；另做「传感器换位而球不动」一组</td><td>流程自身的系统偏差、仪器慢漂移</td></tr>
+          <tr><td class="k">5</td><td><b>配对检验</b></td><td>每对 A/B 先求差、再对差值序列做统计；<b>不比较两组均值</b></td><td>慢漂移（配对把慢漂移变成公共项）</td></tr>
+          <tr><td class="k">6</td><td><b>功效分析定 N</b></td><td>N ≥ (z_α + z_β)² · σ² / δ²；σ 从 sham 实测拿，δ 取「想分辨的最小效应」</td><td>「做几次看看」式的数据挖掘</td></tr>
+          <tr><td class="k">7</td><td><b>环境共变量记录</b></td><td>每次测量同步记录温度、气压、倾斜、声压级、电网频率</td><td>让「这是不是温漂」变成<b>可计算</b>的问题，而不是可争论的问题</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="tip good reveal">
+      <div class="t">🎯 一句话记住升级路线的顺序</div>
+      <p><b>先让「什么都不做」也给出噪声分布（S0）→ 再让「只改一个变量」给出差值（X1 + A-B-B-A）→ 最后才让「改多个正交变量」给出机制（Z1、M2、E2）。</b></p>
+      <p>按性价比排序的可执行顺序：</p>
+      <div class="fml">S0 sham（0 成本，最重要）
+  → X1 + A-B-B-A（主实验，用平衡设计）
+    → Z1 换高度同水平位置（最便宜的一次判别，劈开「位置」的含义）
+      → M2 非导电球（唯一能触到机制方向的一步）
+        → E2 光学／声学通道交叉验证（排除单一仪器假象）
+          → 以上全部成立，再谈第三阶段多中心盲测</div>
+      <p style="color:var(--dim);font-size:13.6px">前人给的最有价值的其实不是装置图纸，而是这句纪律：<b>「在你测量任何东西之前，先证明你的仪器在什么都没发生的时候也不动。」</b>——Allais 做过（换球换板、地下并联），NIST 做过（两钟并置测零差），本项目要做的只是把它变成第一步。</p>
     </div>
   </div>
 </section>
@@ -854,35 +1178,35 @@ footer li{margin:5px 0;font-size:12.9px}
     <div class="svgbox reveal">
       <svg viewBox="0 0 860 290" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="灵敏度与系统误差对比">
         <defs>
-          <linearGradient id="barG" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#54d98c"/><stop offset="1" stop-color="#3ce0cf"/></linearGradient>
-          <linearGradient id="barR" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#ff7272"/><stop offset="1" stop-color="#ffb545"/></linearGradient>
+          <linearGradient id="barG" x1="0" y1="0" x2="1" y2="0"><stop offset="0" style="stop-color:var(--green)" /><stop offset="1" style="stop-color:var(--cyan)" /></linearGradient>
+          <linearGradient id="barR" x1="0" y1="0" x2="1" y2="0"><stop offset="0" style="stop-color:var(--red)" /><stop offset="1" style="stop-color:var(--amber)" /></linearGradient>
         </defs>
-        <text x="24" y="30" fill="#8ea0bb" font-size="13" font-family="Consolas,monospace">对数刻度（相对频率 Δf/f）　越短越好，越靠左越好</text>
+        <text x="24" y="30"  font-size="13" font-family="Consolas,monospace" style="fill:var(--dim)">对数刻度（相对频率 Δf/f）　越短越好，越靠左越好</text>
 
         <g font-size="12.8" font-family="Consolas,monospace">
-          <text x="24" y="82" fill="#54d98c">拍频法灵敏度</text>
+          <text x="24" y="82" style="fill:var(--green)">拍频法灵敏度</text>
           <rect x="200" y="68" width="120" height="20" rx="4" fill="url(#barG)" opacity=".9"/>
-          <text x="330" y="83" fill="#54d98c">3.8×10⁻¹²　(T = 100 s)</text>
+          <text x="330" y="83" style="fill:var(--green)">3.8×10⁻¹²　(T = 100 s)</text>
 
-          <text x="24" y="118" fill="#54d98c">相位法灵敏度</text>
+          <text x="24" y="118" style="fill:var(--green)">相位法灵敏度</text>
           <rect x="200" y="104" width="150" height="20" rx="4" fill="url(#barG)" opacity=".8"/>
-          <text x="360" y="119" fill="#54d98c">5×10⁻¹¹</text>
+          <text x="360" y="119" style="fill:var(--green)">5×10⁻¹¹</text>
 
-          <text x="24" y="154" fill="#5ba3ff">电磁腔相对精度</text>
-          <rect x="200" y="140" width="210" height="20" rx="4" fill="#5ba3ff" opacity=".6"/>
-          <text x="420" y="155" fill="#5ba3ff">10⁻⁸</text>
+          <text x="24" y="154" style="fill:var(--blue)">电磁腔相对精度</text>
+          <rect x="200" y="140" width="210" height="20" rx="4"  opacity=".6" style="fill:var(--blue)" />
+          <text x="420" y="155" style="fill:var(--blue)">10⁻⁸</text>
 
-          <text x="24" y="200" fill="#ffb545">1 mK 温漂（铜腔 16.5 ppm/K）</text>
+          <text x="24" y="200" style="fill:var(--amber)">1 mK 温漂（铜腔 16.5 ppm/K）</text>
           <rect x="200" y="186" width="440" height="20" rx="4" fill="url(#barR)"/>
-          <text x="650" y="201" fill="#ff7272" font-weight="700">1.65×10⁻⁸</text>
+          <text x="650" y="201"  font-weight="700" style="fill:var(--red)">1.65×10⁻⁸</text>
 
-          <text x="24" y="236" fill="#ff7272">1 K 温漂（机械模 −150 ppm/K）</text>
+          <text x="24" y="236" style="fill:var(--red)">1 K 温漂（机械模 −150 ppm/K）</text>
           <rect x="200" y="222" width="620" height="20" rx="4" fill="url(#barR)"/>
-          <text x="230" y="236" fill="#fff" font-weight="700">1.5×10⁻⁴</text>
+          <text x="230" y="236"  font-weight="700" style="fill:var(--t-strong)">1.5×10⁻⁴</text>
         </g>
-        <line x1="200" y1="56" x2="200" y2="256" stroke="#2a3d5c" stroke-width="1"/>
-        <text x="200" y="276" text-anchor="middle" fill="#6c7f9b" font-size="12">← 更小</text>
-        <text x="820" y="276" text-anchor="end" fill="#6c7f9b" font-size="12">更大 →</text>
+        <line x1="200" y1="56" x2="200" y2="256"  stroke-width="1" style="stroke:var(--line2)" />
+        <text x="200" y="276" text-anchor="middle"  font-size="12" style="fill:var(--dim2)">← 更小</text>
+        <text x="820" y="276" text-anchor="end"  font-size="12" style="fill:var(--dim2)">更大 →</text>
       </svg>
       <div class="svgcap">图｜仪器灵敏度 vs 温度漂移。1 mK 的温漂就比拍频法灵敏度<b>劣 4 000 倍</b>——先把温度压住，再谈位置</div>
     </div>
@@ -910,6 +1234,48 @@ footer li{margin:5px 0;font-size:12.9px}
       <p>如果最终测不出差异，应报告一个<b>上限定值</b>，例如：<code>Δf/f &lt; 3×10⁻⁸（95% 置信区间）</code>。</p>
       <p>这句话本身就是对巴夏命题的<b>有效约束</b>——它把「位置是物体的属性」从无限定性的主张，压缩成一条可被引用、可被超越的边界。<b>这正是本实验能给出的最大价值。</b></p>
     </div>
+    <h3 class="reveal">5.1 三道门槛：为什么「没人做」是计量学问题，不是玄学问题</h3>
+    <p>如果难点在于「到底有没有那个效应」，这实验早该有人做了——成本看起来极低：一只球、一张桌、两端各测一次。真正拦住所有人的，是下面三道<b>与效应本身无关</b>的门槛。</p>
+
+    <div class="grid3 reveal">
+      <div class="card" style="border-left:3px solid var(--red)">
+        <div class="tag t-no">门槛一</div>
+        <h4 style="margin-top:11px">球自己会变形<br>而形变直接改频率</h4>
+        <p style="font-size:13.9px">Ø80×0.4 紫铜球自重约 <b>90 g</b>。与桌面点接触的接触半径只有 <b>0.5–1 mm</b>，接触应力轻易超过 <b>300 MPa</b>——而软态紫铜屈服强度只有 <b>70–100 MPa</b>。<b>一定留坑。</b></p>
+        <p style="font-size:13.9px">永久压坑 = 壳形改变 = 本征频率改变。你测到的「位置频差」里，先混进了「壳形变化频差」——而后者往往更大。</p>
+      </div>
+      <div class="card" style="border-left:3px solid var(--amber)">
+        <div class="tag t-mid">门槛二</div>
+        <h4 style="margin-top:11px">壁厚同时决定<br>「不瘪」和「测哪段」</h4>
+        <p style="font-size:13.9px">壁厚不是自由参数：一头挂着<b>屈曲</b>（整体会不会 snap-through），另一头挂着<b>趋肤深度</b>（交变磁场能不能穿过壳壁）。</p>
+        <p style="font-size:13.9px">0.4 mm 铜壳在 <b>1–10 kHz</b> 对磁场近乎透明；到 <b>50 kHz</b> 趋肤深度只剩 0.29 mm，球壳开始变成<b>短路环</b>，Q 值与灵敏度一起掉。<b>选壁厚，其实是在选频段。</b></p>
+      </div>
+      <div class="card" style="border-left:3px solid var(--violet)">
+        <div class="tag t-v">门槛三</div>
+        <h4 style="margin-top:11px">随手做 = 白做<br>做到够格 = 一个课题</h4>
+        <p style="font-size:13.9px">材料费从来不是瓶颈（一块薄铜板几十元量级）。钱花在<b>模具、焊接工装、激光焊外协、圆度检测</b>上，而且<b>一次失败就报废</b>。</p>
+        <p style="font-size:13.9px">于是形成死结：不够严谨的装置，形变噪声淹没效应；够严谨的装置，投入已等同计量课题。<b>这才是「至今没人做」的真正原因。</b></p>
+      </div>
+    </div>
+
+    <div class="tw reveal">
+      <table>
+        <thead><tr><th>门槛</th><th>物理量</th><th>量级（Ø80 × 0.4 紫铜）</th><th>不解决的后果</th><th>最省的解法</th></tr></thead>
+        <tbody>
+          <tr><td class="k">① 接触压坑</td><td>软态屈服 vs 接触应力</td><td>70–100 MPa <span style="color:var(--red)">&lt;</span> 300 MPa</td><td>球底留坑 → 频率漂移</td><td>软硅胶／绒布环（<b>最先做</b>）</td></tr>
+          <tr><td class="k">② 整体屈曲</td><td>临界压力 p_cr</td><td>理想 14.2 kPa／经验 4–5 kPa</td><td>snap-through 塌陷</td><td>半球深冲 + 赤道小法兰</td></tr>
+          <tr><td class="k">③ 局部弯曲</td><td>t / R</td><td>0.4 / 40 = 0.01</td><td>模态频率落不进音频段</td><td>薄壁——这是唯一办法</td></tr>
+          <tr><td class="k">④ 涡流短路</td><td>趋肤深度 δ</td><td>10 kHz → 0.66 mm；50 kHz → 0.29 mm</td><td>Q 掉、灵敏度掉</td><td>工作频率 <b>≤20 kHz</b>，或内贴坡莫合金箔 0.1 mm</td></tr>
+          <tr><td class="k">⑤ 焊接失圆</td><td>热输入 / 装配间隙</td><td>激光 300–500 W；间隙 ≤0.05 mm</td><td>椭圆化 → 模态劈裂假信号</td><td>激光焊（优于 TIG）+ 仿形胎具分段焊</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="tip warn reveal">
+      <div class="t">🧭 把顺序摆对</div>
+      <p>所以正确的前后顺序是：<b>① 底部加软环 → ② 恒温 → ③ 隔振隔声 → ④ 再谈扫描与位置</b>。跳过前三步直接去测「A 点 vs B 点」，测到的一定是环境，不是位置。</p>
+      <p style="color:var(--dim);font-size:13.8px">误差量级与预算见 <a href="#err">第 8 章</a>；「球做多大、多厚、怎么造、花在哪」见 <a href="#spec">第 7 章 7.1b–7.1d</a>。</p>
+    </div>
   </div>
 </section>
 
@@ -925,42 +1291,108 @@ footer li{margin:5px 0;font-size:12.9px}
     <div class="svgbox reveal">
       <svg viewBox="0 0 880 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="三阶段路线阶梯">
         <defs>
-          <linearGradient id="s1" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#1b8f86"/><stop offset="1" stop-color="#3ce0cf"/></linearGradient>
-          <linearGradient id="s2" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#5b52b8"/><stop offset="1" stop-color="#a78bfa"/></linearGradient>
-          <linearGradient id="s3" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#b8762c"/><stop offset="1" stop-color="#ffb545"/></linearGradient>
+          <linearGradient id="s1" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#1b8f86"/><stop offset="1" style="stop-color:var(--cyan)" /></linearGradient>
+          <linearGradient id="s2" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#5b52b8"/><stop offset="1" style="stop-color:var(--violet)" /></linearGradient>
+          <linearGradient id="s3" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#b8762c"/><stop offset="1" style="stop-color:var(--amber)" /></linearGradient>
         </defs>
 
         <g>
-          <rect x="40" y="188" width="250" height="76" rx="10" fill="url(#s1)" opacity=".2" stroke="#3ce0cf" stroke-width="1.5"/>
-          <text x="58" y="214" fill="#3ce0cf" font-size="14.5" font-weight="700" font-family="Consolas,monospace">阶段一 · 初始验证</text>
-          <text x="58" y="236" fill="#b8c6dc" font-size="12.6">测准：平面度·倾角·球几何·滚动阻力·声场</text>
-          <text x="58" y="254" fill="#6c7f9b" font-size="11.6">4–6 人 · 3–8 月 · 60–180 万元</text>
+          <rect x="40" y="188" width="250" height="76" rx="10" fill="url(#s1)" opacity=".2"  stroke-width="1.5" style="stroke:var(--cyan)" />
+          <text x="58" y="214"  font-size="14.5" font-weight="700" font-family="Consolas,monospace" style="fill:var(--cyan)">阶段一 · 初始验证</text>
+          <text x="58" y="236"  font-size="12.6" style="fill:var(--t-lede)">测准：平面度·倾角·球几何·滚动阻力·声场</text>
+          <text x="58" y="254"  font-size="11.6" style="fill:var(--dim2)">4–6 人 · 3–8 月 · 60–180 万元</text>
 
-          <rect x="316" y="128" width="250" height="136" rx="10" fill="url(#s2)" opacity=".2" stroke="#a78bfa" stroke-width="1.5"/>
-          <text x="334" y="154" fill="#a78bfa" font-size="14.5" font-weight="700" font-family="Consolas,monospace">阶段二 · 机制搜索</text>
-          <text x="334" y="176" fill="#b8c6dc" font-size="12.6">找效应：多球／多材料／多位置</text>
-          <text x="334" y="194" fill="#b8c6dc" font-size="12.6">开环扫描 + 闭环对照 + 假目标</text>
-          <text x="334" y="212" fill="#b8c6dc" font-size="12.6">三维声场 · 屏蔽 · 盲目标</text>
-          <text x="334" y="238" fill="#6c7f9b" font-size="11.6">8–15 人 · 12–24 月</text>
-          <text x="334" y="254" fill="#6c7f9b" font-size="11.6">500–1800 万元</text>
+          <rect x="316" y="128" width="250" height="136" rx="10" fill="url(#s2)" opacity=".2"  stroke-width="1.5" style="stroke:var(--violet)" />
+          <text x="334" y="154"  font-size="14.5" font-weight="700" font-family="Consolas,monospace" style="fill:var(--violet)">阶段二 · 机制搜索</text>
+          <text x="334" y="176"  font-size="12.6" style="fill:var(--t-lede)">找效应：多球／多材料／多位置</text>
+          <text x="334" y="194"  font-size="12.6" style="fill:var(--t-lede)">开环扫描 + 闭环对照 + 假目标</text>
+          <text x="334" y="212"  font-size="12.6" style="fill:var(--t-lede)">三维声场 · 屏蔽 · 盲目标</text>
+          <text x="334" y="238"  font-size="11.6" style="fill:var(--dim2)">8–15 人 · 12–24 月</text>
+          <text x="334" y="254"  font-size="11.6" style="fill:var(--dim2)">500–1800 万元</text>
 
-          <rect x="592" y="52" width="250" height="212" rx="10" fill="url(#s3)" opacity=".2" stroke="#ffb545" stroke-width="1.5"/>
-          <text x="610" y="78" fill="#ffb545" font-size="14.5" font-weight="700" font-family="Consolas,monospace">阶段三 · 标准与复现</text>
-          <text x="610" y="100" fill="#b8c6dc" font-size="12.6">说清：标准化 · 多中心盲测</text>
-          <text x="610" y="118" fill="#b8c6dc" font-size="12.6">盲样 · 盲球 · 盲位置</text>
-          <text x="610" y="136" fill="#b8c6dc" font-size="12.6">第三方交叉验证 · 开放数据</text>
-          <text x="610" y="154" fill="#b8c6dc" font-size="12.6">审计 · 停止条件</text>
-          <text x="610" y="186" fill="#6c7f9b" font-size="11.6">20–40 人 · 24–48 月</text>
-          <text x="610" y="204" fill="#6c7f9b" font-size="11.6">3000–12000 万元</text>
-          <text x="610" y="234" fill="#ff7272" font-size="11.8" font-weight="600">不可削减：</text>
-          <text x="610" y="250" fill="#b8c6dc" font-size="11.6">独立设施 · 开放数据 · 审计</text>
+          <rect x="592" y="52" width="250" height="212" rx="10" fill="url(#s3)" opacity=".2"  stroke-width="1.5" style="stroke:var(--amber)" />
+          <text x="610" y="78"  font-size="14.5" font-weight="700" font-family="Consolas,monospace" style="fill:var(--amber)">阶段三 · 标准与复现</text>
+          <text x="610" y="100"  font-size="12.6" style="fill:var(--t-lede)">说清：标准化 · 多中心盲测</text>
+          <text x="610" y="118"  font-size="12.6" style="fill:var(--t-lede)">盲样 · 盲球 · 盲位置</text>
+          <text x="610" y="136"  font-size="12.6" style="fill:var(--t-lede)">第三方交叉验证 · 开放数据</text>
+          <text x="610" y="154"  font-size="12.6" style="fill:var(--t-lede)">审计 · 停止条件</text>
+          <text x="610" y="186"  font-size="11.6" style="fill:var(--dim2)">20–40 人 · 24–48 月</text>
+          <text x="610" y="204"  font-size="11.6" style="fill:var(--dim2)">3000–12000 万元</text>
+          <text x="610" y="234"  font-size="11.8" font-weight="600" style="fill:var(--red)">不可削减：</text>
+          <text x="610" y="250"  font-size="11.6" style="fill:var(--t-lede)">独立设施 · 开放数据 · 审计</text>
 
-          <path d="M296 226 L310 226" stroke="#3ce0cf" stroke-width="2" marker-end="url(#ar)"/>
-          <path d="M572 196 L586 196" stroke="#a78bfa" stroke-width="2"/>
+          <path d="M296 226 L310 226"  stroke-width="2" marker-end="url(#ar)" style="stroke:var(--cyan)" />
+          <path d="M572 196 L586 196"  stroke-width="2" style="stroke:var(--violet)" />
         </g>
-        <text x="440" y="290" text-anchor="middle" fill="#6c7f9b" font-size="12.2">每一级的产出都是下一级的输入；判据不达标不得升级</text>
+        <text x="440" y="290" text-anchor="middle"  font-size="12.2" style="fill:var(--dim2)">每一级的产出都是下一级的输入；判据不达标不得升级</text>
       </svg>
       <div class="svgcap">图｜三阶段路线。预算与人力为项目档案给出的量级估计，用于判断「这不是一个业余周末项目」</div>
+    </div>
+
+    <h3 class="reveal">阶段一 · 初始验证：两件实物，一张桌子</h3>
+    <p>阶段一不是「验证巴夏」，而是<b>建工厂</b>：先把两件实物做出来——<b>一只够格的铜球</b>、<b>一张够平的桌面</b>——再叠加隔离、基线与 SOP。下面把这两件的规格来源拆开讲：<b>哪些是巴夏给的，哪些是我们自己补的。</b></p>
+
+    <div class="tw reveal">
+      <table>
+        <thead><tr><th>阶段一实物</th><th>本项目选型</th><th>巴夏原话给了什么</th><th>我们自己补了什么</th></tr></thead>
+        <tbody>
+          <tr><td class="k">① 铜球</td><td>Ø80 mm × 0.4 mm <b>无氧铜 TU1</b>（半硬态）；另备 3 只同规格 + 2 只对照球</td><td>直径 <b>3–6 in（76.2–152.4 mm）</b>、壁厚 <b>≤1/16 in（1.59 mm）</b>、空心、铜或钢、高度平衡、尽可能球形、与支撑面摩擦尽可能小</td><td>Ø80 × 0.4 这个具体点、牌号 TU1、半硬态、圆度 ≤0.02 mm、底部 Ø6 mm 微平面 —— 见 <a href="#spec">7.1b–7.1d</a></td></tr>
+          <tr><td class="k">② 超平桌面</td><td>3.20 m × 0.90 m × 0.20 m <b>细晶花岗石或人造陶瓷参考平板</b>；平面度 ≤10 μm（全量程）；阶段一倾角 &lt;10 μrad</td><td>长度 <b>≥10 ft（3.048 m）</b>、<b>as flat as you can make it</b>（尽可能平）、宽度不必那么宽、但 <b>约 3 ft</b> 会更舒服</td><td><b>材料完全由我们选</b>（巴夏从未提桌面材料，见下）；「≤10 μm」「&lt;10 μrad」这两个量化门槛；3.20 m 的两端超程余量</td></tr>
+          <tr><td class="k">③ 隔离舱</td><td>隔绝一切外部电磁与机械振动；双层电磁屏蔽；地下或低楼层</td><td><b>isolated chamber</b>：<span class="mono">isolated from any other vibrations electromagnetic in nature other than the ones you wish to impose</span></td><td>具体屏蔽结构；0.1–200 Hz 振动监测；地线路径记录</td></tr>
+          <tr><td class="k">④ 基线与 SOP</td><td>≥30 min 无激励基线；静息滚动率分布；预注册 + 盲分析</td><td>仅一句原则：<span class="mono">double check to make sure that the difference you may find is not the product of something leaking in</span></td><td>全部（这是计量学部分，原话没有）</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="tip bad reveal">
+      <div class="t">🔍 专项核查：巴夏讲过桌面必须用什么材料吗？——<b>没有</b></div>
+      <p>1998-02-28 那次传讯里，提问者<b>专门问过这件事</b>，而且问句里明确带了「材料」这个词：</p>
+      <div class="quote-hero" style="margin:14px 0">
+        <div class="en">"Now for the experiment what should be the <b>dimensions</b> of the of the of the plate <b>or the underlying material</b> that the sphere is put on?"</div>
+        <div class="zh">那么实验中，球所放置的那块板<b>或者底面材料</b>，尺寸应该是多少？</div>
+        <cite>— 提问者 Questioner，1998-02-28</cite>
+      </div>
+      <p>巴夏的回答里 <b>一个材料词都没有</b>，只给了三条与几何有关的约束：</p>
+      <p><b>①</b> 长度 <code>at least 10 ft</code>（≥3.048 m）　<b>②</b> <code>as flat as you can make it</code>（尽可能平）　<b>③</b> 宽度 <code>need not be that wide</code>，但 <code>three of your feet would be comfortable</code>（约 3 ft 更舒服）</p>
+      <p style="color:var(--dim);font-size:13.7px"><b>检索范围与结果（可复核）</b>：1998-02-28 英文逐字全文 + 2017 版转录 + 本归档 110 篇 —— 全部含 <span class="mono">flat surface / flat bed / flat table / surface upon which</span> 的段落里，<b>桌面材料词（wood / metal / granite / glass / stone …）出现 0 次</b>。外网检索同样未见巴夏在任何场次规定过桌面材料。</p>
+    </div>
+
+    <h4>既然原话没规定，那张桌子该怎么选？——三条物理判据</h4>
+    <div class="grid3 reveal">
+      <div class="card" style="border-left:3px solid var(--red)">
+        <div class="tag t-no">判据一</div>
+        <h4 style="margin-top:11px">必须<b>非导电</b></h4>
+        <p style="font-size:13.9px">金属桌面会与空心导电球形成<b>涡流／镜像电流耦合</b>，直接改变球的模态——而<b>被改变的这个量，正是你要测的东西</b>。等于把被测对象短路了。</p>
+      </div>
+      <div class="card" style="border-left:3px solid var(--amber)">
+        <div class="tag t-mid">判据二</div>
+        <h4 style="margin-top:11px">低热膨胀 + 高刚度</h4>
+        <p style="font-size:13.9px">在 3.048 m 长度上，热膨胀与蠕变会直接变成「<b>位置漂移</b>」。这张桌子同时是支撑与<b>长度基准</b>，它自己必须先稳定下来。</p>
+      </div>
+      <div class="card" style="border-left:3px solid var(--blue)">
+        <div class="tag t-info">判据三</div>
+        <h4 style="margin-top:11px">声学边界可预测</h4>
+        <p style="font-size:13.9px">超平硬面是<b>强声反射面</b>，会改变薄壳的辐射阻尼、进而改变 Q 值。要么明确反射并可建模，要么明确吸收——不能是说不清的边界。</p>
+      </div>
+    </div>
+
+    <div class="tw reveal">
+      <table>
+        <thead><tr><th>候选桌面材料</th><th>热膨胀</th><th>平面度可达</th><th>声学边界</th><th>电学</th><th>结论</th></tr></thead>
+        <tbody>
+          <tr><td class="k">花岗石／陶瓷参考平板</td><td>低</td><td><b>≤10 μm 级</b>（行业参考平板标准）</td><td>强反射、稳定可建模</td><td><b>绝缘 ✓</b></td><td><span class="tag t-ok">首选</span></td></tr>
+          <tr><td class="k">光学玻璃</td><td>低</td><td>极高</td><td>强反射</td><td>绝缘 ✓</td><td>次选（大尺寸难做、脆）</td></tr>
+          <tr><td class="k">铸铝／钢板</td><td><b>高</b>（铝约 23 ppm/K）</td><td>中</td><td>反射</td><td><b>导电 ✗ 涡流耦合</b></td><td><span class="tag t-no">不宜作参考面</span></td></tr>
+          <tr><td class="k">木材／MDF</td><td>高（吸湿变形）</td><td>低</td><td>强吸收</td><td>绝缘</td><td>只作底衬减振，不作参考面</td></tr>
+          <tr><td class="k">亚克力板</td><td>高</td><td>低</td><td>中等</td><td>绝缘</td><td>只作隔声罩／屏蔽箱</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="tip reveal">
+      <div class="t">📌 结论</div>
+      <p><b>「桌面材料」是巴夏留下的自由变量，由工程判据决定，而不是由原话决定。</b>选花岗石／陶瓷的理由全部来自计量学：<b>绝缘（不与球涡流耦合）+ 低热膨胀（长度基准稳定）+ 可加工到 10 μm 平面度</b>。</p>
+      <p>而原话里<b>真正被硬性强调的其实是「隔离舱」</b>——<span class="mono">isolated from any other vibrations electromagnetic in nature</span>。这比桌面材料严厉得多，也解释了为什么阶段一的预算大头在<b>环境与测量</b>，而不在那张桌子上。</p>
     </div>
 
     <h3 class="reveal">四级成功判据（逐级门槛）</h3>
@@ -1006,7 +1438,7 @@ footer li{margin:5px 0;font-size:12.9px}
     <div class="shead reveal">
       <span class="snum">07 / SPEC</span>
       <h2>规格：把原话的空格填满<span class="s">球 · 传感器 · 扫描 · 公式</span></h2>
-      <p class="sdesc">第 2 章列了巴夏<b>没规定</b>的 9 个自由变量。这一章就是项目档案对这些空白的填法——注意：<b>这些是我们的设计，不是巴夏的话</b>。</p>
+      <p class="sdesc">第 2 章列了巴夏<b>没规定</b>的 10 个自由变量。这一章就是项目档案对这些空白的填法——注意：<b>这些是我们的设计，不是巴夏的话</b>。</p>
     </div>
 
     <h3 class="reveal">7.1 球体选型：一个必须澄清的尺寸之误</h3>
@@ -1030,20 +1462,116 @@ footer li{margin:5px 0;font-size:12.9px}
       </table>
     </div>
 
-    <details class="reveal">
-      <summary>🔧 制造工艺：薄壁球焊接的硬约束</summary>
-      <div class="body">
-        <p>Ø80 mm、壁厚 0.4 mm 的铜球壳，<b>不能靠手工钎焊</b>。档案给出的窗口：</p>
-        <div class="kv">
-          <span>工艺：<b>光纤激光脉冲焊</b></span>
-          <span>功率：<b>300–500 W 脉冲</b></span>
-          <span>装配间隙：<b>≤ 0.05 mm</b></span>
-          <span>去应力：<b>180–220 ℃ / 1–2 h</b></span>
-          <span>⚠️ 去应力<b>不超 250 ℃</b></span>
-          <span>开孔孔径：<b>≤ 5–8 mm</b></span>
+    <h3 class="reveal">7.1b 做多大、做多厚：五个互相打架的约束，解出 Ø80 × 0.4</h3>
+    <p>「多大、多厚」不能拍脑袋——有 <b>5 个约束互相拉扯</b>。下表把它们拉到一起，<b>Ø80 × 0.4 是这 5 个约束的交集里最便宜的那一点</b>。</p>
+    <div class="tw reveal">
+      <table>
+        <thead><tr><th>约束</th><th>它推着你往哪走</th><th>量化依据</th></tr></thead>
+        <tbody>
+          <tr><td class="k">要装下 8 个线圈</td><td>球要<b>大</b></td><td>Ø80 外径 → 内径 79.2 mm、容积约 <b>258 cm³</b>；8 个 Ø10–15 mm 线圈放得下且互不干涉</td></tr>
+          <tr><td class="k">弯曲模要落进音频段</td><td>球要小、壁要<b>薄</b></td><td>f_弯曲 ∝ (t/R)·f_ring；t/R = 0.01 → 预期 <b>60–230 Hz</b>（Ø80 × 0.4）</td></tr>
+          <tr><td class="k">放桌上不许留坑</td><td>壁要<b>厚</b>，或改接触</td><td>软态紫铜必出坑 → 改走 <b>半硬态（屈服 ≥200 MPa）+ 底部 Ø6 mm 微平面</b>，比加厚便宜得多</td></tr>
+          <tr><td class="k">磁场别被球壳短路</td><td>频率<b>别太高</b></td><td>趋肤深度 δ：10 kHz → 0.66 mm；<b>50 kHz → 0.29 mm（小于 0.4）</b> → 50 kHz 以上壳壁成短路环</td></tr>
+          <tr><td class="k">巴夏给的尺寸区间</td><td>不能小于 3 in</td><td>原话 <b>3–6 in = 76.2–152.4 mm</b>；Ø80 贴着下界（25.4 mm 方案已勘误作废）</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="grid2 reveal">
+      <div class="card">
+        <h4 style="margin-top:0">壁厚 → 频段 → 仪器（一张换算）</h4>
+        <div class="tw" style="margin:10px 0">
+          <table style="min-width:0">
+            <thead><tr><th>频率</th><th>趋肤深度</th><th>vs 0.4 mm 壁</th><th>含义</th></tr></thead>
+            <tbody>
+              <tr><td class="mono">1 kHz</td><td class="mono">2.07 mm</td><td><b>&gt;&gt; 0.4</b></td><td>磁场近乎全穿透，涡流损耗可忽略</td></tr>
+              <tr><td class="mono">10 kHz</td><td class="mono">0.66 mm</td><td>&gt; 0.4</td><td>仍有部分穿透，可接受</td></tr>
+              <tr><td class="mono">50 kHz</td><td class="mono">0.29 mm</td><td>&lt; 0.4</td><td>电流集中表层，开始当短路环</td></tr>
+              <tr><td class="mono">100 kHz</td><td class="mono">0.21 mm</td><td><b>&lt;&lt; 0.4</b></td><td>Q 值与灵敏度明显下降</td></tr>
+            </tbody>
+          </table>
         </div>
-        <p style="color:var(--amber)"><b>坑</b>：铜磷钎料<b>禁用于钢</b>（磷与铁生成脆性相）。两半球对焊的风险已在推演中单独立项（轮 16）。</p>
-        <p style="color:var(--dim);font-size:13.6px">另一条路线是用整段钢管/铜管等厚旋压成型（等厚工艺 + 超声振动 + 滚动研磨两段法），避免焊缝——代价是设备门槛更高。</p>
+        <p style="font-size:13.7px;color:var(--dim)">δ = √(ρ/(πfμ₀μr))，紫铜 ρ ≈ 1.72×10⁻⁸ Ω·m、μr ≈ 1。<b>结论：0.4 mm 紫铜的舒适区是 ≤20 kHz</b>；要更高频，须内贴坡莫合金箔，或改用高电阻率材料。</p>
+      </div>
+      <div class="card">
+        <h4 style="margin-top:0">「不瘪」有两条失效路径，要分开算</h4>
+        <div class="fml">p_cr ≈ 1.21 · E · (t/R)²
+<span class="n">理想球壳（Zoelly）——判「整体会不会突然塌」。铜 E≈120 GPa，R=40、t=0.4 时约 14.2 kPa</span></div>
+        <div class="fml">p_cr,工程 ≈ 0.365 · E · (t/R)²
+<span class="n">含几何缺陷／焊缝的降阶经验值 ≈ 4–5 kPa——真实球壳常只有理想值的几分之一</span></div>
+        <div class="fml">σ_c ~ F / a
+<span class="n">桌面是点接触，a 只有 0.5–1 mm → 局部接触应力远高于均匀外压</span></div>
+        <p style="font-size:13.7px"><b>整体屈曲不是主要风险</b>（90 g 自重远达不到 4–5 kPa 对应载荷）；<b>局部压坑才是</b>——这也是第 5 章把「改接触」排在「加厚」前面的原因。</p>
+      </div>
+    </div>
+
+    <h3 class="reveal">7.1c 四条材料路线：先做哪条，为什么</h3>
+    <div class="tw reveal">
+      <table>
+        <thead><tr><th>路线</th><th>材料牌号</th><th>规格</th><th>关键工艺</th><th>强项</th><th>代价</th></tr></thead>
+        <tbody>
+          <tr><td class="k">① 单材料铜<br><span class="tag t-ok">先做这个</span></td><td>无氧铜 TU1／TU2，或低磷脱氧铜 SW-Cu／Cu-DLP，<b>半硬态</b></td><td>Ø80 × 0.4 mm</td><td>软态深冲两半 → 冷作 10–15% 半硬化 → 激光焊赤道 → 200 ℃ 去应力 → 底部磨 Ø6 mm 微平面</td><td>导电最好（≥98% IACS）、紫铜外观、可焊性成熟</td><td>软态必出坑（须半硬 + 改接触）；激光焊需外协</td></tr>
+          <tr><td class="k">② 磷青铜<br>抗坑优先</td><td>C51000／C52100</td><td>Ø80 × 0.35–0.4 mm</td><td>同上，焊接以软钎／银钎／激光点焊为主</td><td>屈服 380–620 MPa，抗压坑最强</td><td>导电仅十几～二十几 %IACS；铜磷钎缝偏脆</td></tr>
+          <tr><td class="k">③ 钢球<br>不必导电时</td><td>304L／316L；深冲性最好用 <b>305L</b>；要更硬可选 301B（1/2H）</td><td>R 30–50 → t 0.3–0.5 mm</td><td>两半深冲（LDR 1.8–2.2）→ 切 0.4 mm 法兰边 → 脉冲 TIG 或激光 → 150–250 ℃ 低温消应力</td><td>E ≈ 193–200 GPa，同厚度更抗屈曲；料便宜、易焊</td><td>导电差；须防锈；深冲道次多</td></tr>
+          <tr><td class="k">④ 双金属夹层<br>极薄展示</td><td>外铜 0.15–0.2 + 内钛／不锈钢 0.1–0.2</td><td>总 0.3–0.4 mm</td><td>分别成形 → 银基／AgCuTi 真空钎 → 外皮激光封赤道</td><td>刚度 ≈ 单层 0.4–0.5，外观仍薄</td><td>铜–钛会生成脆相；门槛高，<b>首件不建议做</b></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="tip reveal">
+      <div class="t">💡 一个容易踩的坑</div>
+      <p><b>铜磷钎料禁用于钢件</b>——磷与铁会生成脆性相。铜–铜之间可以自钎（纯铜甚至免钎剂），铜–钢、铜–不锈钢则必须换银基钎料或加镍中间层。</p>
+      <p style="color:var(--dim);font-size:13.7px">三套「可直接试」的小样（出自补充对话）：<b>A</b> 单铜 0.4 mm 半硬 + 底部微平面；<b>B</b> 外 TU1 0.15 + 内 C52100 0.2（或全 C51000 0.35）；<b>C</b> 外铜 0.1–0.15 电铸／旋压 + 内钛箔 0.1（首件不要做）。</p>
+    </div>
+
+    <h3 class="reveal">7.1d 工艺怎么落实才划算：整条工艺链 + 三处省钱替换</h3>
+    <div class="steps reveal">
+      <div class="step"><div class="h">下料与深冲（两半球）</div><div class="d">TU1 软态延伸率 ≥40%，<b>拉深比约 2.0 可一次到位</b>，不必中间退火。凸模圆角取壁厚的 4–8 倍（约 2–3 mm）；压边力只要压住不起皱，太大反而把底部拉薄。成品壁厚公差可控制在 <b>±0.02–0.03 mm</b>——传感器一致性靠这一步。</div></div>
+      <div class="step"><div class="h">切边与法兰</div><div class="d">超薄件<b>不要切「刀口零间隙」</b>：留 <b>0.3–0.6 mm 法兰边</b>再焊，焊后可磨平到外观薄。这样比直接对接 0.2 mm 薄边，既不易烧穿，也不易失圆。</div></div>
+      <div class="step"><div class="h">半硬化（关键的一步）</div><div class="d">冷作 <b>10–15%</b> 减薄或低温轧制，把屈服从软态的 70–100 MPa 抬到 <b>≥200 MPa</b>。<em>别用退火软态直接做承重球</em>——指印级别的力就会留坑。</div></div>
+      <div class="step"><div class="h">装配与焊接</div><div class="d">装配间隙 <b>≤0.05 mm</b>。首选 <b>光纤激光脉冲焊 300–500 W</b>（热影响区 &lt;0.2 mm，变形最小）；若用 TIG 必须超小电流 <b>20–30 A</b> + 脉冲 + 铜背衬散热，否则烧穿。<b>分段跳焊</b>，不要一圈连续满焊——连续焊的收缩会让球椭圆化。</div></div>
+      <div class="step"><div class="h">去应力</div><div class="d"><b>180–220 ℃ 保温 1–2 h</b>。<em>不要超过 250 ℃</em>：紫铜会退回软态，前面半硬化的努力全部作废。</div></div>
+      <div class="step"><div class="h">整形与检测</div><div class="d">圆度按<b>直径的 0.1–0.2%</b> 管控（Ø80 → ≤0.08–0.16 mm）；超标用液压胀形或旋压微整形修正。这一步不能省——圆度缺陷会直接变成模态劈裂的假信号。</div></div>
+      <div class="step"><div class="h">开孔与线圈安装</div><div class="d">引线孔 <b>Ø3–5 mm</b>（0.4 mm 壁厚下<b>不要超过 5–8 mm</b>，否则孔边凹陷）。开孔产生应力集中 → <b>先开小孔再焊接</b>，或焊后用精密钻／电火花。8 个线圈按八面体顶点方向贴内壁，或用 3D 打印骨架，减少涡流耦合。</div></div>
+      <div class="step"><div class="h">桌面防护（最省的一步）</div><div class="d">底部磨 <b>Ø6 mm 微平面</b>，或贴软硅胶／绒布环，把点接触变成面接触——接触应力可降一个数量级。<b>这比把壁厚从 0.4 加到 0.8 便宜得多，而且不减灵敏度。</b></div></div>
+    </div>
+
+    <div class="grid3 reveal">
+      <div class="card" style="border-color:var(--green)">
+        <div class="tag t-ok">省钱替换 1</div>
+        <h4 style="margin-top:11px">软接触环<br>代替加厚壁</h4>
+        <p style="font-size:13.9px">加厚要重做模具、增重量，还可能把弯曲模推出音频段。<b>一圈硅胶／绒布环的成本可以忽略</b>，却把「必出坑」变成「看不出来」。</p>
+      </div>
+      <div class="card" style="border-color:var(--green)">
+        <div class="tag t-ok">省钱替换 2</div>
+        <h4 style="margin-top:11px">赤道小法兰<br>代替整体加厚</h4>
+        <p style="font-size:13.9px">只在<b>需要承接触的地方</b>加厚（底部拼接处 0.6–1.0 mm 法兰环），全球重量不增加。焊接时法兰还能当<b>散热与定位基准</b>。</p>
+      </div>
+      <div class="card" style="border-color:var(--green)">
+        <div class="tag t-ok">省钱替换 3</div>
+        <h4 style="margin-top:11px">现成管坯／球坯<br>代替深冲模具</h4>
+        <p style="font-size:13.9px">深冲模具是<b>一次性大头支出</b>。先用标准薄壁铜管等厚旋压（等厚工艺 + 超声振动 + 滚动研磨两段法），或直接买无焊缝成品球坯，可绕开模具费——代价是设备门槛换成工艺门槛。</p>
+      </div>
+    </div>
+
+    <details class="reveal">
+      <summary>💰 成本结构：钱到底花在哪，以及它为什么劝退了绝大多数人</summary>
+      <div class="body">
+        <p>把成本拆开看，会得到一个反直觉的结论：<b>最贵的不是材料。</b></p>
+        <div class="tw" style="margin:12px 0">
+          <table>
+            <thead><tr><th>成本项</th><th>量级</th><th>说明</th></tr></thead>
+            <tbody>
+              <tr><td class="k">薄铜板／管坯</td><td>低</td><td>一块 Ø100 级薄铜板的价格远低于任何一项加工费</td></tr>
+              <tr><td class="k">深冲模具</td><td><b>一次性大头</b></td><td>凸凹模 + 压边圈；这正是「先用管坯旋压」能省一大截的原因</td></tr>
+              <tr><td class="k">激光焊外协</td><td>中～高</td><td>薄铜对光纤激光反射率高、工艺窗口窄，能接的厂不多，按工时计</td></tr>
+              <tr><td class="k">焊接工装（仿形胎具）</td><td>中</td><td>没有它，连续满焊必然失圆——这一项最常被漏算</td></tr>
+              <tr><td class="k">圆度／壁厚检测</td><td>中</td><td>三坐标或超声测厚；<b>不做这一步等于前功尽弃</b></td></tr>
+              <tr><td class="k">报废率</td><td><b>高</b></td><td>软态→半硬→激光焊→去应力，每一步都有废件；<b>一次失败 = 整只球报废</b></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p style="color:var(--amber)"><b>⚠️ 口径说明</b>：上表给的是<b>成本结构</b>（哪一项是大头），不是报价单——具体金额随地区、批量、厂价浮动很大，须实际询价。能确定的判断是：<b>材料费不构成门槛，加工与检测才构成门槛。</b></p>
+        <p>这正好是第 5 章「门槛三」的算术：<b>不够格的装置会被自己淹掉，够格的装置投入已相当于一个计量课题</b>——这只球至今没人做，原因在此。</p>
       </div>
     </details>
 
@@ -1054,17 +1582,17 @@ footer li{margin:5px 0;font-size:12.9px}
           <radialGradient id="core"><stop offset="0" stop-color="#ffd591"/><stop offset="1" stop-color="#a35c1c"/></radialGradient>
         </defs>
         <!-- 立方体 -->
-        <g stroke="#2a3d5c" stroke-width="1.2" fill="none">
+        <g  stroke-width="1.2" fill="none" style="stroke:var(--line2)">
           <path d="M250 90 L430 90 L430 250 L250 250 Z"/>
           <path d="M310 55 L490 55 L490 215 L310 215 Z"/>
           <path d="M250 90 L310 55 M430 90 L490 55 M430 250 L490 215 M250 250 L310 215"/>
         </g>
         <!-- 顶点 -->
         <g>
-          <circle cx="250" cy="90" r="6.5" fill="#3ce0cf"/><circle cx="430" cy="90" r="6.5" fill="#3ce0cf"/>
-          <circle cx="250" cy="250" r="6.5" fill="#a78bfa"/><circle cx="430" cy="250" r="6.5" fill="#a78bfa"/>
-          <circle cx="310" cy="55" r="6.5" fill="#a78bfa"/><circle cx="490" cy="55" r="6.5" fill="#a78bfa"/>
-          <circle cx="310" cy="215" r="6.5" fill="#3ce0cf"/><circle cx="490" cy="215" r="6.5" fill="#3ce0cf"/>
+          <circle cx="250" cy="90" r="6.5" style="fill:var(--cyan)" /><circle cx="430" cy="90" r="6.5" style="fill:var(--cyan)" />
+          <circle cx="250" cy="250" r="6.5" style="fill:var(--violet)" /><circle cx="430" cy="250" r="6.5" style="fill:var(--violet)" />
+          <circle cx="310" cy="55" r="6.5" style="fill:var(--violet)" /><circle cx="490" cy="55" r="6.5" style="fill:var(--violet)" />
+          <circle cx="310" cy="215" r="6.5" style="fill:var(--cyan)" /><circle cx="490" cy="215" r="6.5" style="fill:var(--cyan)" />
         </g>
         <!-- 球心 -->
         <circle cx="370" cy="152" r="27" fill="url(#core)" stroke="#ffd591" stroke-width="1.2"/>
@@ -1075,18 +1603,18 @@ footer li{margin:5px 0;font-size:12.9px}
           <path d="M370 152 L310 55 M370 152 L490 55 M370 152 L310 215 M370 152 L490 215"/>
         </g>
         <!-- 标注 -->
-        <text x="70" y="70" fill="#3ce0cf" font-size="13" font-weight="700">组 A（4 点）</text>
-        <text x="70" y="90" fill="#8ea0bb" font-size="12">正四面体 · 组内夹角 109.471°</text>
-        <text x="70" y="112" fill="#a78bfa" font-size="13" font-weight="700">组 B（4 点）</text>
-        <text x="70" y="132" fill="#8ea0bb" font-size="12">对映正四面体 · 与 A 组互为镜像</text>
-        <text x="70" y="170" fill="#8ea0bb" font-size="12.4">顶点坐标 (±1,±1,±1)/√3 · R</text>
-        <text x="70" y="190" fill="#8ea0bb" font-size="12.4">按坐标符号乘积分组：星形八面体</text>
-        <text x="70" y="222" fill="#54d98c" font-size="12.6" font-weight="600">单组 4 点 = 球面 2-design</text>
-        <text x="70" y="242" fill="#54d98c" font-size="12.6" font-weight="600">全部 8 点 = 球面 3-design ✅</text>
-        <text x="70" y="272" fill="#6c7f9b" font-size="12">线圈 Ø10–15 mm，距球面 5–10 mm</text>
-        <text x="70" y="290" fill="#6c7f9b" font-size="12">外接立方体边长 ≈ 46.2 mm</text>
-        <text x="640" y="290" fill="#6c7f9b" font-size="12">跨组夹角 70.529°</text>
-        <text x="640" y="272" fill="#6c7f9b" font-size="12">对映 180°</text>
+        <text x="70" y="70"  font-size="13" font-weight="700" style="fill:var(--cyan)">组 A（4 点）</text>
+        <text x="70" y="90"  font-size="12" style="fill:var(--dim)">正四面体 · 组内夹角 109.471°</text>
+        <text x="70" y="112"  font-size="13" font-weight="700" style="fill:var(--violet)">组 B（4 点）</text>
+        <text x="70" y="132"  font-size="12" style="fill:var(--dim)">对映正四面体 · 与 A 组互为镜像</text>
+        <text x="70" y="170"  font-size="12.4" style="fill:var(--dim)">顶点坐标 (±1,±1,±1)/√3 · R</text>
+        <text x="70" y="190"  font-size="12.4" style="fill:var(--dim)">按坐标符号乘积分组：星形八面体</text>
+        <text x="70" y="222"  font-size="12.6" font-weight="600" style="fill:var(--green)">单组 4 点 = 球面 2-design</text>
+        <text x="70" y="242"  font-size="12.6" font-weight="600" style="fill:var(--green)">全部 8 点 = 球面 3-design ✅</text>
+        <text x="70" y="272"  font-size="12" style="fill:var(--dim2)">线圈 Ø10–15 mm，距球面 5–10 mm</text>
+        <text x="70" y="290"  font-size="12" style="fill:var(--dim2)">外接立方体边长 ≈ 46.2 mm</text>
+        <text x="640" y="290"  font-size="12" style="fill:var(--dim2)">跨组夹角 70.529°</text>
+        <text x="640" y="272"  font-size="12" style="fill:var(--dim2)">对映 180°</text>
       </svg>
       <div class="svgcap">图｜八点立方体阵列。8 个点构成<b>球面 3-design</b>——意味着它能精确积分到 3 阶球谐，把球壳最低阶模态的盲区消掉</div>
     </div>
@@ -1112,6 +1640,217 @@ footer li{margin:5px 0;font-size:12.9px}
         </div>
         <p style="font-size:13.7px;color:var(--dim)">「相位相干」是关键——8 路必须同一时基，否则跨通道的相位差没有意义，而<b>相位正是我们提升灵敏度的主战场</b>。</p>
       </div>
+    </div>
+
+    <h3 class="reveal">7.2b 线圈之外：把这个项目能用的传感器逐个过一遍<span class="tag t-mid" style="margin-left:8px">选型</span></h3>
+    <p>上一节回答「为什么不能只用 1 个点」，这一节回答「<b>为什么是线圈、线圈之外还有什么</b>」。先立标尺——本项目对传感器的要求比一般振动测量苛刻得多，很多「常规好用」的传感器在这里会被一票否决。</p>
+
+    <div class="tw reveal">
+      <table>
+        <thead><tr><th>硬约束</th><th>量化门槛</th><th>为什么这么严</th></tr></thead>
+        <tbody>
+          <tr><td class="k">① 加载质量可忽略</td><td>附加质量 <b>&lt; 10 mg</b><br>（球质量 90 g 的 10⁻⁴）</td><td>要找的可能是 <b>10⁻⁸ 量级</b>的相对频差；一只 2 g 的加速度计就是 2.2% 质量扰动、直接把模态频率挪走约 1%——<b>比待测效应大 6 个数量级</b>。这一条淘汰了所有接触式传感器</td></tr>
+          <tr><td class="k">② 位移分辨到亚微米</td><td>单点噪声 <b>&lt; 10 μm</b><br>目标 <b>&lt; 0.1 μm</b></td><td>§7.4 的拍频法把灵敏度搬进相位，前端位移噪声会被 Q 值放大成频率抖动</td></tr>
+          <tr><td class="k">③ 相位可测 · 8 路相干</td><td><b>8 路共享时基</b><br>通道间相位一致性好于 0.1°</td><td>相位是主战场；8 路若不同源，跨通道相位差就没有意义</td></tr>
+          <tr><td class="k">④ 频段匹配</td><td>主战场 <b>60–230 Hz</b><br>辅助 <b>≤ 20 kHz</b></td><td>低于 20 Hz 会被桌面／房间低频扰动吃掉；高于 50 kHz 铜壳已成涡流短路环</td></tr>
+          <tr><td class="k">⑤ 对环境不挑</td><td>室温 · 普通桌面<br><b>无磁屏蔽 · 无隔振台</b></td><td>这是「一张桌子就能做」的底线。要求真空／洁净室／低温的方案，第一版直接出局</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="svgbox reveal">
+      <svg viewBox="0 0 760 390" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="同一只球上的多种物理探测通道">
+        <defs>
+          <radialGradient id="cu2" cx="34%" cy="30%">
+            <stop offset="0" stop-color="#ffe3b0"/><stop offset="1" stop-color="#a9621a"/>
+          </radialGradient>
+        </defs>
+
+        <!-- 辐射虚线 -->
+        <g stroke-width="1" stroke-dasharray="3 5" opacity=".6">
+          <path d="M338 168 L232 92"  style="stroke:var(--cyan)"/>
+          <path d="M332 195 L225 195" style="stroke:var(--violet)"/>
+          <path d="M338 222 L232 298" style="stroke:var(--green)"/>
+          <path d="M422 168 L528 92"  style="stroke:var(--amber)"/>
+          <path d="M428 195 L535 195" style="stroke:var(--blue)"/>
+          <path d="M422 222 L528 298" style="stroke:var(--red)"/>
+        </g>
+
+        <!-- 中心球 -->
+        <circle cx="380" cy="195" r="42" fill="url(#cu2)" stroke="#ffd591" stroke-width="1.4"/>
+        <text x="380" y="192" text-anchor="middle" font-size="13" font-weight="700" fill="#3a1f05" font-family="Consolas,monospace">Cu</text>
+        <text x="380" y="208" text-anchor="middle" font-size="9.5" fill="#5a3a10" font-family="Consolas,monospace">ball</text>
+        <text x="380" y="256" text-anchor="middle" font-size="12.2" style="fill:var(--dim)">Ø80 × 0.4 · 90 g · 薄壁导电球</text>
+        <text x="380" y="274" text-anchor="middle" font-size="11.8" style="fill:var(--dim2)">曲面 R40 · 非磁性 · 抛光面</text>
+
+        <!-- 左上：电磁 -->
+        <circle cx="199" cy="92" r="5" style="fill:var(--cyan)"/>
+        <text x="30" y="88"  font-size="13.4" font-weight="700" style="fill:var(--cyan)">① 电磁线圈 ×8</text>
+        <text x="30" y="105" font-size="11.8" style="fill:var(--dim)">涡流耦合 · 激励与拾取同源</text>
+        <text x="30" y="121" font-size="11.4" style="fill:var(--dim2)">主通道 · 一体化是它的独门优势</text>
+
+        <!-- 左中：光纤 -->
+        <circle cx="199" cy="195" r="5" style="fill:var(--violet)"/>
+        <text x="30" y="191" font-size="13.4" font-weight="700" style="fill:var(--violet)">② 光纤 F-P 微探头</text>
+        <text x="30" y="208" font-size="11.8" style="fill:var(--dim)">反射干涉测腔长 · 端面 Ø0.125 mm</text>
+        <text x="30" y="224" font-size="11.4" style="fill:var(--dim2)">最对称的 8 路非接触方案</text>
+
+        <!-- 左下：声学 -->
+        <circle cx="199" cy="298" r="5" style="fill:var(--green)"/>
+        <text x="30" y="294" font-size="13.4" font-weight="700" style="fill:var(--green)">③ 测量传声器阵列</text>
+        <text x="30" y="311" font-size="11.8" style="fill:var(--dim)">声压 ← 球面径向位移</text>
+        <text x="30" y="327" font-size="11.4" style="fill:var(--dim2)">与「薄壁→音频段」的设计目标天生匹配</text>
+
+        <!-- 右上：激光 -->
+        <circle cx="561" cy="92" r="5" style="fill:var(--amber)"/>
+        <text x="530" y="88"  font-size="13.4" font-weight="700" style="fill:var(--amber)">④ 激光自混合 SMI</text>
+        <text x="530" y="105" font-size="11.8" style="fill:var(--dim)">回注光功率 · 每 λ/2 一个条纹</text>
+        <text x="530" y="121" font-size="11.4" style="fill:var(--dim2)">百元级一路 · 性价比黑马</text>
+
+        <!-- 右中：相机 -->
+        <circle cx="561" cy="195" r="5" style="fill:var(--blue)"/>
+        <text x="530" y="191" font-size="13.4" font-weight="700" style="fill:var(--blue)">⑤ 高速相机 + 亚像素</text>
+        <text x="530" y="208" font-size="11.8" style="fill:var(--dim)">全场位移 · 非接触</text>
+        <text x="530" y="224" font-size="11.4" style="fill:var(--dim2)">唯一能「直接看见球在动」的证据</text>
+
+        <!-- 右下：排除 -->
+        <circle cx="561" cy="298" r="5" style="fill:var(--red)"/>
+        <text x="530" y="294" font-size="13.4" font-weight="700" style="fill:var(--red)">✗ 加速度计 / 应变片</text>
+        <text x="530" y="311" font-size="11.8" style="fill:var(--dim)">质量加载 · 胶粘引线</text>
+        <text x="530" y="327" font-size="11.4" style="fill:var(--dim2)">比待测效应大 6 个数量级 → 出局</text>
+      </svg>
+      <div class="svgcap">图｜同一只球可同时挂上六条<b>物理上互不相关</b>的探测链路。真正的价值不在「谁更灵敏」，而在<b>谁跟谁独立</b>——若位置签名是真的，它应当同时出现在电磁、光学、声学三条完全不同的链路上。</div>
+    </div>
+
+    <h3 class="reveal">7.2c 全清单：五族传感器，逐个对着五条硬约束打分</h3>
+    <div class="tw reveal">
+      <table>
+        <thead><tr><th>传感器 / 方案</th><th>测什么</th><th>分辨 · 带宽</th><th>对 Ø80 曲面铜球</th><th>本项目角色</th></tr></thead>
+        <tbody>
+          <tr><td colspan="5" style="background:var(--hover);color:var(--cyan);font-weight:700">A · 电磁族（与现方案同源）</td></tr>
+          <tr><td class="k">驱动＋拾取一体线圈 ×8<br><span class="tag t-ok">现方案</span></td><td>球面涡流反作用 → 线圈阻抗 ΔL／ΔZ</td><td>位移 ~0.1 μm<br>DC – 20 kHz</td><td><b>最优</b>：铜是良导体；但曲面＋线圈间互感需标定</td><td><b>主通道</b>——激励与拾取共用同一场，是巴夏装置的本质</td></tr>
+          <tr><td class="k">分离式驱动＋独立拾取线圈</td><td>同上，但去掉直接互感</td><td>同上</td><td>好：多一个自由度可优化</td><td>主通道的<b>改良版</b>，值得做一次 A/B</td></tr>
+          <tr><td class="k">商品化涡流位移探头<br><span class="mono">Keyence EX / eddyNCDT</span></td><td>探头—靶面间距</td><td>0.1 μm · 40 kHz</td><td>中：要求靶面平坦且 ≥ 3× 探头直径，曲面会把标定线拉弯</td><td>单点<b>标定／旁证</b>，不做 8 点阵列</td></tr>
+          <tr><td class="k">磁通门 / GMI 磁强计</td><td>空间磁场扰动</td><td>pT – nT 级 · DC – 1 MHz</td><td>差：铜<b>非磁性</b>，球本身无磁信号</td><td>探索性——只能测「球移动导致外磁场再分布」</td></tr>
+
+          <tr><td colspan="5" style="background:var(--hover);color:var(--violet);font-weight:700">B · 光学族（非接触、可极灵敏）</td></tr>
+          <tr><td class="k">光纤 Fabry–Perot 微探头 ×8</td><td>光纤端面—球面之间的腔长 d</td><td>nm 级（细分）<br>量程几十 μm–mm · DC – 100 kHz</td><td><b>很好</b>：端面 Ø0.125 mm，可贴到球面 5 mm 内，8 根互不打架</td><td><b>首选光学方案</b>——与八点立方体几何天然契合</td></tr>
+          <tr><td class="k">激光自混合干涉 SMI</td><td>回注光引起的 LD 输出功率起伏</td><td>λ/2 条纹 → nm 级<br>DC – MHz</td><td>好：需散射面，抛光球要先打一块哑光斑</td><td><b>性价比之选</b>，单路百元级，适合做多路验证</td></tr>
+          <tr><td class="k">迈克尔逊 / 外差干涉仪</td><td>靶镜位移（光程差）</td><td>0.3 nm（λ/2 细分）· DC – MHz</td><td>中：必须在球上贴靶镜 → 接触</td><td>计量级参考通道</td></tr>
+          <tr><td class="k">光杠杆：激光 + 镜 + PSD</td><td>镜面<b>角度</b>（不是位移）</td><td>Δθ ≈ 5×10⁻⁸ rad<br>DC – 100 kHz</td><td>中：须贴小镜（几毫克，可接受）</td><td>专测<b>摆动模态</b>；单通道、不需相干</td></tr>
+          <tr><td class="k">多次折返（White / Herriott cell）</td><td>同上，但光程 ×N</td><td>灵敏度 ∝ N</td><td>中：须贴镜</td><td>一种<b>放大手段</b>，不是独立传感器</td></tr>
+          <tr><td class="k">激光三角测距</td><td>表面距离</td><td>1 μm · 1–10 kHz</td><td>好：曲面也能测</td><td>粗定位／防碰撞，不做精密测量</td></tr>
+          <tr><td class="k">ESPI / 剪切散斑干涉</td><td>全场面外位移与振型</td><td>nm 级 · 需隔振</td><td>中：需哑光面</td><td>振型成像——一帧看到整个球的节线</td></tr>
+          <tr><td class="k">高速相机 + 亚像素 / DIC</td><td>全场位移（直接成像）</td><td>≈ 1 μm · 帧率与像素互斥</td><td><b>很好</b>：完全非接触</td><td>宏观运动的<b>唯一直接证据</b>（§6 判据一、二靠它）</td></tr>
+          <tr><td class="k">光学谐振腔 + PDH 锁定</td><td>腔长（把位移搬进频率）</td><td>10⁻¹⁵ m/√Hz 量级</td><td>差：须超高反镜镀膜 + 锁频电路</td><td><b>远景天花板</b>——回答「这条路极限在哪」</td></tr>
+
+          <tr><td colspan="5" style="background:var(--hover);color:var(--green);font-weight:700">C · 声学族</td></tr>
+          <tr><td class="k">测量传声器阵列<br><span class="mono">1/2″ 自由场</span></td><td>球面辐射声压 p</td><td>本底 20 μPa<br>→ 位移 <b>≈ 77 pm</b> · 20 Hz – 20 kHz</td><td><b>很好</b>：完全非接触，8 路只需一张多通道采集卡</td><td><b>设计目标通道</b>——壁做薄就是为了让它能被听见</td></tr>
+          <tr><td class="k">声学阵列 / 波束成形</td><td>声源定位与振型</td><td>—</td><td>很好</td><td>振型诊断，辅助定位节线</td></tr>
+          <tr><td class="k">Helmholtz 声腔增强</td><td>腔共振放大声压</td><td>放大 ×Q</td><td>很好</td><td>一种<b>放大手段</b>，不改球本身</td></tr>
+
+          <tr><td colspan="5" style="background:var(--hover);color:var(--dim);font-weight:700">D · 量子／极限族</td></tr>
+          <tr><td class="k">SQUID / 原子磁力计</td><td>磁场（fT 级灵敏度）</td><td>fT · DC – 10 kHz</td><td>差：铜非磁性，无直接信号</td><td>需 μ 金属屏蔽室；本项目中<b>无信号可测</b></td></tr>
+          <tr><td class="k">原子钟频率比对</td><td>频率本身（不测位移）</td><td>10⁻¹⁸</td><td>—</td><td>若日后要测 2.618 GHz 进动（§7.4），这是最终仲裁器</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="reveal">7.2d 「激光 + 折射镜放大」这条思路：对在哪里，错在哪里</h3>
+    <div class="grid2 reveal">
+      <div class="card">
+        <h4 style="margin-top:0;color:var(--red)">❌ 先纠一个直觉：透镜不放大位移</h4>
+        <p style="font-size:14px">把激光穿过透镜或折射镜打到球上，<b>光斑跟着球动多少就是多少</b>——几何光学只改变光线的<b>方向</b>，不改变物体的<b>位置变化量</b>。想让「浮动幅度差别」变大，靠的必须是下面三种机制之一，<b>加镜片本身不产生任何放大</b>。</p>
+        <div class="fml">θ_out = 2 · θ_in
+<span class="n">反射定律——光杠杆真正的「×2」来自反射，不来自透镜。
+而且折射镜还会引入像差、热漂移与角放大误差，对 nm 级测量是净负担。</span></div>
+      </div>
+      <div class="card">
+        <h4 style="margin-top:0;color:var(--green)">✅ 三种真放大机制</h4>
+        <div class="fml">① 多次折返　Δφ = 2π · (2Nd) / λ
+<span class="n">在两镜之间反射 N 次 → 位移引起的相位变化放大 N 倍（White / Herriott cell）。这是「加镜子」唯一真正有效的用法</span></div>
+        <div class="fml">② 干涉条纹细分　Δd = (λ/2) / S
+<span class="n">λ = 632.8 nm、细分数 S = 1000 → 每计数 0.32 nm</span></div>
+        <div class="fml">③ 腔精细度　灵敏度 ∝ F
+<span class="n">光学腔把位移搬进腔的共振频率，F 越高越灵敏——与 §7.4「把灵敏度搬进相位」是同一个思想</span></div>
+      </div>
+    </div>
+
+    <div class="tip warn reveal">
+      <div class="t">⚠️ 一个必须分清的分水岭：光杠杆测的是<b>角度</b>，不是位移</div>
+      <p>镜面沿法线<b>平移</b> d 时，出射光线<b>方向不变</b>——远处的光斑一点不动，只有光程变了 2d。所以：</p>
+      <div class="fml">镜面平移 d　→　光斑不移动（平移只能靠干涉法测光程 2d）
+<span class="n">∴ 想测「球在桌上整体平移」，要么用干涉仪，要么把反光面做成 V 形／双面对称结构，让平移也转化成角度</span></div>
+      <p>反过来，<b>倾斜</b>角 θ 会让光斑移动 2Lθ（L = 臂长）——这才是「放大」真正的来源：<b>臂长就是放大倍数</b>。</p>
+      <div class="fml">Δx_PSD = 2 · L · θ　，　L = 1 m、PSD 分辨 0.1 μm →　θ_min = 5 × 10⁻⁸ rad
+<span class="n">换算到 R = 40 mm 的球面，相当于弧长变化 2 nm——量级相当漂亮</span></div>
+      <p style="color:var(--amber);font-size:13.7px"><b>但请同时记住它的代价</b>：环境振动与臂长同样成正比地放大（Δx_noise = 2L·θ_noise）。<b>把臂长从 1 m 加到 10 m，信号放大 10 倍，噪声也放大 10 倍，信噪比并不会改善</b>——除非同时做差分或共模抑制。</p>
+      <p style="color:var(--dim);font-size:13.6px"><b>结论</b>：若您要抓的是球<b>整体浮动／摆动</b>这类<b>刚体运动</b>，光杠杆 + PSD 是便宜、灵敏、且<b>不需要相位相干</b>的好选择（本章少见的单通道方案）；但若目标是<b>球壳的高频模态</b>，光杠杆帮不上——它的靶镜必须贴在球面上，那就退化成接触加载。</p>
+    </div>
+
+    <h3 class="reveal">7.2e 三个值得认真做的方案 + 一票否决清单</h3>
+    <div class="grid2 reveal">
+      <div class="card" style="border-color:var(--violet)">
+        <h4 style="margin-top:0">① 光纤 F-P 微型探头阵列<span class="tag t-ok" style="margin-left:6px">最对称的 8 通道</span></h4>
+        <p style="font-size:14px">单模光纤端面与球面之间构成一个皮升级 Fabry–Perot 腔，反射光强随腔长变化——<b>一根光纤就是一个探头</b>，端面只有 <b>Ø0.125 mm</b>。</p>
+        <div class="fml">I(d) = I₁ + I₂ + 2√(I₁I₂) · cos(4πd/λ)
+<span class="n">一个条纹 = λ/2 = 316 nm；细分后 nm 级；量程几十 μm 至 mm</span></div>
+        <div class="kv">
+          <span>探头 <b>Ø0.125 mm</b></span>
+          <span>带宽 <b>DC–100 kHz</b></span>
+          <span>8 路 <b>可全部塞进球周空间</b></span>
+        </div>
+        <p style="font-size:13.7px;color:var(--dim)"><b>为什么值得做</b>：这是唯一能做到「8 个非接触点、每点只有头发丝粗、彼此不干扰」的方案，恰好对上 §7.2 八点立方体阵列的几何需求；而且它<b>跟线圈完全独立</b>（一个光学、一个电磁），交叉验证的价值极高。</p>
+      </div>
+      <div class="card" style="border-color:var(--amber)">
+        <h4 style="margin-top:0">② 激光自混合干涉 SMI<span class="tag t-ok" style="margin-left:6px">性价比黑马</span></h4>
+        <p style="font-size:14px">激光二极管<b>自己的输出功率就是位移信号</b>：光被球面反射回 LD 的有源区，输出功率随外腔长周期起伏，<b>每 λ/2 出现一个条纹</b>。</p>
+        <div class="kv">
+          <span>分辨 <b>λ/2 → 细分后 nm 级</b></span>
+          <span>带宽 <b>DC–MHz</b></span>
+          <span>单路 <b>百元级</b></span>
+        </div>
+        <p style="font-size:13.7px;color:var(--dim)"><b>为什么值得做</b>：不需要分束器、不需要参考臂、不需要准直台——一只 LD 加一个运放就能做一路，<b>最容易铺成多路</b>。代价是需要<b>散射面</b>：Ø80 抛光铜球是镜面，得先打一块哑光喷砂斑或贴一小片漫反射膜（也是接触，但只占毫米级面积、几毫克）。</p>
+      </div>
+      <div class="card" style="border-color:var(--green)">
+        <h4 style="margin-top:0">③ 测量传声器阵列<span class="tag t-ok" style="margin-left:6px">本项目的设计目标</span></h4>
+        <p style="font-size:14px">整条方案的起点就是「<b>把壁做薄，让弯曲模落进音频段</b>」（§7.4：Ø80×0.4 预期 60–230 Hz）。频段既然是自己挑的，麦克风就是<b>与设计目标天生匹配</b>的传感器。</p>
+        <div class="fml">p ≈ ρ · c · ω · u　⟹　u_min = p_min / (ρcω)
+<span class="n">f = 100 Hz（ω = 628）、ρc = 415、p_min = 20 μPa（0 dB SPL）
+→ u_min ≈ 7.7 × 10⁻¹¹ m ≈ 77 pm</span></div>
+        <p style="font-size:13.7px;color:var(--dim)"><b>为什么值得做</b>：这个换算说明传声器<b>根本不缺灵敏度</b>（pm 级！）——限制它的从来不是探头，而是<b>房间本底噪声</b>。所以重点不是买更贵的麦，而是<b>把环境压下去</b>（这正是 §5 说「环境太脏」的确切含义）。8 路相干只需一张共享采样时钟的多通道采集卡。</p>
+      </div>
+      <div class="card" style="border-color:var(--cyan2)">
+        <h4 style="margin-top:0">④ 兜底答案：光学腔 + PDH 锁定<span class="tag t-mid" style="margin-left:6px">灵敏度天花板</span></h4>
+        <p style="font-size:14px">若前面全部失败、但您仍想知道这条路的上限，可以把球面本身当作光学腔的一个镜面，用 Pound–Drever–Hall 技术把腔长锁住。</p>
+        <div class="fml">位移灵敏度可达 10⁻¹⁵ m/√Hz 量级
+<span class="n">LIGO 同源技术。这不是第一版该碰的东西，但它是「这条路有没有天花板」的答案——有，而且高得离谱</span></div>
+        <p style="font-size:13.7px;color:var(--dim)"><b>代价</b>：超高反镜镀膜、真空或恒温、激光频率锁定电路、隔振台。<b>建议只作为远期路线图上的一个点</b>。</p>
+      </div>
+    </div>
+
+    <div class="tw reveal">
+      <table>
+        <thead><tr><th>一票否决</th><th>它为什么诱人</th><th>为什么在本项目出局</th></tr></thead>
+        <tbody>
+          <tr><td class="k">压电加速度计</td><td>成熟、便宜、带宽宽、信噪比好，是工业模态分析的标准件</td><td><b>螺栓／胶粘＝质量加载</b>。一只 2 g 的传感器装到 90 g 球上就是 2.2% 扰动 → 频率偏移约 1%，<b>比待测效应（10⁻⁸）大 6 个数量级</b>。只能贴在外壳上做<b>激励标定</b>，不能当测量通道</td></tr>
+          <tr><td class="k">电阻应变片</td><td>1 με 分辨、便宜、可布多点</td><td>必须胶粘 + 8 处引线（引线质量与胶层阻尼连仿真都难做）。而且应变片测的是<b>局部面内应变</b>，不是我们要的模态位移</td></tr>
+          <tr><td class="k">电容位移探头</td><td>nm 级、100 kHz、非接触的教科书答案</td><td>要求靶面<b>平坦且面积 ≥ 3× 探头直径</b>。Ø80 曲面做不到——除非动用 §7.1d 那只<b>底部 Ø6 mm 微平面</b>，但那只够装 1 个点</td></tr>
+          <tr><td class="k">标准涡流位移探头</td><td>0.1 μm、40 kHz、非接触，且铜是良导体</td><td>同样要求平坦靶面 ≥ 3× 探头径；曲面会把标定曲线拉弯。适合做<b>单点标定</b>，不适合 8 点阵列</td></tr>
+          <tr><td class="k">SQUID / 原子磁力计</td><td>fT 级磁场分辨，灵敏度之王</td><td>铜<b>非磁性</b>——球本身不产生磁信号，它能测的只有「球移动导致空间外磁场再分布」，量级远小于涡流耦合；且需 μ 金属屏蔽室</td></tr>
+          <tr><td class="k">高速相机 + DIC</td><td>全场、直观、完全非接触</td><td>分辨率约 1 μm（亚像素）且<b>帧率与像素数互斥</b>——抓宏观滚动绰绰有余，抓球壳模态不够。<b>但强烈建议还是留一台</b>：它是唯一能<em>直接看见</em>球有没有动的证据，§6 判据一、二就靠它</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="tip good reveal">
+      <div class="t">🎯 选型结论：换传感器最大的价值不是「更灵敏」，而是「更独立」</div>
+      <p>只看灵敏度，线圈（涡流耦合）已经够用，而且它有别的方案都没有的一个优势：<b>激励与拾取可以共用同一组线圈</b>——这恰好就是巴夏那台装置的本质（「激励导电球」和「测它的振动」是同一个场，不必另设探头）。</p>
+      <p>那为什么还要铺光学、声学两路？因为<b>系统误差才是本项目的真正瓶颈</b>（§5 与 §8 整章的主题）。同一只球、同一次位置移动，如果<b>位置签名真的存在</b>，它理应同时出现在三条<b>物理上互不相关</b>的链路上：</p>
+      <div class="fml">电磁（ΔL 涡流）　＋　光学（Δd 腔长）　＋　声学（Δp 声压）
+<span class="n">三者同时给出同一频移 → 一次性排除掉「这只是某一种仪器的耦合假象」这一整类解释</span></div>
+      <p>反过来，如果<b>只有线圈看得到、光学与声学都看不到</b>——那它更可能是线圈自身的漂移或互耦，而不是球的「位置频率」。</p>
+      <p style="color:var(--dim);font-size:13.6px"><b>第一版的建议配置</b>：<b>主</b> = 8 点线圈阵列（激励＋拾取一体）　＋　<b>辅</b> = 2 路光纤 F-P 或 SMI（独立光学验证）　＋　<b>旁证</b> = 1 台高速相机（看得见的运动）。传声器阵列留到第二阶段——等壁厚确实调到 60–230 Hz 之后，它会成为性价比最高的一路。</p>
     </div>
 
     <h3 class="reveal">7.3 开环扫描协议：不知道频率在哪，就全扫一遍</h3>
@@ -1358,6 +2097,555 @@ footer li{margin:5px 0;font-size:12.9px}
   </div>
 </section>
 
+<!-- ================= 11 展望 ================= -->
+<section id="fut">
+  <div class="wrap">
+    <div class="shead reveal">
+      <span class="snum">11 / OUTLOOK · 远景层</span>
+      <h2>展望未来：从「读一个位置签名」到「一张覆盖全球的运动场」<span class="s">此处起，不再有任何判据</span></h2>
+      <p class="sdesc">前面十章只做一件事——<b>把一个无限定的主张，压缩成一条可测、可否定的边界</b>。这一章反过来做：把边界重新打开，往前推演到它可能的尽头。推演的起点，必须是本页那台还没搭起来的装置。</p>
+    </div>
+
+    <div class="tip bad reveal">
+      <div class="t">⚠️ 本章性质声明（读前必看）</div>
+      <p><b>本章属于「第四层」——远景叙述层。</b>§10 定的三层分离纪律在此照旧生效。本章全部内容<b>不进入 §7 四道判据中的任何一道，也不构成任何验收标准</b>；其中涉及来源的部分，均为原始叙述者<b>未经主流科学界验证的自述</b>，本页只做结构整理，不做真伪判定。</p>
+      <p>一句话：<b>本页的实验能否成立，与本章一个标点都无关。</b>本章唯一的用途，是回答一个动机问题——假如物体真的带有「本有的空间地点频率」，那么这个频率被读出来之后，人类可能走向哪里。</p>
+    </div>
+
+    <h3 class="reveal">11.1　地基：巴夏那台装置读到的到底是什么</h3>
+    <p>远景不能凭空起跳，它必须踩在本页的实验上。所以先把这台装置在做什么，用一句工程语言说清：</p>
+
+    <div class="grid2 reveal">
+      <div class="card" style="border-left:3px solid var(--cyan)">
+        <h4 style="margin-top:0">装置在做什么</h4>
+        <p style="font-size:14px">一张 ≥10 ft 的超平桌子，一只空心导电球在其上静息（§3、§7.1）。外部声／电激励把球壳<b>激发</b>成一个灵敏的谐振体；若「位置」真是一个可读属性，那么<b>同一物体在不同位置，应给出可重复、可区分的频率读数</b>——这就是所谓「本有的空间地点频率」。</p>
+      </div>
+      <div class="card" style="border-left:3px solid var(--dim2)">
+        <h4 style="margin-top:0">它现在只走到哪一步</h4>
+        <p style="font-size:14px">三个限定必须同时记住：<b>① 单向</b>（只读，不写）；<b>② 单点</b>（一次一个位置、一个物体）；<b>③ 静态</b>（测稳恒读数，不测传递过程）。这三点决定了本章的五级台阶，第一级就是它，也仅仅是它。</p>
+      </div>
+    </div>
+
+    <div class="fml reveal">读（本页在做）：&nbsp;&nbsp;&nbsp; f_obs(Γ, r_obj) = f0 + δ(r_obj ; Γ)<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Γ = 激励场配置（声学 / 电学）<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 目标：δ ≠ 0，且 δ 只随 r_obj 变化 —— 不随被测材料变化<br><br>写（远景第一块砖）：&nbsp; r_obj := r_target &nbsp;&nbsp;←&nbsp;&nbsp; 用同一组球／线圈阵注入 −δ
+      <span class="n">同一台装置，正向是「读」，反向就是「写」。本页只做第一行；第二行是本章全部推演的分岔点。</span></div>
+
+    <p>关键在那条被反复强调的判据上：<b>δ 必须只随位置变化，不随材料变化</b>。材料无关，是「位置是空间属性」这句话唯一的可测指纹；而它同时是 §8 误差预算里最容易被温度、气流、声辐射力冒充的那一条。所以它只能被当作<b>待检验的判据</b>，不能被当作<b>支持结论的证据</b>。</p>
+
+    <h3 class="reveal">11.2　五级台阶：从「读一个点」到「一张网」</h3>
+    <p>把本章的推演拆成五级。每一级都以上一级的产出为输入，跳级即失去可解释性——这条纪律与 §7 完全一致，只是终点被推远了。</p>
+
+    <div class="svgbox reveal">
+      <svg viewBox="0 0 880 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="从读位置签名到全球运动场的五级台阶">
+        <line x1="20" y1="236" x2="860" y2="236" stroke-width="1.5" style="stroke:var(--line2)"/>
+        <line x1="181" y1="58" x2="181" y2="236" stroke-width="1.5" stroke-dasharray="5 5" style="stroke:var(--red)"/>
+        <text x="187" y="50" font-size="11.8" font-weight="700" style="fill:var(--red)">本页判据到此为止</text>
+
+        <rect x="33" y="202" width="140" height="34" rx="8" opacity=".22" style="fill:var(--cyan)"/>
+        <rect x="33" y="202" width="140" height="34" rx="8" fill="none" stroke-width="1.5" style="stroke:var(--cyan)"/>
+        <text x="45" y="195" font-size="12.5" font-weight="700" font-family="Consolas,monospace" style="fill:var(--cyan)">01 读</text>
+        <text x="45" y="256" font-size="13" font-weight="700" style="fill:var(--t-strong)">读出位置签名</text>
+        <text x="45" y="273" font-size="11.6" style="fill:var(--dim2)">单点 · 单向 · 静态</text>
+
+        <rect x="199" y="174" width="140" height="62" rx="8" opacity=".22" style="fill:var(--blue)"/>
+        <rect x="199" y="174" width="140" height="62" rx="8" fill="none" stroke-width="1.5" style="stroke:var(--blue)"/>
+        <text x="211" y="167" font-size="12.5" font-weight="700" font-family="Consolas,monospace" style="fill:var(--blue)">02 写</text>
+        <text x="211" y="256" font-size="13" font-weight="700" style="fill:var(--t-strong)">反向注入</text>
+        <text x="211" y="273" font-size="11.6" style="fill:var(--dim2)">最小瞬移单元</text>
+
+        <rect x="365" y="144" width="140" height="92" rx="8" opacity=".22" style="fill:var(--violet)"/>
+        <rect x="365" y="144" width="140" height="92" rx="8" fill="none" stroke-width="1.5" style="stroke:var(--violet)"/>
+        <text x="377" y="137" font-size="12.5" font-weight="700" font-family="Consolas,monospace" style="fill:var(--violet)">03 网格</text>
+        <text x="377" y="256" font-size="13" font-weight="700" style="fill:var(--t-strong)">坐标网格</text>
+        <text x="377" y="273" font-size="11.6" style="fill:var(--dim2)">运动网的底图</text>
+
+        <rect x="531" y="112" width="140" height="124" rx="8" opacity=".22" style="fill:var(--amber)"/>
+        <rect x="531" y="112" width="140" height="124" rx="8" fill="none" stroke-width="1.5" style="stroke:var(--amber)"/>
+        <text x="543" y="105" font-size="12.5" font-weight="700" font-family="Consolas,monospace" style="fill:var(--amber)">04 场网</text>
+        <text x="543" y="256" font-size="13" font-weight="700" style="fill:var(--t-strong)">场网覆盖</text>
+        <text x="543" y="273" font-size="11.6" style="fill:var(--dim2)">无导线 · 非接触</text>
+
+        <rect x="697" y="78" width="140" height="158" rx="8" opacity=".22" style="fill:var(--green)"/>
+        <rect x="697" y="78" width="140" height="158" rx="8" fill="none" stroke-width="1.5" style="stroke:var(--green)"/>
+        <text x="709" y="71" font-size="12.5" font-weight="700" font-family="Consolas,monospace" style="fill:var(--green)">05 态读写</text>
+        <text x="709" y="256" font-size="13" font-weight="700" style="fill:var(--t-strong)">态读写合一</text>
+        <text x="709" y="273" font-size="11.6" style="fill:var(--dim2)">质量·时间·意识</text>
+      </svg>
+      <div class="svgcap">图｜五级台阶。虚线以左是本页的范围，虚线以右是本章的推演——两者之间隔着的不是勇气，是四道判据</div>
+    </div>
+
+    <div class="steps reveal">
+      <div class="step">
+        <div class="h">第 01 级 · 读出位置签名（本页）</div>
+        <div class="d">用导电球读出 δ(r_obj)，并证明它<b>只随位置变、不随材料变</b>。产出：一条可复现的「位置 → 频率」曲线，以及一个可信的负结果上限（§7 判据 ① ②）。</div>
+      </div>
+      <div class="step">
+        <div class="h">第 02 级 · 反向写入（最小瞬移单元）</div>
+        <div class="d">同一组球／线圈反向注入 −δ，让物体的位置参数从 r₁ 变到 r₂。<b>这是「瞬移」能被拆解出的最小单元：一个物体、一段距离、一次单项操作。</b>产出：位移是否随注入量单调。</div>
+      </div>
+      <div class="step">
+        <div class="h">第 03 级 · 建立坐标网格</div>
+        <div class="d">把「位置 → 频率」的映射固化成一张覆盖全部目标坐标的网格，并规定网格点之间的插值与误差预算。<b>这张网格就是「全球运动网」的底图</b>——没有它，瞬移只是单点魔术；有了它，瞬移才是交通。</div>
+      </div>
+      <div class="step">
+        <div class="h">第 04 级 · 场网覆盖</div>
+        <div class="d">网格由若干分布式发生器共同维持，做到<b>无导线、非接触、全球可达</b>。这一级对应原叙述里的「太空中的几个发生器」。难点全在一致性：多个源重叠区的相位与幅值必须可仲裁，否则坐标会漂。</div>
+      </div>
+      <div class="step">
+        <div class="h">第 05 级 · 态读写合一</div>
+        <div class="d">不再只搬「位置」这一个参数，而是一起读写<b>质量、时间、内部态</b>。前述叙述里所有「不止于搬运」的功能（冷焊、无创手术、意识存储），都落在这一级。<b>越到后面，可证伪性越低——这正是本章必须自标「非判据层」的原因。</b></div>
+      </div>
+    </div>
+
+    <h3 class="reveal">11.3　参照：一个与本页互不相干的自述来源</h3>
+    <p>本章的远景术语取自一份公开的中文自述：<b>张祥前《果克星球奇遇》</b>（1985 年夏，时年 19 岁，安徽庐江；他自述被带到一颗名为「果克星」的星球生活一月，返回后长期撰文宣传其所得，并公开过一个「统一场论」与「人工场扫描」的技术图景）。</p>
+
+    <div class="tip warn reveal">
+      <div class="t">🔍 引用纪律：与本页对特斯拉那条线索的处理方式完全一致</div>
+      <p>§10 已经示范过做法：<b>不判定真伪，只取其中可被工程化的那部分描述。</b>张祥前的这份自述至今<b>未获主流科学界验证</b>，其「统一场论」也未被同行评议接受。本页因此只做两件事：把它当作<b>一个远景术语的来源</b>予以标注；以及，在 §11.7 指出它与巴夏主张之间一个值得注意的重合点。</p>
+      <p>参照来源：张祥前官网的实验指引（<a href="https://www.unifiedfield.info/theory-1" target="_blank" rel="noopener">unifiedfield.info</a>，含其自称的可复现演示与「邀请独立复现或反驳」的声明）。<b>本页不为其内容背书。</b></p>
+    </div>
+
+    <p>他笔下与本章台阶结构直接对应的，是<b>两大网络</b>——它们正是「全球人工运动场扫描技术」的实际运转形态：</p>
+
+    <div class="grid2 reveal">
+      <div class="card" style="border-left:3px solid var(--blue)">
+        <h4 style="margin-top:0">全球运动网 · 管「物」</h4>
+        <ul style="font-size:14px">
+          <li>负责传递物体，<b>包括人的移动</b>；自述速度为光速，性质为瞬移</li>
+          <li>作用范围<b>限于一颗星球</b>；星球之间改用飞碟</li>
+          <li>设备是<b>分布在太空中的少数几台人工场发生器</b>（一说九个），不在地面</li>
+          <li>使用方式是<b>发出请求</b>（意念或手势）→ 系统确认身份 → 场照射 → 到达；不自带任何交通工具</li>
+          <li>自述称系统有<b>准入判定</b>：会拒绝违法请求</li>
+        </ul>
+      </div>
+      <div class="card" style="border-left:3px solid var(--violet)">
+        <h4 style="margin-top:0">全球信息网 · 管「信」</h4>
+        <ul style="font-size:14px">
+          <li>远程、<b>非接触</b>地读取全球每一个人的大脑意识信息</li>
+          <li>也能远程、非接触地<b>把信息写入</b>每一个大脑</li>
+          <li>以<b>虚拟数字人</b>形式提供服务：为每个人分配一个客服</li>
+          <li>传输介质是<b>空间本身（场）</b>，而非电磁波或光缆</li>
+          <li>自述称信息存储于空间，容量接近无限</li>
+        </ul>
+      </div>
+    </div>
+
+    <p style="color:var(--dim);font-size:13.8px"><b>结构上的注意点</b>：这两个网络恰好对应本章台阶的两条支线——运动网 = 台阶 02→04（位置读写），信息网 = 台阶 05 的一个特例（把「态」具体化为「意识态」）。<b>也就是说，原叙述的技术骨架，与本页推演出的台阶是能对齐的。</b>这不代表它正确，只代表这套远景描述并非随意拼凑，而是有一个可被拆解的内部结构。</p>
+
+    <h3 class="reveal">11.4　全球人工运动场扫描技术：功能详解</h3>
+    <p>下面按「它宣称能做到什么」逐项展开，共七类。<b>每项后的方括号是它在 §11.2 五级台阶中对应的位置</b>，仅作结构对齐，<b>不代表任何一项已被实现</b>。所有条目均出自前述自述，本页不为其真实性作任何担保。</p>
+
+    <div class="grid3 reveal">
+      <div class="card">
+        <div class="tag t-info">类 1 · 定位与成像</div>
+        <h4>把「看见」变成一次扫描</h4>
+        <ul style="font-size:13.6px">
+          <li><b>全球遥视／透视</b>——锁住远处目标处的光线成像，可穿墙，可看入房间内部〔03〕</li>
+          <li><b>三维立体虚像</b>——远程在任意地点生成三维影像与声音〔03〕</li>
+          <li><b>分子原子级识别</b>——对内部结构精确定位、识别、批量操作〔01〕</li>
+          <li><b>地球内部与深空探测</b>——自述可用于预测地震、探测比电子光子更小的结构〔01〕</li>
+          <li><b>超光速通讯</b>——以空间为介质，可穿透任何物体〔04〕</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="tag t-mid">类 2 · 瞬移与运动</div>
+        <h4>把「运输」变成一次赋值</h4>
+        <ul style="font-size:13.6px">
+          <li><b>全球瞬移</b>——人与不太大的物品一秒内出现在全球任意地点，不带任何交通工具〔04〕</li>
+          <li><b>零质量光速飞行</b>——质量减到零即突然以光速运动；因碰撞力为零，起降反而安全〔02〕</li>
+          <li><b>准激发穿墙</b>——质量接近零时可穿墙而过，且人与墙都完好无损〔02〕</li>
+          <li><b>空中悬浮</b>——由运动网维持悬停、云中漫步〔04〕</li>
+          <li><b>工业级搬运</b>——极强的批量搬运能力，是后续一切制造功能的前提〔04〕</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="tag t-ok">类 3 · 能量输送</div>
+        <h4>把「电能」升级成「场能」</h4>
+        <ul style="font-size:13.6px">
+          <li><b>无导线全球供电</b>——经真空非接触地把能量远距离送给接收者，不需要电线〔04〕</li>
+          <li><b>场能替代电能</b>——发生器本身不创造能量，只把电能／核能／太阳能转化为场能〔04〕</li>
+          <li><b>中心化供能</b>——少设备服务全球，产品与设备因此可虚拟化〔04〕</li>
+          <li><b>汇聚太阳能</b>——一平米接收上万平方米的太阳能量；反之亦可削减某地日照以调节天气〔04〕</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="tag t-v">类 4 · 时空改写</div>
+        <h4>把「时空」当成可写参数</h4>
+        <ul style="font-size:13.6px">
+          <li><b>改变物体基本量</b>——对物体照射即可改变其质量、电荷、速度、位置、温度〔02〕</li>
+          <li><b>局部时间改写</b>——所谓「时空冰箱」：里面过一秒，外面过一年，且方向可反〔05〕</li>
+          <li><b>空间压缩存储</b>——认为任意一处空间含全宇宙信息，故可用空间本身存储与传输信息〔05〕</li>
+          <li><b>局部空间伸缩</b>——影响局部空间的长度，进而影响其中发生事情的时间长短〔05〕</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="tag t-no">类 5 · 医疗与生命</div>
+        <h4>把「诊断—手术—修复」合并成一次扫描</h4>
+        <ul style="font-size:13.6px">
+          <li><b>无创体内手术</b>——不开刀即可从人体内部移走物体，外部组织不受影响〔01/02〕</li>
+          <li><b>瞬间治愈</b>——自述可快速彻底治疗传染病、癌症、高血压、糖尿病、老年痴呆等〔05〕</li>
+          <li><b>塑形与整容</b>——减肥、整容、体型雕塑，自述为分子级重排、无痛〔05〕</li>
+          <li><b>意识数字化</b>——读取、存储、安装意识，进而换身体、长生、建人工身体工厂〔05〕</li>
+          <li><b>远程生理支持</b>——远程获得血氧，在水下或泥浆中不致窒息〔04〕</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="tag t-mid">类 6 · 制造与工程</div>
+        <h4>把「加工」变成一次叠合</h4>
+        <ul style="font-size:13.6px">
+          <li><b>超大规模冷焊</b>——两物体进入准激发态后可无阻力互相嵌入，工程速度与成本各改善百倍量级〔02〕</li>
+          <li><b>物质转化</b>——一种物质可转化为另一种（于是贵金属失去稀缺性）〔05〕</li>
+          <li><b>信息泥造物</b>——在两大网络远程照射下瞬间构造万物〔05〕</li>
+          <li><b>虚拟建筑</b>——场平面直接充当墙体，虚拟建筑跨度几十公里而无需一根柱子〔03〕</li>
+        </ul>
+      </div>
+
+      <div class="card" style="grid-column:1/-1">
+        <div class="tag t-info">类 7 · 通讯与社会</div>
+        <h4>把「获取」变成一次下载</h4>
+        <ul style="font-size:13.6px">
+          <li><b>大脑联网</b>——知识直接扫描入脑，不必授课，故传统学校消失；但自述称单次注入量不宜过大，否则大脑承受不了〔05〕</li>
+          <li><b>虚拟数字人</b>——为每个单位、每个个人分配客服与代言人〔05〕</li>
+          <li><b>意念翻译</b>——翻译以意念形式直接进入大脑，可辅助声音、图像、视频；亦可与动物勉强沟通〔05〕</li>
+          <li><b>全球跟踪保护</b>——两大网络时刻伴随每一个人，故暴力与谋杀几乎无法发生，大量法律随之消失〔04〕</li>
+          <li><b>身份远程验证与纯数字货币</b>——无需携带任何实物即可完成支付与收款〔05〕</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3 class="reveal">11.5　把远景翻译回本页：每一项的「最小前身」是什么</h3>
+    <p>这一节是本章唯一有实际用处的部分。远景再大，也必须回答一个问题：<b>它最原始的那一步，落在本页的哪条判据上？</b>下表把 §11.4 的功能逐条折回。任何一项在前身栏里写不出东西的，就是本页管不到的——只能如实标注为「无」。</p>
+
+    <div class="tw reveal">
+      <table>
+        <thead><tr><th>远景功能</th><th>它要求的最小可测现象</th><th>本页哪一条是它的前身</th><th>现状</th></tr></thead>
+        <tbody>
+          <tr><td class="k">全球遥视／锁光成像</td><td>一个物体能被远处<b>非接触地读出状态</b></td><td>§7 判据 ① 规格达标（先把「读」的能力建起来）</td><td><span class="tag t-no">未开始</span></td></tr>
+          <tr><td class="k">全球瞬移</td><td><b>路程时间与距离无关</b>（详见 §11.6）</td><td>§7 判据 ③ 主动响应：<b>关掉信号位移即消失</b></td><td><span class="tag t-no">未开始</span></td></tr>
+          <tr><td class="k">穿墙／零质量态</td><td>物体在极端态下与容器<b>无动量交换</b></td><td>§8「接触点／Q 泄漏」项——那正是动量交换的记账处</td><td><span class="tag t-no">未开始</span></td></tr>
+          <tr><td class="k">无导线场能供电</td><td>非接触能量转移可被<b>计量并归属</b></td><td>§8「工频干扰」与「电磁泄漏」两项（先学会把它测干净）</td><td><span class="tag t-no">未开始</span></td></tr>
+          <tr><td class="k">无创体内手术</td><td>毫米级<b>非接触力／位移可控</b></td><td>§7 判据 ①：平面度与滚动阻力本质都是位移计量</td><td><span class="tag t-no">未开始</span></td></tr>
+          <tr><td class="k">冷焊／物质转化</td><td>两固体在无热输入下<b>自发互嵌</b></td><td>§8「温度（机械模）」项——需先排除热致变形</td><td><span class="tag t-no">未开始</span></td></tr>
+          <tr><td class="k">意识读写</td><td>非接触读出并回写神经活动</td><td><b>无</b>——本页不涉及，且此项属第三、四层叙事</td><td><span class="tag t-mid">本页范围外</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p style="color:var(--dim);font-size:13.8px">注意最后一行的写法：<b>写不出前身，就写「无」。</b>这不是谦虚，是纪律——一个功能如果在最小尺度上没有对应的可测现象，那么它在工程上就还不存在，无论叙述得多完整。</p>
+
+    <h3 class="reveal">11.6　本章唯一可交付的硬东西：一条判据</h3>
+    <p>远景里最诱人的是瞬移。而瞬移恰好可以用一句<b>不需要知道机制</b>的话来检验——这也是本页能真正贡献给远景的、唯一一条硬判据：</p>
+
+    <div class="fml reveal">
+机械搬运（火箭 / 磁悬浮 / 气动 / 弹射 …）：   t = d / v        →   dt/dd &gt; 0
+真瞬移（若存在）：                            t ≈ const        →   dt/dd ≈ 0
+
+判别的不是「快」，是「斜率」。
+      <span class="n">测法：同一物体，在 1 m / 10 m / 100 m 三档距离上重复同一操作，记录路程时间。任何已知搬运手段的 dt/dd 都严格大于零；哪怕用加速去掩盖，也只能压低截距，压不平凡斜率。</span>
+      <span class="n">这条判据的好处：它不要求你相信任何理论，只要求你画出一条直线。而一条直线的斜率，是全世界都能复算的东西。</span>
+    </div>
+
+    <div class="tip good reveal">
+      <div class="t">🧭 为什么这条判据比「瞬移」本身更重要</div>
+      <p>因为它把「瞬移」从一个<em>状态词</em>变成了一个<em>函数性质</em>。状态词无法证伪（对方永远可以说「条件没满足」），函数性质可以——<b>只要斜率不为零，瞬移就没发生；只要斜率为零，就发生了某种现有物理无法解释的事</b>。这正是 §7 判据 ③「关掉信号位移即消失」在同一条思路上的延长线。</p>
+    </div>
+
+    <h3 class="reveal">11.7　一个值得记录的重合点（不是证据）</h3>
+    <p>整理本章材料时发现一件有意思的事：<b>两个来源毫无关系，却给出了同一个可检验特征。</b></p>
+
+    <div class="tw reveal">
+      <table>
+        <thead><tr><th>可检验特征</th><th>巴夏（2017 传讯）</th><th>张祥前（1985 自述／官网实验指引）</th><th>同源？</th></tr></thead>
+        <tbody>
+          <tr><td class="k">材料无关响应</td><td>「位置签名」不依赖被测物材质，只随位置变</td><td>其官网实验指引称：交替电磁装置可在局部产生涡旋区，<b>有机组织、金属、植物、纸张、陶瓷、绝缘板均出现响应</b></td><td><span class="tag t-info">否</span></td></tr>
+          <tr><td class="k">以电磁手段搅动</td><td>声／电激励空心导电球</td><td>用交替电磁装置制造局部区域</td><td><span class="tag t-info">否</span></td></tr>
+          <tr><td class="k">位置可被改写</td><td>瞬移＝位置的重新赋值</td><td>全球运动网＝按坐标瞬移物体</td><td><span class="tag t-info">否</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="tip bad reveal">
+      <div class="t">⚠️ 这条重合必须被正确地使用</div>
+      <p><b>两个未经证实的来源互相重合，仍然只是两个未经证实的来源。</b>它不构成任何证据，也不改变 §10 的边界声明。它的价值只有一个方向：</p>
+      <p>它把「该测什么」从一个模糊的口号（「测位置频率」）变成一个具体参数——<b>材料无关性</b>。而这一条恰好是 §8 误差预算里最容易被温度、气流、声辐射力冒充的那一项。所以正确的用法是：<b>把它设计成判据，而不是把它当成证据。</b>一旦反向使用（「两个来源都对上了，所以是真的」），本页的全部纪律当场作废。</p>
+    </div>
+
+    <h3 class="reveal">11.8　回到工程</h3>
+    <div class="tip good reveal" style="border-left-width:4px">
+      <div class="t" style="font-size:15.5px">🧭 本章的收口</div>
+      <p style="font-size:15px">§11.4 列了七类、三十余项功能，读起来像一份科幻工程目录。<b>但其中没有任何一项进入本页的判据。</b>本页的判据仍然只有 §7 那四道：规格达标、基线可复现、主动响应、外部复现。</p>
+      <p style="font-size:15px">所以这张远景图的作用只有一个，而且很小：<b>回答「为什么值得把那只 Ø80 mm 的铜球真的做出来」。</b>因为它左边连着四道能落地的判据，右边连着一条斜率必须为零的直线——而这两端之间，目前仍然是空的。</p>
+      <p style="font-size:15px;color:var(--dim)">远景不缩短距离，只告诉你距离通向哪里。<b>该做的第一件事，仍然是那张桌子、那只球、那 30 分钟基线。</b></p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ================= 12 战略价值 ================= -->
+<section id="strat">
+  <div class="wrap">
+    <div class="shead reveal">
+      <span class="snum">12 / STRATEGY · 战略层</span>
+      <h2>这笔账有多大：如果那只球真的「换个位置就换个频率」<span class="s">把价值说在量级上，不说在情绪上</span></h2>
+      <p class="sdesc">前面十一章回答「怎么做、怎么验」。这一章换一个提问者：<b>如果它是真的，谁会因此重算资产负债表？</b>——给决策者的一份只讲量级的账本。所有数字都标出处，所有推断都标前提。</p>
+    </div>
+
+    <div class="tip bad reveal">
+      <div class="t">⚠️ 本章前提声明（与 §11 同级，读前必看）</div>
+      <p><b>本章与 §11 同属「第四层」——远景／战略叙述层，不进入 §7 四道判据中的任何一道，也不构成验收标准、投资建议或政策建议。</b></p>
+      <p>本章全部推演，建立在<b>一个尚未验证的假设</b>上：物体在不同空间位置会给出可重复、可区分的频率读数（§4.4：这类实验至今无人做过）。只要这条被否定，本章所有数字<b>同时归零</b>——而本页的实验资产（方法论、工艺、判据）<b>一条都不会损失</b>。</p>
+      <p>市场数字取自 2025–2026 年的公开研报，只用于<b>量级参照</b>；不同机构口径相差可达 30% 以上，不作精确引用。</p>
+    </div>
+
+    <h3 class="reveal">12.1　把账算在同一个坐标系里：那个从来不会归零的「b」</h3>
+    <p>凡是「把东西从这里弄到那里」的行业，成本都能拆成两项——这一条对快递、外卖、航空、手术耗材，甚至对给病人插一根胃管，都同样成立：</p>
+
+    <div class="fml reveal">c = a + b · d<br>&nbsp;&nbsp;a&nbsp;&nbsp;&nbsp;= 与距离无关的固定项（设备 / 装卸 / 包装 / 人力 / 许可）<br>&nbsp;&nbsp;b·d = 距离项（燃油·电费 / 折旧 / 时间价值 / 损耗 / 保险）<br><br>传统物流与交通的百年史，一直在把 b 变小（更大的船、更省油的机、更高的装载率）<br>但没有任何一项技术，让 b = 0
+      <span class="n">而本页 §11.6 的那条判据是：真瞬移的 dt/dd ≈ 0。把时间换成钱，同一个命题就是 dc/dd ≈ 0 —— 成本对距离的导数也为零。</span></div>
+
+    <div class="tip reveal">
+      <div class="t">🔁 这一句是本章最重要的转换</div>
+      <p>它意味着瞬移不是「更快的快递」——那只是把 b 变小；它是<b>把 b·d 这一整项删掉</b>。于是行业不会是被「改良」，而是被<b>重新定价</b>：谁的账本里含 b·d，谁的成本就要重算。</p>
+    </div>
+
+    <div class="svgbox reveal">
+      <svg viewBox="0 0 880 340" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="成本与距离的关系曲线：传统方式的斜率永远为正，瞬移的斜率趋近于零">
+        <rect x="110" y="60" width="680" height="230" style="fill:var(--card2);stroke:var(--line)"/>
+        <g style="stroke:var(--line);stroke-width:1">
+          <line x1="110" y1="117.5" x2="790" y2="117.5"/>
+          <line x1="110" y1="175" x2="790" y2="175"/>
+          <line x1="110" y1="232.5" x2="790" y2="232.5"/>
+          <line x1="280" y1="60" x2="280" y2="290"/>
+          <line x1="450" y1="60" x2="450" y2="290"/>
+          <line x1="620" y1="60" x2="620" y2="290"/>
+        </g>
+        <rect x="399" y="60" width="391" height="230" style="fill:var(--cyan);opacity:.07"/>
+        <g style="stroke:var(--line2);stroke-width:1.6">
+          <line x1="110" y1="60" x2="110" y2="290"/>
+          <line x1="110" y1="290" x2="790" y2="290"/>
+        </g>
+        <line x1="110" y1="275" x2="790" y2="70" style="stroke:var(--amber);stroke-width:2.4"/>
+        <line x1="110" y1="190" x2="790" y2="185" style="stroke:var(--cyan);stroke-width:2.4"/>
+        <line x1="399" y1="188" x2="399" y2="290" style="stroke:var(--red);stroke-width:1.4;stroke-dasharray:5 4"/>
+        <circle cx="399" cy="188" r="5.5" style="fill:var(--red)"/>
+        <text x="106" y="52" text-anchor="end" style="fill:var(--dim);font-size:12.5px">单位成本 c ↑</text>
+        <text x="786" y="283" text-anchor="end" style="fill:var(--dim);font-size:12.5px">距离 d →</text>
+        <text x="150" y="104" style="fill:var(--amber);font-size:13px;font-weight:700">传统物流 · 交通</text>
+        <text x="150" y="123" style="fill:var(--dim);font-size:12px">c = a + b·d，b 永远大于 0</text>
+        <text x="415" y="82" style="fill:var(--cyan);font-size:12px;font-weight:700">瞬移优势区</text>
+        <text x="150" y="246" style="fill:var(--cyan);font-size:13px;font-weight:700">瞬移（远景）</text>
+        <text x="150" y="265" style="fill:var(--dim);font-size:12px">c = a′ + b′·d，b′ → 0</text>
+        <text x="415" y="232" style="fill:var(--red);font-size:12.5px">交叉点：越过它，距离越远、优势越大</text>
+        <text x="110" y="306" text-anchor="middle" style="fill:var(--dim2);font-size:11.5px">室内</text>
+        <text x="280" y="306" text-anchor="middle" style="fill:var(--dim2);font-size:11.5px">同城</text>
+        <text x="450" y="306" text-anchor="middle" style="fill:var(--dim2);font-size:11.5px">跨省</text>
+        <text x="620" y="306" text-anchor="middle" style="fill:var(--dim2);font-size:11.5px">洲际</text>
+        <text x="790" y="306" text-anchor="middle" style="fill:var(--dim2);font-size:11.5px">行星际</text>
+      </svg>
+      <div class="svgcap">成本—距离曲线：传统方式的斜率 b 永远为正，瞬移的 b′ 趋近于零。<b>交叉点之后，距离越远，两者的差距越大</b>——这正是「距离不再收费」的图形含义。</div>
+    </div>
+
+    <h3 class="reveal">12.2　六个场景：从桌上的第一厘米，到行星之间的最后一米</h3>
+    <p>您点出的每一项——同频冷焊、食物直达、无创手术、瞬移物流、城市级瞬移——都不是各自独立的幻想，而是<b>同一台装置从「单向读数」升级到「双向写入」之后，沿同一个方向排开的一列台阶</b>。摊平成一张表就是这样：</p>
+
+    <div class="tw reveal">
+      <table>
+        <thead>
+          <tr><th style="width:48px">级</th><th style="width:120px">场景</th><th>一句话读法</th><th>被它替换掉的东西</th><th style="width:150px">依赖哪一级台阶</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="k">S0</td>
+            <td class="k">同频冷焊</td>
+            <td>给两件物体施加<b>同一个空间地点频率</b>，等于把它们放进「同一个地方」——原子之间不再有势垒，直接成键。这就是您说的「两种东西融在一起」。</td>
+            <td>焊接 / 钎焊 / 胶粘 / 铆接 / 螺栓；<b>异种材料连接</b>的全部工艺路线</td>
+            <td>写（第 2 级）＋ 定位精度</td>
+          </tr>
+          <tr>
+            <td class="k">S1</td>
+            <td class="k">食物直达</td>
+            <td>把「投送」和「摄入」合成一步：食物直接出现在胃里，或营养精微直接进入肠道与血管。</td>
+            <td>进食本身；管饲与饲管；肠内营养泵与配方粉；部分静脉营养</td>
+            <td>写 ＋ 活体内定位</td>
+          </tr>
+          <tr>
+            <td class="k">S2</td>
+            <td class="k">无创手术</td>
+            <td>把「进入」和「切除」合成一步：病灶被移出体外，器械与药物被移入体内，体表不留创面。</td>
+            <td>开刀与腔镜手术、麻醉、住院床位、术后护理与并发症处理</td>
+            <td>写 ＋ 活体安全</td>
+          </tr>
+          <tr>
+            <td class="k">S3</td>
+            <td class="k">瞬移物流</td>
+            <td>把「运输」和「仓储」合成一步：货不再需要在路上，也不再需要在库里——<b>仓库这个设施本身失去存在理由</b>。</td>
+            <td>干线运输、仓储、库存占用、包装、货损与货运保险</td>
+            <td>网格（第 3 级）</td>
+          </tr>
+          <tr>
+            <td class="k">S4</td>
+            <td class="k">城市级瞬移</td>
+            <td>把「通勤」和「出行」合成一步：从 A 到 B 不再经过路。</td>
+            <td>城市公交、轨道交通、网约车、私家车通勤、机场与安检</td>
+            <td>场网（第 4 级）＋ 生命体安全</td>
+          </tr>
+          <tr>
+            <td class="k">S5</td>
+            <td class="k">行星／星际级</td>
+            <td>把「发射」和「在轨机动」合成一步：入轨不再是工程难题。</td>
+            <td>运载火箭、上面级、部分在轨推进与再入</td>
+            <td>态读写（第 5 级）</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="tip warn reveal">
+      <div class="t">⚠️ S0 这一条必须补一句限定</div>
+      <p>现役工程的「冷焊」是真的，但条件很窄：<b>同种或高度相容的金属 ＋ 洁净表面（去除氧化膜）＋ 高真空 ＋ 足够接触压力</b>。NASA 伽利略号木星探测器的主天线，就是因为冷焊粘死而未能完全展开，代价是传讯速率从 134 kbit/s 掉到约 1 kbit/s。</p>
+      <p>上表 S0 写的是它的<b>推演式延伸</b>：若「同一个位置频率」能够替代「同一种材料 ＋ 洁净 ＋ 高压」，那么限制条件里的前几项可以同时撤销，冷焊就从「航天设计事故」变成「任意两件物体之间的连接工具」。<b>这是推演，不是已验证事实。</b></p>
+    </div>
+
+    <h3 class="reveal">12.3　经济账目对比：哪些科目会被重定价</h3>
+    <p>下表把 S0–S5 各自对应的产业，换算到可比较的刻度上。左列是<b>今天存在的会计科目</b>，不是想象出来的市场。</p>
+
+    <div class="tw reveal">
+      <table>
+        <thead>
+          <tr><th style="width:180px">被替换的科目</th><th style="width:210px">2025 年规模（公开研报口径）</th><th>瞬移的替代逻辑</th><th style="width:170px">近期可替代份额（保守）</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="k">焊接与连接<br>（设备＋焊材）</td>
+            <td>全球 ≈ <b>US$271–311 亿</b><br>（约 ¥1,900–2,200 亿）</td>
+            <td>同频冷焊：原子级一次成键，无热影响区、无填充材料、可跨材料种类连接</td>
+            <td>高 —— 精密件、异种材料、微连接最先被拿走</td>
+          </tr>
+          <tr>
+            <td class="k">肠内营养 / 管饲</td>
+            <td>全球 ≈ <b>US$87–133 亿</b></td>
+            <td>营养直接送到胃或肠道血管，撤掉饲管、泵与配方粉</td>
+            <td>中高 —— 医院与居家管饲几乎全可替代</td>
+          </tr>
+          <tr>
+            <td class="k">外科手术与介入</td>
+            <td>手术机器人全球 ≈ <b>US$92 亿</b>；外科整体在千亿美元量级</td>
+            <td>无创：把病灶移出、把器件与药物移入，无需切口</td>
+            <td>中 —— 先吃活检、取栓、取石、定点给药</td>
+          </tr>
+          <tr>
+            <td class="k">中国社会物流总费用</td>
+            <td><b>¥19.5 万亿</b>（2025，＝ GDP 的 13.9%）<br>其中运输 ¥10.6 万亿、保管 ¥6.5 万亿</td>
+            <td>删掉运输费用里的距离项，与保管费用里的库存项</td>
+            <td>低 → 高 —— 先高值小体积（芯片、药品、贵金属、生物制品）</td>
+          </tr>
+          <tr>
+            <td class="k">全球航空客运</td>
+            <td>≈ <b>US$9,790 亿–1.007 万亿</b>（IATA，2025）</td>
+            <td>中短程航线被城际瞬移吃掉客座</td>
+            <td>中长期 —— 1,500 km 以内先失守</td>
+          </tr>
+          <tr>
+            <td class="k">铁路客运 ＋<br>城市公共交通</td>
+            <td>铁路客运 ≈ US$2,607–3,167 亿；<br>城市公交／出租／网约车 ≈ US$2,123–2,771 亿</td>
+            <td>通勤与市内机动不再需要车辆与路网</td>
+            <td>远期</td>
+          </tr>
+          <tr>
+            <td class="k">全球新车市场<br>（含后市场）</td>
+            <td>新车 ≈ <b>US$2.5 万亿</b>；全生命周期 ≈ US$4–4.5 万亿</td>
+            <td>通勤需求消失，私家车从「必需品」退回「爱好品」</td>
+            <td>远期 —— 不是被替代，是需求基数萎缩</td>
+          </tr>
+          <tr>
+            <td class="k">交通设备制造</td>
+            <td>≈ <b>US$4.2 万亿</b>（2025）</td>
+            <td>同上，整条产业链的订单基数被改写</td>
+            <td>远期</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="tip warn reveal">
+      <div class="t">📐 这份账目怎么读：三个限定</div>
+      <p><b>① 不能简单相加。</b>上表科目互有重叠（新车属于交通设备、城市交通属于客运服务），直接求和会重复计算。只取互不重叠的四类——<b>物流 ＋ 客运 ＋ 城市机动 ＋ 交通设备</b>——量级也在 <b>US$8–10 万亿／年</b>，约合全球 GDP 的 <b>8%–10%</b>。</p>
+      <p><b>② 这是 TAM，不是收入。</b>它衡量的是「可能被重新定价的存量总盘」，既不是本项目的营收，也不是投资回报。</p>
+      <p><b>③ 它一定带反面。</b>任何一项被替换，都意味着对应行业的<b>既有资产要减记</b>——船队、机场、仓储园区、焊工的职业证书。决策者要同时看到「价值创造」和「资产减记」这两栏，它们是同一次重定价的一体两面。</p>
+    </div>
+
+    <h3 class="reveal">12.4　企业家视角：第一笔钱不在「瞬移」，在「那把尺」</h3>
+    <p>一个常见误判是：等效应被验证了，再成立一家「瞬移物流公司」。这个顺序是反的。回顾两项基础技术真实的商业化路径：</p>
+
+    <div class="grid2 reveal">
+      <div class="card" style="border-left:3px solid var(--cyan)">
+        <h4 style="margin-top:0">先有尺，后有路</h4>
+        <p style="font-size:14px"><b>GPS</b> 的第一桶金不是导航 App，而是<b>原子钟与测地基准</b>；<b>激光</b>的第一桶金不是光通信，而是<b>测距与准直</b>。任何「改动坐标」的技术，最先卖出去的永远是<b>测量它的能力</b>。</p>
+      </div>
+      <div class="card" style="border-left:3px solid var(--violet)">
+        <h4 style="margin-top:0">三段可落地的商业路径</h4>
+        <p style="font-size:14px"><b>① 计量服务</b>——卖「证据」：可复现的第三方测量与数据服务；<b>② 场写入设备</b>——卖「第一台能改位置频率的机器」；<b>③ 网络运营</b>——卖「接入」。</p>
+        <p style="font-size:14px;color:var(--dim)">顺序不可颠倒，跳级即失去定价权。</p>
+      </div>
+    </div>
+
+    <div class="tip good reveal">
+      <div class="t">💡 最不起眼的切入点，门槛往往最低</div>
+      <p>六个场景里，真正<b>今天就有付费方</b>的，是看起来最小的一项——<b>S0 同频冷焊</b>。理由很实在：它不需要「运人」，不需要过活体安全审批，也不需要一张覆盖城市的网；它只需要<b>两件东西被放到同一个位置频率上</b>。</p>
+      <p>而在现役工业里，<b>异种材料连接</b>（铝—铜、钛—钢、金属—陶瓷）长期是最贵、最不可靠、专利最密集的一环。这是一个<b>效应一旦成立就立刻有客户</b>的入口。</p>
+    </div>
+
+    <h3 class="reveal">12.5　国家视角：为什么这件事「现在做」的成本最低</h3>
+    <div class="grid3 reveal">
+      <div class="card">
+        <h4 style="margin-top:0">① 量具已经在手</h4>
+        <p style="font-size:14px">这一条最容易被忽略：<b>引力红移的比对能力，中国已有世界级装置</b>——光钟、超稳激光、隔振平台、时频比对链路（即 §4.1 里 NIST／JILA 那一套的国内对应能力）。</p>
+        <p style="font-size:14px">换句话说：<b>这不需要新增大科学装置，只需要在存量装置上换一个问题。</b>成本曲线与新建一台完全不同。</p>
+      </div>
+      <div class="card">
+        <h4 style="margin-top:0">② 标准的窗口期</h4>
+        <p style="font-size:14px">「位置频率」如果成为一项可计量的量纲，<b>定义它的一方长期收租</b>——如同米、秒、开尔文的历史。这类基础量纲的窗口期通常只有 <b>5–10 年</b>：一旦国际计量体系定稿，后来者只能付费使用。</p>
+      </div>
+      <div class="card">
+        <h4 style="margin-top:0">③ 不可及 → 可及</h4>
+        <p style="font-size:14px">深海、太空、灾区、人体内部——这些地方今天的问题都是<b>「送不进去」</b>。一旦「运输问题」变成「频率问题」，应急、国防、航天、医疗这四类作业书<b>同时被改写</b>。这是任何单一产业技术都给不出的杠杆。</p>
+      </div>
+    </div>
+
+    <h3 class="reveal">12.6　三条必须与本章一起读的反面</h3>
+
+    <div class="tip bad reveal">
+      <div class="t">⚠️ 一、效应一个字都还没被验证</div>
+      <p>本页 §7 的第一道判据是「规格达标」——<b>把两只 Ø80×0.4 的球做出来，把基线稳上三十分钟</b>。这一道都还没过。本章所有数字的性质是<b>「如果」</b>，不是「将要」。</p>
+    </div>
+
+    <div class="tip warn reveal">
+      <div class="t">⚠️ 二、价值判断不能替代测量</div>
+      <p>Allais 视差摆的效应被报告了 70 年仍未收敛，根因是<b>没有盲测、没有预注册、没有误差预算表</b>（§4.6）；Betz 那颗「会自己滚的金属球」，最终被解释成一颗球阀。<b>两次教训的共同点是：先有结论，再去找测量。</b></p>
+      <p>本章的账目之所以敢写，恰恰是因为它被放在 §7 的四道判据<b>之外</b>——它不被允许进入任何验收标准。</p>
+    </div>
+
+    <div class="tip reveal">
+      <div class="t">⚠️ 三、本章的失败不会损失任何东西</div>
+      <p>这是本页最值得强调的一条：<b>即使效应最终被否定，本项目产出的工艺规范、误差预算、变量矩阵、四道判据，对任何后续精密测量实验都直接可用。</b></p>
+      <p>远景是期权，不是赌注——<b>最大的下行损失，是一张桌子和一只球。</b></p>
+    </div>
+
+    <h3 class="reveal">12.7　收口：给一张桌子，配一个足够大的理由</h3>
+    <div class="tip good reveal" style="border-left-width:4px">
+      <div class="t" style="font-size:15.5px">🧭 这一章要说的一句话</div>
+      <p style="font-size:15px">本章不画饼。它做的是<b>给「一张桌子、一只球、三十分钟基线」这件事，配上一个量级足够大的理由</b>。</p>
+      <p style="font-size:15px">如果那只球真的会在不同位置给出不同频率——那么<b>被改写的东西，比这只球本身大得多</b>：焊接、营养、手术、物流、通勤、航天，所有账本里含 b·d 的成本结构都要重算一遍。</p>
+      <p style="font-size:15px;color:var(--dim)">但如果它不会呢？那也只是<b>一张桌子、一只球、三十分钟</b>。</p>
+    </div>
+  </div>
+</section>
+
 
 <footer>
   <div class="wrap">
@@ -1393,6 +2681,11 @@ footer li{margin:5px 0;font-size:12.9px}
     <p style="border-top:1px solid var(--line);padding-top:20px">
       档案目录 <code>D:\AAA我的文件\bashar的实验\</code>　·　本页由项目档案汇总生成　·　
       核验日期 2026-09-21　·　所有统计数字均从磁盘实时计算
+    </p>
+    <p style="margin-top:12px">
+      <b style="color:var(--txt)">在线阅读</b>：<a href="https://awakeninglanxin.github.io/bashar-sphere-experiment/" target="_blank" rel="noopener">awakeninglanxin.github.io/bashar-sphere-experiment</a>
+      　·　<b style="color:var(--txt)">GitHub 仓库</b>：<a href="https://github.com/awakeninglanxin/bashar-sphere-experiment" target="_blank" rel="noopener">awakeninglanxin / bashar-sphere-experiment</a>
+      　·　本页文件：<code>AAA_空间瞬移落地实现_索引页.html</code>
     </p>
   </div>
 </footer>
@@ -1451,6 +2744,44 @@ footer li{margin:5px 0;font-size:12.9px}
   lb.addEventListener("click", function(){ lb.classList.remove("on"); });
   document.addEventListener("keydown", function(e){ if (e.key === "Escape") lb.classList.remove("on"); });
 
+})();
+
+/* ---------- 白天 / 暗黑 主题切换 ---------- */
+(function(){
+  var root = document.documentElement;
+  var btn  = document.getElementById("tgl");
+  if (!btn) return;
+  var ico  = btn.querySelector(".ti"), txt = btn.querySelector(".tt");
+  var meta = document.querySelector('meta[name="theme-color"]');
+
+  function isDark(){ return root.getAttribute("data-theme") === "dark"; }
+
+  function sync(){
+    var dark = isDark();
+    /* 按钮上写「点了会切到哪里」：当前是白底，就显示"暗黑" */
+    ico.textContent = dark ? "\u2600" : "\u263e";
+    txt.textContent = dark ? "白天" : "暗黑";
+    btn.title = dark ? "切换到白天模式（白底）" : "切换到暗黑模式";
+    btn.setAttribute("aria-label", btn.title);
+    if (meta) meta.setAttribute("content", dark ? "#070b14" : "#ffffff");
+  }
+
+  btn.addEventListener("click", function(){
+    var next = isDark() ? "light" : "dark";
+    root.setAttribute("data-theme", next);
+    try { localStorage.setItem("bashar-theme", next); } catch(e){}
+    sync();
+  });
+
+  /* 默认固定白天模式：本页使用者不需要暗色，故不跟随系统 prefers-color-scheme。
+     只有用户亲手点过按钮，才会切到暗色（并记住选择）。 */
+  try {
+    if (!localStorage.getItem("bashar-theme")){
+      root.setAttribute("data-theme", "light");
+    }
+  } catch(e){}
+
+  sync();
 })();
 </script>
 </body>
