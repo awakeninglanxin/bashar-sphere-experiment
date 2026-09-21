@@ -71,7 +71,7 @@ html[data-theme="light"] tr[style*="255,114,114"],
 html[data-theme="light"] td[style*="255,114,114"]{background:rgba(201,42,42,.07)!important}
 html[data-theme="light"] td[style*="84,217,140"]{background:rgba(21,128,61,.07)!important}
 *{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth;scroll-padding-top:74px}
+html{scroll-behavior:smooth;scroll-padding-top:112px}
 body{
   background:var(--bg); color:var(--txt);
   font:15px/1.78 "Segoe UI","Microsoft YaHei","PingFang SC",system-ui,sans-serif;
@@ -104,14 +104,16 @@ nav{
   border-bottom:1px solid var(--line);
 }
 nav .inner{max-width:var(--mx);margin:0 auto;padding:11px 24px;display:flex;align-items:center;gap:18px}
-nav .brand{font-weight:700;letter-spacing:.5px;white-space:nowrap;font-size:14px;display:flex;align-items:center;gap:9px}
+nav .brand{font-weight:700;letter-spacing:.5px;font-size:14px;display:flex;align-items:center;gap:9px}
+nav .brand .bt{display:flex;flex-direction:column;line-height:1.3;white-space:nowrap}
+nav .brand .bs{font-size:10.8px;font-weight:600;color:var(--dim);letter-spacing:.2px;white-space:nowrap}
 nav .brand b{color:var(--cyan)}
 nav .dot{width:8px;height:8px;border-radius:50%;background:var(--cyan);box-shadow:0 0 10px var(--cyan);animation:pu 2.6s infinite}
 @keyframes pu{0%,100%{opacity:1}50%{opacity:.35}}
-nav .links{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;flex:1 1 auto;min-width:0}
+nav .links{display:flex;flex-wrap:wrap;gap:3px 4px;overflow:visible;flex:1 1 auto;min-width:0;justify-content:flex-start}
 nav .links::-webkit-scrollbar{display:none}
 nav .links a{
-  color:var(--dim);font-size:13px;padding:6px 11px;border-radius:8px;white-space:nowrap;transition:.2s
+  color:var(--dim);font-size:13px;padding:6px 10px;border-radius:8px;white-space:nowrap;transition:.2s
 }
 nav .links a:hover{color:var(--txt);background:var(--hover);text-decoration:none}
 nav .links a.on{color:var(--cyan);background:rgba(60,224,207,.11)}
@@ -127,7 +129,7 @@ nav .tgl .ti{font-size:13.5px;line-height:1;display:inline-block;transition:tran
 nav .tgl:hover .ti{transform:rotate(-18deg)}
 
 /* ---------- Hero ---------- */
-header.hero{padding:132px 0 76px;position:relative}
+header.hero{padding:150px 0 76px;position:relative}
 .kicker{
   display:inline-flex;align-items:center;gap:9px;font-size:12.5px;letter-spacing:1.6px;
   color:var(--cyan);border:1px solid var(--line2);border-radius:999px;
@@ -364,11 +366,19 @@ footer li{margin:5px 0;font-size:12.9px}
   .hero-grid{grid-template-columns:minmax(0,1fr);gap:34px}
   .hero-fig{max-width:430px;margin:0 auto}
 }
+/* 导航链接：窄屏改回单行横向滚动，右侧渐隐提示「还有更多」 */
+@media(max-width:760px){
+  nav .links{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;gap:4px;
+    -webkit-mask-image:linear-gradient(90deg,#000 0,#000 84%,transparent 100%);
+    mask-image:linear-gradient(90deg,#000 0,#000 84%,transparent 100%)}
+  nav .links a{flex:0 0 auto}
+  html{scroll-padding-top:78px}
+}
 @media(max-width:760px){
   header.hero{padding:108px 0 56px}
   .wrap{padding:0 17px}
   nav .inner{padding:9px 17px;gap:11px}
-  nav .brand span{display:none}
+  nav .brand .dot,nav .brand .bs{display:none}
   section{padding:56px 0}
   nav .tgl .tt{display:none}
   nav .tgl{padding:7px 11px}
@@ -383,7 +393,7 @@ footer li{margin:5px 0;font-size:12.9px}
 
 <nav>
   <div class="inner">
-    <div class="brand"><span class="dot"></span>空间瞬移<b>·落地路径</b><span>｜巴夏金属球位置频率实验</span></div>
+    <div class="brand"><span class="dot"></span><span class="bt"><span>空间瞬移<b>·落地路径</b></span><span class="bs">巴夏金属球位置频率实验</span></span></div>
     <div class="links" id="navlinks">
       <a href="#thesis">命题</a>
       <a href="#source">原话</a>
@@ -399,6 +409,7 @@ footer li{margin:5px 0;font-size:12.9px}
       <a href="#strat">这笔账</a>
       <a href="#upgrade">升级实验</a>
       <a href="#challenge">挑战</a>
+      <a href="#common-wish">共愿</a>
     </div>
     <button class="tgl" id="tgl" type="button" title="切换到暗黑模式" aria-label="切换到暗黑模式">
       <span class="ti">&#9790;</span><span class="tt">暗黑</span>
