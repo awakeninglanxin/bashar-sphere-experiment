@@ -1,0 +1,1457 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>空间瞬移 · 落地实现路径 ｜ 金属球位置频率实验索引页</title>
+<style>
+:root{
+  --bg:#070b14; --bg2:#0b1220; --card:#101a2b; --card2:#0d1524;
+  --line:#1d2b42; --line2:#2a3d5c;
+  --txt:#e2e9f5; --dim:#8ea0bb; --dim2:#6c7f9b;
+  --cyan:#3ce0cf; --cyan2:#1b8f86; --amber:#ffb545; --violet:#a78bfa;
+  --red:#ff7272; --green:#54d98c; --blue:#5ba3ff;
+  --r:14px; --mx:1180px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;scroll-padding-top:74px}
+body{
+  background:var(--bg); color:var(--txt);
+  font:15px/1.78 "Segoe UI","Microsoft YaHei","PingFang SC",system-ui,sans-serif;
+  -webkit-font-smoothing:antialiased; overflow-x:hidden;
+}
+body::before{
+  content:""; position:fixed; inset:0; z-index:0; pointer-events:none;
+  background:
+    radial-gradient(1100px 620px at 12% -6%, rgba(60,224,207,.13), transparent 62%),
+    radial-gradient(900px 560px at 92% 4%, rgba(167,139,250,.11), transparent 60%),
+    radial-gradient(1000px 700px at 50% 106%, rgba(255,181,69,.07), transparent 62%);
+}
+body::after{
+  content:""; position:fixed; inset:0; z-index:0; pointer-events:none; opacity:.5;
+  background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),
+                   linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);
+  background-size:64px 64px;
+  mask-image:radial-gradient(circle at 50% 30%,#000 0%,transparent 78%);
+}
+a{color:var(--cyan);text-decoration:none}
+a:hover{text-decoration:underline}
+.wrap{max-width:var(--mx);margin:0 auto;padding:0 24px;position:relative;z-index:1}
+
+/* ---------- 进度条 & 导航 ---------- */
+.prog{position:fixed;top:0;left:0;height:2px;width:100%;background:transparent;z-index:60}
+.prog i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--cyan),var(--violet),var(--amber));box-shadow:0 0 12px rgba(60,224,207,.7)}
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:50;
+  background:rgba(7,11,20,.82);backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--line);
+}
+nav .inner{max-width:var(--mx);margin:0 auto;padding:11px 24px;display:flex;align-items:center;gap:18px}
+nav .brand{font-weight:700;letter-spacing:.5px;white-space:nowrap;font-size:14px;display:flex;align-items:center;gap:9px}
+nav .brand b{color:var(--cyan)}
+nav .dot{width:8px;height:8px;border-radius:50%;background:var(--cyan);box-shadow:0 0 10px var(--cyan);animation:pu 2.6s infinite}
+@keyframes pu{0%,100%{opacity:1}50%{opacity:.35}}
+nav .links{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
+nav .links::-webkit-scrollbar{display:none}
+nav .links a{
+  color:var(--dim);font-size:13px;padding:6px 11px;border-radius:8px;white-space:nowrap;transition:.2s
+}
+nav .links a:hover{color:var(--txt);background:rgba(255,255,255,.05);text-decoration:none}
+nav .links a.on{color:var(--cyan);background:rgba(60,224,207,.11)}
+
+/* ---------- Hero ---------- */
+header.hero{padding:132px 0 76px;position:relative}
+.kicker{
+  display:inline-flex;align-items:center;gap:9px;font-size:12.5px;letter-spacing:1.6px;
+  color:var(--cyan);border:1px solid var(--line2);border-radius:999px;
+  padding:6px 15px;background:rgba(60,224,207,.06);margin-bottom:26px
+}
+h1{font-size:clamp(30px,5.2vw,58px);line-height:1.14;font-weight:800;letter-spacing:-.5px}
+h1 .g{background:linear-gradient(100deg,var(--cyan),var(--violet) 55%,var(--amber));-webkit-background-clip:text;background-clip:text;color:transparent}
+.lede{max-width:820px;margin-top:22px;font-size:17px;color:#b8c6dc}
+.lede b{color:var(--txt);font-weight:600}
+.quote-hero{
+  margin-top:34px;padding:22px 26px;border-left:3px solid var(--amber);
+  background:linear-gradient(90deg,rgba(255,181,69,.09),transparent 78%);
+  border-radius:0 var(--r) var(--r) 0;max-width:900px
+}
+.quote-hero .en{font-family:Consolas,"SF Mono",monospace;font-size:13.5px;color:#cfd9e8;line-height:1.7}
+.quote-hero .zh{margin-top:11px;font-size:16.5px;color:var(--amber);font-weight:600}
+.quote-hero cite{display:block;margin-top:9px;font-size:12.5px;color:var(--dim2);font-style:normal}
+
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(126px,1fr));gap:12px;margin-top:44px}
+.stat{
+  background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px 14px;position:relative;overflow:hidden
+}
+.stat::after{content:"";position:absolute;left:0;top:0;width:100%;height:2px;background:linear-gradient(90deg,var(--cyan),transparent)}
+.stat .v{font-size:26px;font-weight:800;color:var(--txt);letter-spacing:-.5px}
+.stat .v s{font-size:13px;color:var(--dim2);text-decoration:none;font-weight:500;margin-left:3px}
+.stat .k{font-size:12.5px;color:var(--dim);margin-top:3px}
+
+/* 首页配图（竖版长图，左文右图双栏） */
+.hero-grid{display:grid;grid-template-columns:minmax(0,1fr) 366px;gap:46px;align-items:start}
+.hero-main{min-width:0}
+.hero-fig{margin:0;position:relative}
+.hero-fig .frame{
+  position:relative;border:1px solid var(--line2);border-radius:16px;overflow:hidden;
+  background:var(--card);cursor:zoom-in;transition:.3s;
+  box-shadow:0 26px 64px -24px rgba(0,0,0,.9)
+}
+.hero-fig .frame:hover{border-color:var(--cyan);transform:translateY(-3px)}
+.hero-fig img{width:100%;display:block}
+.hero-fig .frame::after{
+  content:"";position:absolute;left:0;right:0;bottom:0;height:104px;pointer-events:none;
+  background:linear-gradient(transparent,rgba(7,11,20,.9))
+}
+.hero-fig .tip{
+  position:absolute;left:0;right:0;bottom:13px;text-align:center;pointer-events:none;
+  font-size:12.5px;color:var(--cyan);letter-spacing:.4px
+}
+.hero-fig figcaption{margin-top:11px;font-size:12.5px;color:var(--dim2);text-align:center;line-height:1.62}
+
+/* ---------- 通用区块 ---------- */
+section{padding:74px 0;position:relative;z-index:1}
+section+section{border-top:1px solid rgba(29,43,66,.6)}
+.shead{margin-bottom:36px}
+.snum{
+  font-family:Consolas,monospace;font-size:12.5px;letter-spacing:2px;color:var(--cyan2);
+  display:block;margin-bottom:9px
+}
+h2{font-size:clamp(23px,3.3vw,33px);font-weight:750;letter-spacing:-.3px;line-height:1.25}
+h2 .s{color:var(--dim2);font-weight:400;font-size:.62em;margin-left:9px}
+.sdesc{color:var(--dim);margin-top:12px;max-width:860px}
+h3{font-size:18.5px;font-weight:700;margin:38px 0 15px;display:flex;align-items:center;gap:10px}
+h3::before{content:"";width:4px;height:17px;border-radius:2px;background:var(--cyan)}
+h4{font-size:15.5px;font-weight:700;color:var(--cyan);margin:26px 0 11px}
+p{margin:11px 0;color:#c3cfe1}
+p b,li b{color:#fff;font-weight:600}
+em{color:var(--amber);font-style:normal}
+code{
+  font-family:Consolas,"SF Mono",monospace;font-size:12.8px;background:rgba(60,224,207,.1);
+  color:#8ff0e4;padding:2px 6px;border-radius:5px;word-break:break-word
+}
+ul,ol{margin:12px 0 12px 22px;color:#c3cfe1}
+li{margin:7px 0}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:22px}
+.card+.card{margin-top:14px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.grid4{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:13px}
+
+.tip{
+  border:1px solid var(--line2);border-left:3px solid var(--cyan);border-radius:0 10px 10px 0;
+  background:rgba(60,224,207,.055);padding:15px 19px;margin:18px 0
+}
+.tip.warn{border-left-color:var(--amber);background:rgba(255,181,69,.06)}
+.tip.bad{border-left-color:var(--red);background:rgba(255,114,114,.06)}
+.tip.good{border-left-color:var(--green);background:rgba(84,217,140,.06)}
+.tip .t{font-weight:700;font-size:14px;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.tip p{margin:5px 0;font-size:14.3px}
+
+/* 表格 */
+.tw{overflow-x:auto;margin:18px 0;border:1px solid var(--line);border-radius:var(--r);background:var(--card2)}
+table{width:100%;border-collapse:collapse;font-size:13.8px;min-width:520px}
+th{
+  background:rgba(60,224,207,.08);color:var(--cyan);text-align:left;padding:11px 13px;
+  font-weight:650;font-size:13px;white-space:nowrap;border-bottom:1px solid var(--line)
+}
+td{padding:10px 13px;border-bottom:1px solid rgba(29,43,66,.65);color:#c3cfe1;vertical-align:top}
+tr:last-child td{border-bottom:none}
+tbody tr:hover{background:rgba(255,255,255,.017)}
+td.k{color:#fff;font-weight:600;white-space:nowrap}
+.mono{font-family:Consolas,"SF Mono",monospace;font-size:12.8px}
+
+.tag{
+  display:inline-block;font-size:11.5px;padding:2.5px 9px;border-radius:999px;
+  border:1px solid;line-height:1.6;white-space:nowrap;font-weight:600
+}
+.t-ok{color:var(--green);border-color:rgba(84,217,140,.45);background:rgba(84,217,140,.1)}
+.t-no{color:var(--red);border-color:rgba(255,114,114,.45);background:rgba(255,114,114,.1)}
+.t-mid{color:var(--amber);border-color:rgba(255,181,69,.45);background:rgba(255,181,69,.1)}
+.t-info{color:var(--blue);border-color:rgba(91,163,255,.45);background:rgba(91,163,255,.1)}
+.t-v{color:var(--violet);border-color:rgba(167,139,250,.45);background:rgba(167,139,250,.1)}
+
+/* 步骤 */
+.steps{counter-reset:s;display:grid;gap:12px;margin:22px 0}
+.step{
+  counter-increment:s;position:relative;padding:17px 20px 17px 62px;
+  background:var(--card);border:1px solid var(--line);border-radius:var(--r);transition:.25s
+}
+.step:hover{border-color:var(--line2);transform:translateX(3px)}
+.step::before{
+  content:counter(s,decimal-leading-zero);position:absolute;left:19px;top:16px;
+  font-family:Consolas,monospace;font-size:16px;font-weight:700;color:var(--cyan);
+  opacity:.85
+}
+.step .h{font-weight:700;color:#fff;font-size:15px;margin-bottom:5px}
+.step .d{font-size:14px;color:var(--dim)}
+.step .d em{color:var(--amber)}
+
+/* 折线时间轴 */
+.tl{position:relative;margin:30px 0;padding-left:30px}
+.tl::before{content:"";position:absolute;left:8px;top:6px;bottom:6px;width:2px;background:linear-gradient(180deg,var(--cyan),var(--violet),var(--amber))}
+.tli{position:relative;margin-bottom:22px}
+.tli::before{
+  content:"";position:absolute;left:-26px;top:8px;width:10px;height:10px;border-radius:50%;
+  background:var(--bg);border:2px solid var(--cyan);box-shadow:0 0 0 3px rgba(60,224,207,.14)
+}
+.tli.amber::before{border-color:var(--amber);box-shadow:0 0 0 3px rgba(255,181,69,.14)}
+.tli.violet::before{border-color:var(--violet);box-shadow:0 0 0 3px rgba(167,139,250,.14)}
+.tli.red::before{border-color:var(--red);box-shadow:0 0 0 3px rgba(255,114,114,.14)}
+.tli .y{font-family:Consolas,monospace;font-size:12.5px;color:var(--cyan);letter-spacing:1px}
+.tli.amber .y{color:var(--amber)} .tli.violet .y{color:var(--violet)} .tli.red .y{color:var(--red)}
+.tli .h{font-weight:700;font-size:15.5px;color:#fff;margin:2px 0 4px}
+.tli .d{font-size:14px;color:var(--dim)}
+
+/* 图库 */
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px;margin:22px 0}
+.gi{
+  background:var(--card);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;cursor:zoom-in;transition:.25s
+}
+.gi:hover{border-color:var(--cyan2);transform:translateY(-3px);box-shadow:0 12px 32px -14px rgba(0,0,0,.8)}
+.gi img{width:100%;height:158px;object-fit:cover;display:block;background:#060a12}
+.gi.cover img{object-position:center top}
+.gi .c{padding:11px 13px}
+.gi .n{font-size:13.3px;font-weight:600;color:#dfe8f6}
+.gi .s{font-size:11.8px;color:var(--dim2);margin-top:3px}
+.gi.poster img{height:300px;object-fit:cover;object-position:top}
+
+/* 公式 */
+.fml{
+  background:#080d17;border:1px solid var(--line2);border-left:3px solid var(--violet);
+  border-radius:0 10px 10px 0;padding:13px 18px;margin:13px 0;
+  font-family:Consolas,"SF Mono",monospace;font-size:14px;color:#d7c8ff;overflow-x:auto
+}
+.fml .n{display:block;font-size:12.3px;color:var(--dim);margin-top:6px;font-family:inherit}
+
+.kv{display:flex;flex-wrap:wrap;gap:9px;margin:14px 0}
+.kv span{
+  background:var(--card2);border:1px solid var(--line);border-radius:9px;
+  padding:7px 12px;font-size:13px;color:#c3cfe1
+}
+.kv span b{color:var(--cyan);font-family:Consolas,monospace}
+
+details{border:1px solid var(--line);border-radius:var(--r);background:var(--card2);margin:12px 0;overflow:hidden}
+summary{padding:13px 18px;cursor:pointer;font-weight:650;font-size:14.5px;color:#dfe8f6;list-style:none;display:flex;align-items:center;gap:9px}
+summary::-webkit-details-marker{display:none}
+summary::before{content:"＋";color:var(--cyan);font-family:monospace;font-size:15px}
+details[open] summary::before{content:"－"}
+details[open] summary{border-bottom:1px solid var(--line);color:var(--cyan)}
+details .body{padding:16px 19px}
+details .body p:first-child{margin-top:0}
+
+footer{border-top:1px solid var(--line);padding:44px 0 60px;color:var(--dim2);font-size:13.3px;position:relative;z-index:1}
+footer a{color:var(--dim)}
+footer .fr{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:22px;margin-bottom:26px}
+footer h5{color:var(--txt);font-size:13.5px;margin-bottom:10px;font-weight:700}
+footer ul{margin:0 0 0 17px}
+footer li{margin:5px 0;font-size:12.9px}
+
+.lb{
+  position:fixed;inset:0;background:rgba(3,6,11,.94);z-index:100;display:none;
+  align-items:center;justify-content:center;padding:34px;cursor:zoom-out
+}
+.lb.on{display:flex}
+.lb img{max-width:96vw;max-height:90vh;border-radius:10px;box-shadow:0 0 70px rgba(0,0,0,.9)}
+.lb .cap{position:absolute;bottom:20px;left:0;right:0;text-align:center;color:var(--dim);font-size:13.5px}
+
+.reveal{opacity:0;transform:translateY(20px);transition:opacity .65s cubic-bezier(.2,.7,.3,1),transform .65s cubic-bezier(.2,.7,.3,1)}
+.reveal.in{opacity:1;transform:none}
+
+.svgbox{background:var(--card2);border:1px solid var(--line);border-radius:var(--r);padding:18px;margin:20px 0;overflow-x:auto}
+.svgbox svg{display:block;margin:0 auto;max-width:100%;height:auto}
+.svgcap{text-align:center;font-size:12.7px;color:var(--dim2);margin-top:11px}
+
+@media(max-width:1120px){
+  .hero-grid{grid-template-columns:minmax(0,1fr);gap:34px}
+  .hero-fig{max-width:430px;margin:0 auto}
+}
+@media(max-width:760px){
+  header.hero{padding:108px 0 56px}
+  .wrap{padding:0 17px}
+  nav .inner{padding:9px 17px;gap:11px}
+  nav .brand span{display:none}
+  section{padding:56px 0}
+  .gi img{height:132px}
+  .gi.poster img{height:250px}
+  .hero-fig{max-width:340px}
+}
+</style>
+</head>
+<body>
+<div class="prog"><i id="pb"></i></div>
+
+<nav>
+  <div class="inner">
+    <div class="brand"><span class="dot"></span>空间瞬移<b>·落地路径</b><span>｜巴夏金属球位置频率实验</span></div>
+    <div class="links" id="navlinks">
+      <a href="#thesis">命题</a>
+      <a href="#source">原话</a>
+      <a href="#exp">实验</a>
+      <a href="#prior">前人走到哪</a>
+      <a href="#why">为何没人做</a>
+      <a href="#road">三阶段</a>
+      <a href="#spec">规格</a>
+      <a href="#err">误差</a>
+      <a href="#assets">资产</a>
+      <a href="#edge">边界</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="hero-grid">
+      <div class="hero-main">
+        <div class="kicker">巴夏科技系列 ｜ 唯一桌面可做的可证伪实验</div>
+        <h1>把「空间瞬移」<br>翻译成<span class="g">一张桌面实验台</span></h1>
+        <p class="lede">
+          巴夏（Bashar）说：<b>位置不是物体所处的容器，而是物体的一个属性</b>。改掉这个变量，物体就不必穿越中间的距离——它从 A 停止存在，在 B 立即开始存在。
+          飞船尺度无从检验。但同一原理，他给了一个<b>降维到音频段</b>的版本：一只空心导电球，一条 10 英尺长的平桌，两端各测一次共振。</p>
+        <p class="lede">
+          本页把 <b>110 篇档案</b>里的重点串成一条落地路径：命题 → 原话 → 装置 → <b>前人已经走到哪一步</b> → 难点 → 三阶段方案 → 规格与误差预算 → 边界。<br>
+          其中第 4 章是一份<b>独立检索结果</b>：科学界其实早已做过「同一物体在不同位置频率不同」的测量，而巴夏这只铜球的实验——<b>至今无人做过</b>。</p>
+
+        <div class="quote-hero">
+          <div class="en">"If you change the locational variable in the energy equation of an object to another locational variable, the object has to stop existing in the first location, and simply immediately start existing at the second location. Not actually having travel the intervening distance."</div>
+          <div class="zh">如果你改变一个物体「能量方程」上的位置变数，那个物体就必须停止出现在第一个位置，并立刻出现在第二个位置上——而不是真的飞行穿梭两个位置之间的距离。</div>
+          <cite>— Bashar，2017 传讯《The Structure of Existence》</cite>
+        </div>
+      </div>
+
+      <figure class="hero-fig" data-zoom="YouTube 上的巴夏（Bashar）视频 · 本项目视频来源总览">
+        <div class="frame">
+          <img src="图/youtube上的bashar视频.jpg" width="1251" height="2308" alt="YouTube 上的巴夏视频封面总览">
+          <div class="tip">点击放大查看全图</div>
+        </div>
+        <figcaption>YouTube 上的巴夏视频 ｜ 本项目 39 篇语录的原始出处<br>1251×2308 · 竖版总览图</figcaption>
+      </figure>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><div class="v">110<s>篇</s></div><div class="k">归档 md 文档</div></div>
+      <div class="stat"><div class="v">39<s>篇</s></div><div class="k">视频语录全文</div></div>
+      <div class="stat"><div class="v">22<s>轮</s></div><div class="k">方案推演对话</div></div>
+      <div class="stat"><div class="v">10<s>张</s></div><div class="k">图、海报与封面图</div></div>
+      <div class="stat"><div class="v">3<s>阶段</s></div><div class="k">落地路线</div></div>
+      <div class="stat"><div class="v" style="color:var(--amber)">0<s>例</s></div><div class="k">公开复现记录</div></div>
+    </div>
+  </div>
+</header>
+
+<!-- ================= 1 命题 ================= -->
+<section id="thesis">
+  <div class="wrap">
+    <div class="shead reveal">
+      <span class="snum">01 / THESIS</span>
+      <h2>命题：一句话，三个层级<span class="s">先分清哪些能检验，哪些不能</span></h2>
+      <p class="sdesc">整套巴夏科技体系都从三条公理展开。读它时必须把三类东西<b>严格分开</b>，否则会把叙事当技术、把技术当事实——这是可行性报告里踩过的第一个坑。</p>
+    </div>
+
+    <div class="grid3 reveal">
+      <div class="card">
+        <div class="tag t-info">公理 1</div>
+        <h4 style="margin-top:12px">万物是频率</h4>
+        <p style="font-size:14px">物质是「原初能量」的特定振动变体。原初能量有一个背景频率，其他一切都是它的显化。</p>
+      </div>
+      <div class="card" style="border-color:var(--cyan2)">
+        <div class="tag t-ok">公理 2 · 实验就长在这条上</div>
+        <h4 style="margin-top:12px">位置是物体的属性</h4>
+        <p style="font-size:14px">位置不是物体「存在于其中」的东西，而是物体能量方程里的一个变量。<b>它可改写。</b></p>
+      </div>
+      <div class="card">
+        <div class="tag t-v">公理 3</div>
+        <h4 style="margin-top:12px">意识是第一性</h4>
+        <p style="font-size:14px">飞船有知觉，驾驶靠意识连接，技术是意识与物质的结合。</p>
+      </div>
+    </div>
+
+    <h3 class="reveal">三层拆解：把「主张」按可检验性分层</h3>
+    <div class="tw reveal">
+      <table>
+        <thead><tr><th>层</th><th>陈述</th><th>状态</th><th>可否检验</th></tr></thead>
+        <tbody>
+          <tr><td class="k" rowspan="3" style="background:rgba(84,217,140,.06)">第一层<br><span style="font-size:11.5px;color:var(--dim2)">可检验的<br>物理陈述</span></td>
+            <td>同一球在桌面 A、B 两处的共振读数存在可测差异</td><td><span class="tag t-ok">假设 H1</span></td><td>能。需先做两端基线并排除环境泄漏</td></tr>
+          <tr><td>施加 B 端振动后，球产生定向净位移并停在 B</td><td><span class="tag t-ok">假设 H2 / H3</span></td><td>能。需假信号、盲目标、净力测量</td></tr>
+          <tr><td>球到达后「轻微波动一下然后停下」</td><td><span class="tag t-mid">现象描述</span></td><td>能。判据需自定为速度/位置阈值</td></tr>
+          <tr><td class="k" rowspan="2" style="background:rgba(255,181,69,.06)">第二层<br><span style="font-size:11.5px;color:var(--dim2)">机制解释</span></td>
+            <td>该差异代表「位置本身的振动特征」</td><td><span class="tag t-mid">解释性主张</span></td><td>间接。可看效应是附着于坐标还是附着于硬件</td></tr>
+          <tr><td>位置是物体的属性，不是容器</td><td><span class="tag t-mid">本体论主张</span></td><td><b style="color:var(--red)">不可直接检验</b></td></tr>
+          <tr><td class="k" style="background:rgba(255,114,114,.06)">第三层<br><span style="font-size:11.5px;color:var(--dim2)">宇宙论 / 叙事</span></td>
+            <td>该原理用于外星飞船瞬时传送；科技领先 3000 年</td><td><span class="tag t-no">叙事</span></td><td><b style="color:var(--red)">不可检验。绝不进入验收标准</b></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="tip reveal">
+      <div class="t">🎯 为什么「金属球实验」在整个体系里位置特殊</div>
+      <p>它是巴夏给的<b>唯一一个能在桌面尺度、用现有仪器检验</b>的主张。其余主张（隔离场、微波光壳、零点能）都要求「3000 年后的技术」。巴夏自己点明了这个降维关系：</p>
+      <p class="mono" style="color:var(--cyan);font-size:13px">"This is what we do with our spacecraft <em style="color:var(--cyan)">except we do it on a much higher frequency and much more instantaneously</em>."</p>
+      <p>——这就是我们对飞船所做的，只是我们是在<b>高得多的频率</b>上、而且<b>瞬时得多</b>地做。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 2 原话 ================= -->
+<section id="source">
+  <div class="wrap">
+    <div class="shead reveal">
+      <span class="snum">02 / SOURCE</span>
+      <h2>原话：两场传讯，合起来才是完整规格<span class="s">1998 给尺寸，2017 给机制</span></h2>
+      <p class="sdesc">同一实验在巴夏传讯中出现过两次，<b>详略完全互补</b>。只读 2017 版会得出「巴夏没给尺寸」的错误结论。</p>
+    </div>
+
+    <div class="grid2 reveal">
+      <div class="card" style="border-left:3px solid var(--cyan)">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+          <h4 style="margin:0">早版 · 1998-02-28</h4><span class="tag t-ok">含尺寸</span>
+        </div>
+        <p style="font-size:13.6px;color:var(--dim);margin-top:9px">Essassani transmissions（superphysics.org 归档）</p>
+        <ul style="font-size:14px">
+          <li>球的直径、壁厚、材料、平衡要求</li>
+          <li>桌面长宽、<b>隔离舱</b>、<b>声学波束</b></li>
+          <li>完整的<b>六步流程</b></li>
+        </ul>
+        <p style="font-size:13.4px;color:var(--dim2)">缺：没描述球是否真会滚</p>
+      </div>
+      <div class="card" style="border-left:3px solid var(--amber)">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+          <h4 style="margin:0">晚版 · 2017</h4><span class="tag t-no">无尺寸</span>
+        </div>
+        <p style="font-size:13.6px;color:var(--dim);margin-top:9px">传讯会《The Structure of Existence》（igod.tw Jimmy 译）</p>
+        <ul style="font-size:14px">
+          <li>「位置是物体的属性」完整论证</li>
+          <li>「球滚向 B 并停下」的结果描述</li>
+          <li><b style="color:var(--amber)">「至今无人做过」</b></li>
+        </ul>
+        <p style="font-size:13.4px;color:var(--dim2)">缺：完全没提尺寸</p>
+      </div>
+    </div>
+
+    <h3 class="reveal">原话里最硬的两句</h3>
+    <div class="quote-hero reveal" style="border-left-color:var(--cyan);background:linear-gradient(90deg,rgba(60,224,207,.08),transparent 78%)">
+      <div class="en">"See if there is a difference between the two. Double check to make sure that the difference you may find <b style="color:#fff">is not the product of something leaking in</b> that you do not want to be there. That it is <b style="color:#fff">not the product of the vibration of the sphere itself</b>."</div>
+      <div class="zh" style="color:var(--cyan)">看看两者之间有无差异。反复核对，确认你发现的差异<b>不是从外面漏进来的东西</b>造成的，<b>也不是球自身的振动</b>造成的。</div>
+      <cite>— 1998-02-28｜这两句就是全部技术难度所在：<b>排除混淆源</b>。巴夏自己要求了「双盲式复核」。</cite>
+    </div>
+    <div class="quote-hero reveal">
+      <div class="en">"We have described this experiment to several people on your planet. <b style="color:var(--amber)">To date, no one has done it.</b>"</div>
+      <div class="zh" style="color:var(--amber)">我们已经向你们地球上的许多人解释过这个实验。但是，<b>至今为止，还没有人完成过这项实验</b>。</div>
+      <cite>— 2017｜这是整条线索最重要的<b>元信息</b>：没有既有成功可参照，也没有既有失败可借鉴。</cite>
+    </div>
+
+    <h3 class="reveal">原话硬要求清单（V0，共 15 条）</h3>
+    <p class="reveal" style="color:var(--dim);font-size:14px">做实验前必须锁定的逐字要求。<b style="color:var(--amber)">R3、R4、R8、R12 四条此前常被漏掉</b>。</p>
+    <div class="tw reveal">
+      <table>
+        <thead><tr><th>编号</th><th>要求原文关键词</th><th>含义</th><th>出处</th></tr></thead>
+        <tbody>
+          <tr><td class="k">R1</td><td class="mono">hollow sphere of conductive material</td><td>空心导电球（铜或钢）</td><td>1998</td></tr>
+          <tr><td class="k">R2</td><td class="mono">thin but solidly made, cannot be dented</td><td>薄，但结实到不可压凹</td><td>1998</td></tr>
+          <tr style="background:rgba(255,181,69,.06)"><td class="k">R3</td><td class="mono">anywhere from 3 to 6 in in diameter</td><td><b>直径 3–6 英寸（76.2–152.4 mm）</b></td><td>1998</td></tr>
+          <tr style="background:rgba(255,181,69,.06)"><td class="k">R4</td><td class="mono">no more than 1/16th of an inch in thickness</td><td><b>壁厚 ≤ 1.59 mm</b></td><td>1998</td></tr>
+          <tr><td class="k">R5</td><td class="mono">highly balanced as spherical as you can</td><td>高度平衡、尽可能球形</td><td>1998</td></tr>
+          <tr><td class="k">R6</td><td class="mono">as little friction as possible</td><td>与表面间摩擦尽可能小</td><td>1998</td></tr>
+          <tr><td class="k">R7</td><td class="mono">at least … 10 of your feet in length</td><td>平面长度 ≥ 10 英尺（3.048 m）</td><td>1998</td></tr>
+          <tr style="background:rgba(255,181,69,.06)"><td class="k">R8</td><td class="mono">three of your feet would be comfortable</td><td><b>平面宽度约 3 英尺更舒适</b></td><td>1998</td></tr>
+          <tr><td class="k">R9</td><td class="mono">isolated chamber … from any other vibrations</td><td>置于隔离舱，隔离一切外部电磁振动</td><td>1998</td></tr>
+          <tr><td class="k">R10</td><td class="mono">at one end … move it … See if there is a difference</td><td>一端测 → 移另一端再测 → 比较</td><td>1998</td></tr>
+          <tr><td class="k">R11</td><td class="mono">not leaking in … not the vibration of the sphere itself</td><td>排除「外部泄漏」与「球自身振动」</td><td>1998</td></tr>
+          <tr style="background:rgba(255,181,69,.06)"><td class="k">R12</td><td class="mono">for now you can begin with an acoustic beacon</td><td><b>声学波束优先，电磁可后加</b></td><td>1998</td></tr>
+          <tr><td class="k">R13</td><td class="mono">the sphere begin to roll … come to a stop</td><td>施加 B 后球应滚向 B 并停下</td><td>1998 / 2017</td></tr>
+          <tr><td class="k">R14</td><td class="mono">location is a property of the object</td><td>位置是物体的属性</td><td>1998 / 2017</td></tr>
+          <tr><td class="k">R15</td><td class="mono">much higher frequency and much more instantaneously</td><td>飞船以更高频率、瞬时得多地做同一件事</td><td>1998 / 2017</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="tip warn reveal">
+      <div class="t">⚠️ 原话<b>没有</b>规定的（属自由变量，必须自己设计）</div>
+      <p>频率范围 · 声压级 · 模态阶次 · 位置坐标容差 · 停止判据 · 采样率 · 温度 · 场地电磁谱 · 球的自重</p>
+      <p>这些空白不是遗漏，而是<b>必须由工程师补齐的部分</b>——第 7 章「规格」填的就是这些。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 3 实验 ================= -->
+<section id="exp">
+  <div class="wrap">
+    <div class="shead reveal">
+      <span class="snum">03 / SETUP</span>
+      <h2>实验：长什么样、怎么搭<span class="s">10 英尺平桌 · 空心导电球 · 声学波束 · 隔离舱</span></h2>
+      <p class="sdesc">把原话逐字翻译成装置。注意：<b>巴夏要的是「两端读数有差异」，不是「球滚起来」</b>——球滚动是第 6 步，前提是第 5 步真的测到了差异。</p>
+    </div>
+
+    <div class="svgbox reveal">
+      <svg viewBox="0 0 900 340" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="实验装置俯视示意">
+        <defs>
+          <linearGradient id="bed" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stop-color="#16283f"/><stop offset=".5" stop-color="#1d3450"/><stop offset="1" stop-color="#16283f"/>
+          </linearGradient>
+          <radialGradient id="ballg"><stop offset="0" stop-color="#ffd591"/><stop offset=".55" stop-color="#e08d3c"/><stop offset="1" stop-color="#7a4211"/></radialGradient>
+          <linearGradient id="wav" x1="1" y1="0" x2="0" y2="0">
+            <stop offset="0" stop-color="#a78bfa" stop-opacity=".1"/><stop offset="1" stop-color="#3ce0cf" stop-opacity=".95"/>
+          </linearGradient>
+          <marker id="ar" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+            <path d="M0,0 L7,3 L0,6 z" fill="#3ce0cf"/>
+          </marker>
+          <marker id="ar2" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+            <path d="M0,0 L7,3 L0,6 z" fill="#ffb545"/>
+          </marker>
+        </defs>
+
+        <!-- 隔离舱 -->
+        <rect x="34" y="34" width="832" height="262" rx="16" fill="none" stroke="#2a3d5c" stroke-dasharray="9 7" stroke-width="1.6"/>
+        <text x="50" y="24" fill="#6c7f9b" font-size="12.5" font-family="Consolas,monospace">ISOLATED CHAMBER　隔离舱（隔离一切外部电磁振动 · R9）</text>
+
+        <!-- 平桌 -->
+        <rect x="86" y="132" width="728" height="70" rx="9" fill="url(#bed)" stroke="#2f4a6d" stroke-width="1.4"/>
+        <text x="450" y="222" text-anchor="middle" fill="#8ea0bb" font-size="12.6" font-family="Consolas,monospace">flat surface　3.048 m (10 ft)　×　~0.9 m (3 ft)　·　水平度与平面度决定成败</text>
+
+        <!-- A/B 端点刻度 -->
+        <line x1="112" y1="118" x2="112" y2="132" stroke="#3ce0cf" stroke-width="1.6"/>
+        <line x1="788" y1="118" x2="788" y2="132" stroke="#ffb545" stroke-width="1.6"/>
+        <text x="112" y="110" text-anchor="middle" fill="#3ce0cf" font-size="13.5" font-weight="700" font-family="Consolas,monospace">A</text>
+        <text x="788" y="110" text-anchor="middle" fill="#ffb545" font-size="13.5" font-weight="700" font-family="Consolas,monospace">B</text>
+        <line x1="128" y1="100" x2="772" y2="100" stroke="#2a3d5c" stroke-width="1" stroke-dasharray="4 5"/>
+        <text x="450" y="94" text-anchor="middle" fill="#6c7f9b" font-size="12" font-family="Consolas,monospace">3.048 m</text>
+
+        <!-- B 端声源 -->
+        <g>
+          <rect x="800" y="146" width="34" height="42" rx="7" fill="#1b2b42" stroke="#a78bfa" stroke-width="1.5"/>
+          <text x="817" y="172" text-anchor="middle" fill="#a78bfa" font-size="10.5" font-family="Consolas,monospace">SPK</text>
+          <text x="817" y="206" text-anchor="middle" fill="#a78bfa" font-size="11">声学波束</text>
+          <text x="817" y="221" text-anchor="middle" fill="#6c7f9b" font-size="10">R12 优先</text>
+        </g>
+
+        <!-- 声波（从 B 射向 A） -->
+        <g stroke="url(#wav)" fill="none" stroke-width="2.1" stroke-linecap="round">
+          <path d="M790 167 q -58 -22 -116 0"/>
+          <path d="M770 167 q -74 -30 -148 0"/>
+          <path d="M750 167 q -90 -38 -180 0"/>
+          <path d="M730 167 q -106 -46 -212 0"/>
+        </g>
+        <line x1="700" y1="167" x2="190" y2="167" stroke="#3ce0cf" stroke-width="1.5" stroke-dasharray="7 6" marker-end="url(#ar)" opacity=".85"/>
+        <text x="450" y="160" text-anchor="middle" fill="#3ce0cf" font-size="11.8" font-family="Consolas,monospace">施加 B 端特征频率（overwhelm）</text>
+
+        <!-- A 端球 -->
+        <g>
+          <circle cx="150" cy="167" r="20" fill="url(#ballg)" stroke="#ffd591" stroke-width="1.2"/>
+          <circle cx="143" cy="160" r="4.2" fill="#fff8e6" opacity=".55"/>
+          <text x="150" y="212" text-anchor="middle" fill="#ffb545" font-size="11.6" font-family="Consolas,monospace">hollow Cu ball</text>
+          <text x="150" y="227" text-anchor="middle" fill="#6c7f9b" font-size="10.5">Ø80 × 0.4 mm</text>
+        </g>
+
+        <!-- B 端虚影球（预期落点） -->
+        <circle cx="758" cy="167" r="20" fill="none" stroke="#ffb545" stroke-width="1.5" stroke-dasharray="5 5" opacity=".8"/>
+        <text x="758" y="212" text-anchor="middle" fill="#6c7f9b" font-size="10.5">预期终点</text>
+
+        <!-- 滚动箭头 -->
+        <path d="M186 143 q 280 -30 552 0" stroke="#ffb545" stroke-width="1.7" fill="none" stroke-dasharray="6 6" marker-end="url(#ar2)" opacity=".9"/>
+        <text x="460" y="120" text-anchor="middle" fill="#ffb545" font-size="11.8" font-family="Consolas,monospace">R13：球滚向 B，轻微波动一下，然后停下</text>
+
+        <!-- 八点阵列 -->
+        <g opacity=".95">
+          <circle cx="150" cy="167" r="34" fill="none" stroke="#5ba3ff" stroke-width="1.2" stroke-dasharray="3 4"/>
+          <circle cx="150" cy="133" r="4" fill="#5ba3ff"/><circle cx="150" cy="201" r="4" fill="#5ba3ff"/>
+          <circle cx="116" cy="167" r="4" fill="#5ba3ff"/><circle cx="184" cy="167" r="4" fill="#5ba3ff"/>
+          <text x="150" y="256" text-anchor="middle" fill="#5ba3ff" font-size="11">八点立方体传感阵列（R5/R6 的读数来源）</text>
+        </g>
+
+        <!-- 尺度标注 -->
+        <text x="450" y="286" text-anchor="middle" fill="#6c7f9b" font-size="11.6">整台装置的目标：把一切「能让球自己动」的普通原因压到零</text>
+      </svg>
+      <div class="svgcap">图｜实验装置俯视示意（按 1998-02-28 原话还原）。虚线框＝隔离舱，A/B 相隔 10 英尺，八点阵列贴在 A 端球面外围采集</div>
+    </div>
+
+    <h3 class="reveal">实验六步（严格按原话顺序）</h3>
+    <div class="steps reveal">
+      <div class="step"><div class="h">取球</div><div class="d">空心导电球（铜／钢），Ø3–6 in，壁 ≤1/16 in，尽量平衡、球形、低摩擦。<em>这一步决定后面全部信噪比</em></div></div>
+      <div class="step"><div class="h">隔离</div><div class="d">置于隔离舱内，隔离一切外部电磁振动。<em>注意：原话只要求隔离「电磁」，声学与机械隔离是我们自己加的</em></div></div>
+      <div class="step"><div class="h">测 A</div><div class="d">把球放在平坦面一端（总长 ≥10 ft，宽约 3 ft），用尽一切手段测其特征振动</div></div>
+      <div class="step"><div class="h">测 B</div><div class="d">把球移到另一端（10 ft 距离），同样测一次</div></div>
+      <div class="step"><div class="h">比对</div><div class="d">确认两端读数有差异，并<em>排除「外部泄漏」与「球自身振动」两个混淆源</em>——<b>这是全部技术难度所在</b></div></div>
+      <div class="step"><div class="h">施加</div><div class="d">把 B 端特征振动以声学波束照射 A 端的球 → <em>预期：球沿平面滚向 B，到达后轻微波动一下，然后停下</em></div></div>
+    </div>
+
+    <div class="tip reveal">
+      <div class="t">🎯 球「为什么该停」——原话的逻辑，不是物理推论</div>
+      <p class="mono" style="color:#8ff0e4;font-size:13px">"an object cannot exist in a space it is not the signature vibration of in matching harmony"</p>
+      <p>物体无法存在于一个与它振动特征不匹配谐和的空间，它必须去到它所是振动的那个空间。</p>
+      <p style="color:var(--dim)">这是个<b>同义反复式的前提</b>，不是可推导的结论。实验要检验的正是这个前提本身。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 4 前人 ================= -->
+<section id="prior">
+  <div class="wrap">
+    <div class="shead reveal">
+      <span class="snum">04 / PRIOR ART</span>
+      <h2>前人已经走到哪一步了<span class="s">独立检索结果 · 2026-09-21</span></h2>
+      <p class="sdesc">这是本页唯一<b>不来自项目档案、而来自外部检索</b>的章节。要回答的是一个具体问题：<b>有没有人已经测量过钢球／铜球在不同地点的频谱？</b>
+      结论分四块——两块「有人做过但对象不同」，一块「科学界早就测过位置→频率」，一块「真的无人做过」。</p>
+    </div>
+
+    <h3 class="reveal">4.1 「位置 → 频率」这件事，科学界早就测到了</h3>
+    <p class="reveal">巴夏命题的字面版本是「<b>同一个物体，换个位置，特征频率就不同</b>」。而这件事在主流物理里<b>不仅成立，还已经被测到 0.2 毫米的高度差</b>——只是机制不是「位置变量」，而是<b>引力势</b>。</p>
+
+    <div class="tl reveal">
+      <div class="tli">
+        <div class="y">1959</div>
+        <div class="h">Pound–Rebka 实验</div>
+        <div class="d">哈佛杰斐逊实验室，用伽马射线在 <b>22 米垂直落差</b>上测引力红移。上方探测器记录到略高的频率——第一次在建筑尺度上测到时空曲率。</div>
+      </div>
+      <div class="tli">
+        <div class="y">1976</div>
+        <div class="h">Gravity Probe A</div>
+        <div class="d">NASA 把氢微波激射钟送上约 10 000 km 高空，与地面同款钟比对，频移与广义相对论预测吻合到 <b>70 ppm</b>。当时最精确的引力红移验证。</div>
+      </div>
+      <div class="tli">
+        <div class="y">2010</div>
+        <div class="h">NIST 铝离子光钟 · 33 厘米 <span class="tag t-info" style="margin-left:6px">Science</span></div>
+        <div class="d">两台世界最好的铝离子钟，一台被千斤顶抬高 <b>33 cm（约 1 英尺）</b>，高的那台走得更快。<b>相对频移 3.6×10⁻¹⁷</b>；若一个人终生活在两级台阶之上，79 年会多出约 <b>90 纳秒</b>。人类第一次在「个人尺度」上看到相对论。</div>
+      </div>
+      <div class="tli amber">
+        <div class="y">2022</div>
+        <div class="h">JILA 锶晶格钟 · 0.2 毫米 <span class="tag t-info" style="margin-left:6px">Nature</span></div>
+        <div class="d">约 10 万个锶-87 原子被激光晶格分层排列（像一叠薄饼）。逐层读数，每层因所受引力不同而「跳得不一样」。高度差只需 <b>0.2 mm</b>（约两张纸厚）即可分辨，精度比 2010 年提升约 <b>1 000 倍</b>。</div>
+      </div>
+      <div class="tli violet">
+        <div class="y">日常</div>
+        <div class="h">GPS：已经在吃这碗饭</div>
+        <div class="d">卫星钟每日比地面快约 <b>38 微秒</b>（引力项 +45 μs，速度项 −7 μs）。不预先校正，定位每天漂 <b>约 11 公里</b>。<b>整个 GPS 系统就是一台应用相对论机器。</b></div>
+      </div>
+    </div>
+
+    <div class="tw reveal">
+      <table>
+        <thead><tr><th>实验</th><th>年份</th><th>位置差</th><th>相对频移 Δf/f</th><th>机制</th></tr></thead>
+        <tbody>
+          <tr><td class="k">Pound–Rebka</td><td>1959</td><td>22 m</td><td class="mono">~2.4×10⁻¹⁵</td><td>引力红移</td></tr>
+          <tr><td class="k">Gravity Probe A</td><td>1976</td><td>10 000 km</td><td class="mono">~1×10⁻¹⁰</td><td>引力红移</td></tr>
+          <tr><td class="k">NIST 铝离子钟</td><td>2010</td><td><b>33 cm</b></td><td class="mono"><b>3.6×10⁻¹⁷</b></td><td>引力红移</td></tr>
+          <tr><td class="k">JILA 锶晶格钟</td><td>2022</td><td><b>0.2 mm</b></td><td class="mono">~1×10⁻¹⁹</td><td>引力红移</td></tr>
+          <tr><td class="k">本项目（巴夏版）</td><td>—</td><td>3.048 m</td><td class="mono">引力项仅 3×10⁻¹⁶</td><td><span class="tag t-no">未知</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="tip warn reveal">
+      <div class="t">⚠️ 别把这当成「巴夏被验证了」——差别在这里</div>
+      <p><b>同</b>：都是「同一振子在不同位置频率不同」。</p>
+      <p><b>异 1｜方向</b>：引力红移是<b>单调、连续、可计算</b>的——升高一定变快，公式 <code>Δf/f = gΔh/c²</code>。巴夏的「位置签名」没有任何方程、方向、量级。</p>
+      <p><b>异 2｜量级</b>：本项目桌面 3 m 落差的引力项只有 <b>3×10⁻¹⁶</b>，而且是在<b>一整台钟的高度</b>上——不是在一只铜球的机械共振上。铜球的本征频率对高度不敏感（见第 5 章）。</p>
+      <p><b>异 3｜可预测性</b>：原子钟实验是「按公式做、必然测到」；铜球实验是「按原话做，很可能只测到噪声」。</p>
+    </div>
+
+    <h3 class="reveal">4.2 最接近的先例：Allais 视差摆（1954–1960）<span class="tag t-ok" style="margin-left:8px">钢球 + 平板</span></h3>
+    <p class="reveal">如果说有谁做过「<b>用一颗钢球在平板上滚，去探测位置／时间相关的异常</b>」，那就是法国人 <b>Maurice Allais</b>（1988 年诺贝尔经济学奖得主）。他的仪器在构造上与我们的装置<b>同构</b>：</p>
+
+    <div class="grid2 reveal">
+      <div class="card" style="border-left:3px solid var(--green)">
+        <h4 style="margin-top:0">装置：支点就是一颗滚动的钢球</h4>
+        <ul style="font-size:14px">
+          <li>等效摆长约 <b>83 cm</b>、总重 <b>12 kg</b></li>
+          <li>不是吊在丝线上，而是吊在一个<b>马镫形托架</b>上</li>
+          <li>托架落在一颗 <b>Ø6.5 mm 的钢球</b>上，钢球在<b>平板（bearing plate）上自由滚动</b></li>
+          <li>称为「<b>paraconical pendulum</b>（视差摆／球载摆）」</li>
+          <li>这种支点让摆锤画<b>椭圆</b>而非固定平面——Allais 追踪的就是椭圆方位角</li>
+        </ul>
+      </div>
+      <div class="card" style="border-left:3px solid var(--cyan)">
+        <h4 style="margin-top:0">方法学：严谨到近乎偏执</h4>
+        <ul style="font-size:14px">
+          <li><b>6 轮</b>实验，每轮连续约 <b>一个月</b>，昼夜不停</li>
+          <li>每 <b>20 分钟</b>烧断棉线释放一次，观测 14 分钟 → 每天 <b>72 组</b>数据，首尾相接成一条连续链</li>
+          <li><b>每轮更换钢球</b>、<b>每周更换承板</b>（排除磨损）</li>
+          <li>1958-07 起，在 <b>57 米深的废弃白垩矿坑</b>（距实验室 6.5 km）并联第二台同样装置</li>
+        </ul>
+        <p style="font-size:13.6px;color:var(--amber);margin-top:8px">👆 那台地下并联装置，就是「<b>隔离舱</b>」的 1950 年代版本——目的正是回答「你的结果是不是热／振动伪影」这个质疑。</p>
+      </div>
+    </div>
+
+    <div class="grid2 reveal" style="margin-top:14px">
+      <div class="card">
+        <h4 style="margin-top:0">他测到了什么</h4>
+        <ul style="font-size:14px">
+          <li>方位角出现约 <b>24 小时 50 分</b>的周期（太阴日）——周期本身不奇怪，<b>振幅大得离谱</b></li>
+          <li>他算出常规日月引潮力比观测效应小约 <b>10⁸ 倍</b>（2022 年合作者重算，仍有约 <b>6 个数量级</b>的差距）</li>
+          <li>1954-06-30 日全食期间，摆动平面方位角突然偏离趋势，最大达 <b>13.5°</b>（约食甚前 20 分钟），食后回落</li>
+          <li>1959-10-02 日食再次捕捉到类似但明显更弱的扰动</li>
+        </ul>
+      </div>
+      <div class="card" style="border-color:var(--amber)">
+        <h4 style="margin-top:0;color:var(--amber)">他的结论 &amp; 70 年的争议</h4>
+        <p style="font-size:14px">Allais 认为只能引入「<b>一种新场</b>」来解释，主张<b>空间是各向异性的</b>（存在类以太流）。这就是「<b>Allais 效应</b>」。</p>
+        <p style="font-size:14px">此后 70 年被反复复现与质疑：</p>
+        <ul style="font-size:13.8px">
+          <li>1970（扭秤）、1995 印度（重力仪）、1997 中国、2009 乌克兰／罗马尼亚（扭秤）等先后尝试</li>
+          <li>有些成功、有些失败；<b>整体量级相差 5 个数量级，连符号都不一样</b></li>
+          <li>至今<b>没有共识</b>——它既没被彻底否证，也没被稳定复现</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="tip good reveal">
+      <div class="t">✅ Allais 对我们真正有用的启示（不是他的结论）</div>
+      <p><b>① 方法论可继承</b>：换球、换板、地下并联、连续链、昼夜不停——这些正是我们要做但成本高的事，他 70 年前就做全了。</p>
+      <p><b>② 结局是警示</b>：一个设计了地下隔离、换件排除磨损、连跑 6 个月一个月的实验，最后仍然<b>没能把效应从系统误差里干净地分离出来</b>。它至今停留在「有争议」。</p>
+      <p><b>③ 所以</b>：本项目的价值不在于「跑出球动」，而在于<b>把不确定度压到能被同行审阅的水平</b>——这也是三阶段方案里第 3 阶段（多中心盲测）存在的理由。</p>
+    </div>
+
+    <h3 class="reveal">4.3 巴夏体系内确实被复现过的部分：时空天线（STA）<span class="tag t-mid" style="margin-left:8px">但对象不同</span></h3>
+    <p class="reveal">巴夏的装置里，<b>双锥螺旋铜线圈（Spacetime Antenna）</b>真有人做了，而且做得很认真。但这些复现<b>不能借来当铜球实验的依据</b>——原因见下表。</p>
+
+    <div class="grid3 reveal">
+      <div class="card">
+        <h4 style="margin-top:0">morpher44（Chuck）</h4>
+        <ul style="font-size:13.7px">
+          <li>造出完整 STA，并用铝制<b>四面体外壳</b>包裹</li>
+          <li>用信号发生器 + 示波器扫出自谐振 <b>≈1.229 MHz</b></li>
+          <li>原生输出约 <b>6 mV / 448 pW</b>（皮瓦级）</li>
+          <li>旁边放等离子球时升到 <b>30.6 V / 9 mW</b>，足以点亮 LED</li>
+          <li>测了平方反比律：远离等离子球功率衰减</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4 style="margin-top:0">Kevin（2008-10-12 场次）</h4>
+        <ul style="font-size:13.7px">
+          <li>做了<b>绕线夹具（jig）</b>，让铜线能规整地绕成 33° 锥</li>
+          <li>巴夏在该场次补充：<b>线圈必须绝缘</b>；STA 某种意义上<b>既是电容也是变压器</b></li>
+          <li>巴夏原话：需要先用 <b>AC 脉冲「启动」</b>它，之后它会自持共振</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4 style="margin-top:0">3D 打印与开源社区</h4>
+        <ul style="font-size:13.7px">
+          <li>Thingiverse 有 STA 的 <b>STL</b>（锥角 33°；<b>9 圈版</b>与 <b>18 圈版</b>）</li>
+          <li>GrabCAD 有 SolidWorks <b>SLDPRT / STEP</b> 模型（2022）</li>
+          <li>basharspacetimeantenna.wordpress.com 完整记录建造过程</li>
+          <li>金属 3D 打印单个线圈约 <b>77.58 美元</b></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="tw reveal">
+      <table>
+        <thead><tr><th></th><th>时空天线 STA（有人做 ✅）</th><th>铜球位置频率实验（无人做 ❌）</th></tr></thead>
+        <tbody>
+          <tr><td class="k">对象</td><td>双锥螺旋铜线圈（+ 有时套铝四面体）</td><td><b>空心导电球</b></td></tr>
+          <tr><td class="k">自变量</td><td>线圈几何、圈数、线径、激励方式</td><td><b>球所处的位置</b></td></tr>
+          <tr><td class="k">测量量</td><td>输出电压／功率（pW – mW）</td><td><b>特征振动频率／Q 值之差</b></td></tr>
+          <tr><td class="k">控制变量</td><td>环境电磁背景、激励源稳定性</td><td>温度、倾斜、声流、Q 泄漏、地磁……</td></tr>
+          <tr><td class="k">结论能否互借</td><td colspan="2" style="color:var(--red)"><b>不能。</b>对象不同、变量不同、测的量不同——STA 的输出功率与「位置是不是物体的属性」无关。</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="reveal">4.4 核心结论：铜球位置频率实验 —— 至今无人做过</h3>
+    <div class="tl reveal">
+      <div class="tli">
+        <div class="y">1998-02-28</div>
+        <div class="h">巴夏第一次给出这个实验，并给了全套尺寸</div>
+        <div class="d">Ø3–6 in、壁 ≤1/16 in、10 ft 平桌、隔离舱、声学波束、六步流程。</div>
+      </div>
+      <div class="tli amber">
+        <div class="y">2017</div>
+        <div class="h">巴夏本人确认「无人做过」</div>
+        <div class="d" style="color:var(--amber)"><b>"We have described this experiment to several people on your planet. To date, no one has done it."</b>　—— 我们已经向地球上许多人解释过这个实验，但至今没有人完成过。</div>
+      </div>
+      <div class="tli red">
+        <div class="y">2026-09-21</div>
+        <div class="h">本次独立检索：仍未见任何公开复现记录</div>
+        <div class="d">英文社区、中文社区、Bashar 官方与民间站点、Thingiverse / GrabCAD / WordPress 复现圈——<b>没有一处报告做过「铜球在 A/B 两点测共振频率差」</b>。</div>
+      </div>
+    </div>
+
+    <details class="reveal">
+      <summary>📋 检索方法与命中清单（方便你复核，含检索词）</summary>
+      <div class="body">
+        <p><b>检索时间</b>：2026-09-21　<b>检索范围</b>：英文 + 中文公开网络</p>
+        <div class="tw">
+          <table>
+            <thead><tr><th>检索词</th><th>命中</th><th>是否为目标实验</th></tr></thead>
+            <tbody>
+              <tr><td class="mono">Bashar hollow conductive ball steel copper experiment 10 feet table resonance location</td><td>igod.tw 原话页（2017 中英对照）、Kundt 管、驻波、共振教学页</td><td><span class="tag t-no">否</span></td></tr>
+              <tr><td class="mono">"hollow conductive ball" sphere rolling 10 foot table experiment Bashar anyone tried</td><td>只有原话转载；Betz 神秘球；Magdeburg 半球；滚球比赛；空心/实心球惯性教学</td><td><span class="tag t-no">否</span></td></tr>
+              <tr><td class="mono">bashar spacetime antenna replication experiment results community coil build</td><td>ThreeDrop / Thingiverse STL、basharspacetimeantenna.wordpress.com、GrabCAD 模型</td><td><span class="tag t-mid">对象不同（STA 线圈）</span></td></tr>
+              <tr><td class="mono">sphere resonance frequency difference different location experiment teleportation</td><td>Schumann 共振科普、声学谐振腔、resonantfractals 球体实验笔记</td><td><span class="tag t-no">否</span></td></tr>
+              <tr><td class="mono">"巴夏" 铜球 实验 有人做过 复现 位置频率</td><td>Betz 金属球（中文报道）、液压半球、Barton 摆、Cavendish</td><td><span class="tag t-no">否</span></td></tr>
+              <tr><td class="mono">Allais paraconical pendulum ball flat surface 1954 anomaly</td><td>视差摆词条、Allais 效应复现史</td><td><span class="tag t-ok">最接近的先例</span></td></tr>
+              <tr><td class="mono">atomic clock gravitational redshift NIST 33 cm</td><td>ScienceDaily / PBS / LiveScience / AZoQuantum</td><td><span class="tag t-ok">「位置→频率」真实案例</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p style="color:var(--dim);font-size:13.5px">⚠️ 说明：网络检索不能穷尽所有未公开的私人实验。严格表述应为「<b>未见任何公开复现记录</b>」，而非「绝对没人做过」。这与巴夏本人 2017 年的说法一致。</p>
+      </div>
+    </details>
+
+    <div class="tip reveal">
+      <div class="t">🧭 空白不是坏消息，它是坐标</div>
+      <p>没有既有的成功案例可以参照，也没有既有的失败报告可以借鉴——意味着<b>不存在「照着别人的做法再来一遍」这条捷径</b>。</p>
+      <p>所有基线、误差模型、判据都要自己建。<b>这就是这个实验真正的成本，也是它真正的价值。</b></p>
+    </div>
+
+    <h3 class="reveal">4.5 顺带一个必须知道的警示案例：Betz 神秘球（1974）</h3>
+    <p class="reveal">这是「球自己在平桌上动了」类报告的<b>教科书样本</b>，情节几乎和巴夏实验的民间想象重合——但结局完全不同。</p>
+    <div class="grid2 reveal">
+      <div class="card">
+        <h4 style="margin-top:0">当时被报告的「异常」</h4>
+        <ul style="font-size:13.9px">
+          <li>放在平坦桌面上会<b>自行滚动</b>，有时改变方向、甚至绕桌边转圈</li>
+          <li>被推走后会<b>自己滚回原位</b></li>
+          <li>对它弹吉他／吹长笛会发出类似音叉的<b>共鸣嗡声</b></li>
+          <li>被磁铁吸引；阳光照射下活动更活跃</li>
+          <li>美国海军 X 光扫描：内部有三个更致密小球呈三角排列、表面有微弱磁场、成分似不锈钢但有「无法检测的成分」</li>
+          <li>1974 年全国报纸报道；海军结论「不是已知地球科技，但无法证明外星来源」</li>
+        </ul>
+      </div>
+      <div class="card" style="border-color:var(--red)">
+        <h4 style="margin-top:0;color:var(--red)">2012 年的复核结论</h4>
+        <p style="font-size:14px">调查播客 <b>Skeptoid</b> 重新核查后指出：这只球极可能就是 <b>Bell &amp; Howell 公司生产的球阀（ball check valve）</b>——尺寸、重量、材质全部吻合。</p>
+        <p style="font-size:14px">更关键的是关于「自行滚动」的记录：它<b>在 Betz 家安静陈列了近两周，从未被报告自行移动过</b>；所谓异常行为，只出现在<b>有人专门把它拿去做实验、试图证明它会动之后</b>。</p>
+        <p style="font-size:14px;color:var(--amber)"><b>教训</b>：一只「会自己动的神秘金属球」，最后被解释成一颗阀门。<b>「球自己动了」这类报告的默认解释是机械原因或观察者效应，不是新物理。</b></p>
+      </div>
+    </div>
+    <div class="tip bad reveal">
+      <div class="t">🔴 这个故事直接决定了本项目的技术路线</div>
+      <p>正因为「球自己动」有太多平凡的成因（桌面微倾、气流、静电、残余磁矩、观察者干预），所以本项目<b>不把「球滚起来」当第一目标</b>，而是先做第 3–5 步：<b>测频率、排除泄漏、报出测量上限</b>。</p>
+      <p>顺序不能颠倒。<b>先证明「我们测不出差异，且能说明为什么」，再谈让球滚。</b></p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 5 为何没人做 ================= -->
+<section id="why">
+  <div class="wrap">
+    <div class="shead reveal">
+      <span class="snum">05 / THE REAL DIFFICULTY</span>
+      <h2>为什么它至今没人做<span class="s">答案不在玄学，在计量学</span></h2>
+      <p class="sdesc">这是全案最关键的一次视角转换：<b>这项工作的真正内容不是「验证巴夏」，而是「用计量学把混淆源压到足够低」</b>——让结论要么是差异，要么是一个有意义的测量上限。</p>
+    </div>
+
+    <div class="grid2 reveal">
+      <div class="card" style="border-left:3px solid var(--blue)">
+        <h4 style="margin-top:0">标准物理的预测：零效应</h4>
+        <p style="font-size:14px"><b>平移不变性</b>——一个物体的本征频率只由<b>几何、材料、边界条件</b>决定，与它摆在哪里无关。</p>
+        <p style="font-size:14px">所以按主流物理，<b>H1 应当测不出超出不确定度的差异</b>。球是 Ø80 mm 还是 Ø152 mm 有影响，摆在桌子这头还是那头<b>没有</b>。</p>
+      </div>
+      <div class="card" style="border-left:3px solid var(--amber)">
+        <h4 style="margin-top:0">但现实测量：几乎必然测到差异</h4>
+        <p style="font-size:14px">来源全是<em>平凡</em>的：</p>
+        <p style="font-size:13.9px">桌面倾斜 · 球质量偏心 · 释放冲量 · 桌面波纹导向 · 声流与气流 · 静电与残余磁矩 · 温度梯度 · 地面微动 · 仪器漂移</p>
+        <p style="font-size:14px"><b>你会测到差异——只是它不是你要的那个。</b></p>
+      </div>
+    </div>
+
+    <div class="tip reveal">
+      <div class="t">🎯 一句话结论：<b>灵敏度不是瓶颈，系统误差才是</b></div>
+      <p>这是本项目最重要的量化判断。对比一下「仪器能分辨多少」和「温度漂了多少」：</p>
+    </div>
+
+    <div class="svgbox reveal">
+      <svg viewBox="0 0 860 290" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="灵敏度与系统误差对比">
+        <defs>
+          <linearGradient id="barG" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#54d98c"/><stop offset="1" stop-color="#3ce0cf"/></linearGradient>
+          <linearGradient id="barR" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#ff7272"/><stop offset="1" stop-color="#ffb545"/></linearGradient>
+        </defs>
+        <text x="24" y="30" fill="#8ea0bb" font-size="13" font-family="Consolas,monospace">对数刻度（相对频率 Δf/f）　越短越好，越靠左越好</text>
+
+        <g font-size="12.8" font-family="Consolas,monospace">
+          <text x="24" y="82" fill="#54d98c">拍频法灵敏度</text>
+          <rect x="200" y="68" width="120" height="20" rx="4" fill="url(#barG)" opacity=".9"/>
+          <text x="330" y="83" fill="#54d98c">3.8×10⁻¹²　(T = 100 s)</text>
+
+          <text x="24" y="118" fill="#54d98c">相位法灵敏度</text>
+          <rect x="200" y="104" width="150" height="20" rx="4" fill="url(#barG)" opacity=".8"/>
+          <text x="360" y="119" fill="#54d98c">5×10⁻¹¹</text>
+
+          <text x="24" y="154" fill="#5ba3ff">电磁腔相对精度</text>
+          <rect x="200" y="140" width="210" height="20" rx="4" fill="#5ba3ff" opacity=".6"/>
+          <text x="420" y="155" fill="#5ba3ff">10⁻⁸</text>
+
+          <text x="24" y="200" fill="#ffb545">1 mK 温漂（铜腔 16.5 ppm/K）</text>
+          <rect x="200" y="186" width="440" height="20" rx="4" fill="url(#barR)"/>
+          <text x="650" y="201" fill="#ff7272" font-weight="700">1.65×10⁻⁸</text>
+
+          <text x="24" y="236" fill="#ff7272">1 K 温漂（机械模 −150 ppm/K）</text>
+          <rect x="200" y="222" width="620" height="20" rx="4" fill="url(#barR)"/>
+          <text x="230" y="236" fill="#fff" font-weight="700">1.5×10⁻⁴</text>
+        </g>
+        <line x1="200" y1="56" x2="200" y2="256" stroke="#2a3d5c" stroke-width="1"/>
+        <text x="200" y="276" text-anchor="middle" fill="#6c7f9b" font-size="12">← 更小</text>
+        <text x="820" y="276" text-anchor="end" fill="#6c7f9b" font-size="12">更大 →</text>
+      </svg>
+      <div class="svgcap">图｜仪器灵敏度 vs 温度漂移。1 mK 的温漂就比拍频法灵敏度<b>劣 4 000 倍</b>——先把温度压住，再谈位置</div>
+    </div>
+
+    <div class="grid3 reveal">
+      <div class="card">
+        <div class="tag t-ok">好消息</div>
+        <h4 style="margin-top:11px">仪器够用</h4>
+        <p style="font-size:14px">拍频法已能到 <b>3.8×10⁻¹²</b>。不需要进口顶级设备就能获得远超所需的相对精度。</p>
+      </div>
+      <div class="card">
+        <div class="tag t-no">坏消息</div>
+        <h4 style="margin-top:11px">环境太脏</h4>
+        <p style="font-size:14px">普通实验室的 1 mK 温漂、1 μrad 微倾、Q 值泄漏，任何一个都<b>盖过真实效应几个数量级</b>。</p>
+      </div>
+      <div class="card" style="border-color:var(--green)">
+        <div class="tag t-mid">这就是方法</div>
+        <h4 style="margin-top:11px">先控温，再测位置</h4>
+        <p style="font-size:14px">全部工程重心应放在<b>恒温、隔振、真空／隔声、Q 值控制</b>，而不是买更贵的分析仪。</p>
+      </div>
+    </div>
+
+    <div class="tip good reveal">
+      <div class="t">✅ 未检出也是科学结果</div>
+      <p>如果最终测不出差异，应报告一个<b>上限定值</b>，例如：<code>Δf/f &lt; 3×10⁻⁸（95% 置信区间）</code>。</p>
+      <p>这句话本身就是对巴夏命题的<b>有效约束</b>——它把「位置是物体的属性」从无限定性的主张，压缩成一条可被引用、可被超越的边界。<b>这正是本实验能给出的最大价值。</b></p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 6 三阶段 ================= -->
+<section id="road">
+  <div class="wrap">
+    <div class="shead reveal">
+      <span class="snum">06 / ROADMAP</span>
+      <h2>落地路线：三阶段，四道判据<span class="s">从「测得准」到「说得清」</span></h2>
+      <p class="sdesc">思路是<b>先把测量能力建起来</b>，再找效应，最后接受同行审阅。任何一跳都不可省——跳到第 3 步而没有第 1 步，结果必然无法解释。</p>
+    </div>
+
+    <div class="svgbox reveal">
+      <svg viewBox="0 0 880 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="三阶段路线阶梯">
+        <defs>
+          <linearGradient id="s1" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#1b8f86"/><stop offset="1" stop-color="#3ce0cf"/></linearGradient>
+          <linearGradient id="s2" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#5b52b8"/><stop offset="1" stop-color="#a78bfa"/></linearGradient>
+          <linearGradient id="s3" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#b8762c"/><stop offset="1" stop-color="#ffb545"/></linearGradient>
+        </defs>
+
+        <g>
+          <rect x="40" y="188" width="250" height="76" rx="10" fill="url(#s1)" opacity=".2" stroke="#3ce0cf" stroke-width="1.5"/>
+          <text x="58" y="214" fill="#3ce0cf" font-size="14.5" font-weight="700" font-family="Consolas,monospace">阶段一 · 初始验证</text>
+          <text x="58" y="236" fill="#b8c6dc" font-size="12.6">测准：平面度·倾角·球几何·滚动阻力·声场</text>
+          <text x="58" y="254" fill="#6c7f9b" font-size="11.6">4–6 人 · 3–8 月 · 60–180 万元</text>
+
+          <rect x="316" y="128" width="250" height="136" rx="10" fill="url(#s2)" opacity=".2" stroke="#a78bfa" stroke-width="1.5"/>
+          <text x="334" y="154" fill="#a78bfa" font-size="14.5" font-weight="700" font-family="Consolas,monospace">阶段二 · 机制搜索</text>
+          <text x="334" y="176" fill="#b8c6dc" font-size="12.6">找效应：多球／多材料／多位置</text>
+          <text x="334" y="194" fill="#b8c6dc" font-size="12.6">开环扫描 + 闭环对照 + 假目标</text>
+          <text x="334" y="212" fill="#b8c6dc" font-size="12.6">三维声场 · 屏蔽 · 盲目标</text>
+          <text x="334" y="238" fill="#6c7f9b" font-size="11.6">8–15 人 · 12–24 月</text>
+          <text x="334" y="254" fill="#6c7f9b" font-size="11.6">500–1800 万元</text>
+
+          <rect x="592" y="52" width="250" height="212" rx="10" fill="url(#s3)" opacity=".2" stroke="#ffb545" stroke-width="1.5"/>
+          <text x="610" y="78" fill="#ffb545" font-size="14.5" font-weight="700" font-family="Consolas,monospace">阶段三 · 标准与复现</text>
+          <text x="610" y="100" fill="#b8c6dc" font-size="12.6">说清：标准化 · 多中心盲测</text>
+          <text x="610" y="118" fill="#b8c6dc" font-size="12.6">盲样 · 盲球 · 盲位置</text>
+          <text x="610" y="136" fill="#b8c6dc" font-size="12.6">第三方交叉验证 · 开放数据</text>
+          <text x="610" y="154" fill="#b8c6dc" font-size="12.6">审计 · 停止条件</text>
+          <text x="610" y="186" fill="#6c7f9b" font-size="11.6">20–40 人 · 24–48 月</text>
+          <text x="610" y="204" fill="#6c7f9b" font-size="11.6">3000–12000 万元</text>
+          <text x="610" y="234" fill="#ff7272" font-size="11.8" font-weight="600">不可削减：</text>
+          <text x="610" y="250" fill="#b8c6dc" font-size="11.6">独立设施 · 开放数据 · 审计</text>
+
+          <path d="M296 226 L310 226" stroke="#3ce0cf" stroke-width="2" marker-end="url(#ar)"/>
+          <path d="M572 196 L586 196" stroke="#a78bfa" stroke-width="2"/>
+        </g>
+        <text x="440" y="290" text-anchor="middle" fill="#6c7f9b" font-size="12.2">每一级的产出都是下一级的输入；判据不达标不得升级</text>
+      </svg>
+      <div class="svgcap">图｜三阶段路线。预算与人力为项目档案给出的量级估计，用于判断「这不是一个业余周末项目」</div>
+    </div>
+
+    <h3 class="reveal">四级成功判据（逐级门槛）</h3>
+    <div class="tw reveal">
+      <table>
+        <thead><tr><th>级别</th><th>判据</th><th>性质</th></tr></thead>
+        <tbody>
+          <tr><td class="k">① 规格达标</td><td>平面度、倾角、球几何、滚动阻力、声场均匀性全部实测达标</td><td><span class="tag t-info">工程前提</span></td></tr>
+          <tr><td class="k">② 基线可复现</td><td>A/B 频谱差 <b>超出不确定度</b>，且交换球的位置后可复现（双球交换法）</td><td><span class="tag t-mid">科学观察</span></td></tr>
+          <tr><td class="k">③ 主动响应</td><td>主动信号产生的<b>定向净位移 &gt; 5 倍合并标准差</b>；盲目标命中显著；<b>关掉信号位移即消失</b></td><td><span class="tag t-ok">因果证据</span></td></tr>
+          <tr><td class="k">④ 外部复现</td><td>两个独立实验室复现出<b>同方向、同量级</b>的效应</td><td><span class="tag t-v">共同体承认</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <details class="reveal">
+      <summary>🎯 H3 停止窗口：预注册的「球真的停在 B 了」判定标准</summary>
+      <div class="body">
+        <p>为了避免事后挑数据，停止条件必须<b>事先写死</b>：</p>
+        <div class="kv">
+          <span>净位移 <b>&gt; 2 mm</b></span>
+          <span>≥ <b>80%</b> 的试验向 B 方向</span>
+          <span>目标区 = <b>5 倍球径</b></span>
+          <span><b>30 s</b> 内速度 &lt; 0.05 mm/s</span>
+          <span><b>60 s</b> 内不返回 A</span>
+        </div>
+        <p style="color:var(--dim);font-size:13.6px">意义：把巴夏原话里含糊的「轻微波动一下，然后停下」，翻译成<b>可被第三方重新计算</b>的数值条件。</p>
+      </div>
+    </details>
+
+    <h3 class="reveal">每一阶段的「不可削减项」</h3>
+    <div class="grid3 reveal">
+      <div class="card"><div class="tag t-info">阶段一</div><p style="font-size:14px;margin-top:10px">水平控制 · 同步记录 · 球体 CT 检测 · 外部顾问复核</p></div>
+      <div class="card"><div class="tag t-v">阶段二</div><p style="font-size:14px;margin-top:10px">三维声场标定 · 电磁屏蔽 · 独立数据分析方</p></div>
+      <div class="card"><div class="tag t-mid">阶段三</div><p style="font-size:14px;margin-top:10px">独立设施 · 开放数据 · 审计 · 明确的停止条件</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 7 规格 ================= -->
+<section id="spec">
+  <div class="wrap">
+    <div class="shead reveal">
+      <span class="snum">07 / SPEC</span>
+      <h2>规格：把原话的空格填满<span class="s">球 · 传感器 · 扫描 · 公式</span></h2>
+      <p class="sdesc">第 2 章列了巴夏<b>没规定</b>的 9 个自由变量。这一章就是项目档案对这些空白的填法——注意：<b>这些是我们的设计，不是巴夏的话</b>。</p>
+    </div>
+
+    <h3 class="reveal">7.1 球体选型：一个必须澄清的尺寸之误</h3>
+    <div class="tip bad reveal">
+      <div class="t">🔴 勘误：25.4 mm 不在巴夏给的区间里</div>
+      <p>此前方案曾把 <b>25.4 mm</b>（＝1 英寸）当工艺自定值使用。<b>这是错的</b>：巴夏给的是 <b>3–6 英寸 = 76.2–152.4 mm</b>，25.4 mm <b>比下界还小 3 倍</b>，完全在区间之外。</p>
+      <p>目前 25.4 mm 只保留一个用途：作为<b>微波腔对照小样</b>（TE₁₁ 模约 5.2 GHz）。<b>它不是本路线的主力球。</b></p>
+      <p style="color:var(--dim)">错误根源：没有先分清「巴夏给了什么」（第一层）与「我们自己补什么」——见 <a href="勘误与修订_巴夏铜球原始尺寸原话与首球选型表.md">勘误与修订文档</a>。</p>
+    </div>
+
+    <div class="tw reveal">
+      <table>
+        <thead><tr><th>项</th><th>巴夏原话</th><th>本项目选型</th><th>理由</th></tr></thead>
+        <tbody>
+          <tr><td class="k">直径</td><td class="mono">3–6 in　(76.2–152.4 mm)</td><td><b>Ø80 或 Ø100 mm</b>（工艺规范 v3.0 取 <b>Ø80</b>）</td><td>贴近下界，质量与频率便于处理</td></tr>
+          <tr><td class="k">壁厚</td><td class="mono">≤ 1/16 in　(1.59 mm)</td><td><b>0.4–0.6 mm</b>（取 0.4）</td><td>t/R = 0.01，把弯曲模压进音频段</td></tr>
+          <tr><td class="k">主球材料</td><td class="mono">copper / steel</td><td>无氧铜 <b>TU1 / TU2</b>，或低磷脱氧铜 SW-Cu / Cu-DLP</td><td>导电率高、可焊、球形度好</td></tr>
+          <tr><td class="k">对照球</td><td>—</td><td><b>304L / 316L</b>（钢球首选 305L）</td><td>不同材料/阻尼对照，排除材料单一性</td></tr>
+          <tr><td class="k">形位公差</td><td class="mono">highly balanced, as spherical as you can</td><td>圆度 ≤ 0.02 mm；壁厚差 ≤ 0.02 mm</td><td>质心偏心是最大的伪位移源</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <details class="reveal">
+      <summary>🔧 制造工艺：薄壁球焊接的硬约束</summary>
+      <div class="body">
+        <p>Ø80 mm、壁厚 0.4 mm 的铜球壳，<b>不能靠手工钎焊</b>。档案给出的窗口：</p>
+        <div class="kv">
+          <span>工艺：<b>光纤激光脉冲焊</b></span>
+          <span>功率：<b>300–500 W 脉冲</b></span>
+          <span>装配间隙：<b>≤ 0.05 mm</b></span>
+          <span>去应力：<b>180–220 ℃ / 1–2 h</b></span>
+          <span>⚠️ 去应力<b>不超 250 ℃</b></span>
+          <span>开孔孔径：<b>≤ 5–8 mm</b></span>
+        </div>
+        <p style="color:var(--amber)"><b>坑</b>：铜磷钎料<b>禁用于钢</b>（磷与铁生成脆性相）。两半球对焊的风险已在推演中单独立项（轮 16）。</p>
+        <p style="color:var(--dim);font-size:13.6px">另一条路线是用整段钢管/铜管等厚旋压成型（等厚工艺 + 超声振动 + 滚动研磨两段法），避免焊缝——代价是设备门槛更高。</p>
+      </div>
+    </details>
+
+    <h3 class="reveal">7.2 八点立方体传感阵列：为什么是 8 个点、摆成这样</h3>
+    <div class="svgbox reveal">
+      <svg viewBox="0 0 760 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="八点立方体阵列几何">
+        <defs>
+          <radialGradient id="core"><stop offset="0" stop-color="#ffd591"/><stop offset="1" stop-color="#a35c1c"/></radialGradient>
+        </defs>
+        <!-- 立方体 -->
+        <g stroke="#2a3d5c" stroke-width="1.2" fill="none">
+          <path d="M250 90 L430 90 L430 250 L250 250 Z"/>
+          <path d="M310 55 L490 55 L490 215 L310 215 Z"/>
+          <path d="M250 90 L310 55 M430 90 L490 55 M430 250 L490 215 M250 250 L310 215"/>
+        </g>
+        <!-- 顶点 -->
+        <g>
+          <circle cx="250" cy="90" r="6.5" fill="#3ce0cf"/><circle cx="430" cy="90" r="6.5" fill="#3ce0cf"/>
+          <circle cx="250" cy="250" r="6.5" fill="#a78bfa"/><circle cx="430" cy="250" r="6.5" fill="#a78bfa"/>
+          <circle cx="310" cy="55" r="6.5" fill="#a78bfa"/><circle cx="490" cy="55" r="6.5" fill="#a78bfa"/>
+          <circle cx="310" cy="215" r="6.5" fill="#3ce0cf"/><circle cx="490" cy="215" r="6.5" fill="#3ce0cf"/>
+        </g>
+        <!-- 球心 -->
+        <circle cx="370" cy="152" r="27" fill="url(#core)" stroke="#ffd591" stroke-width="1.2"/>
+        <text x="370" y="157" text-anchor="middle" fill="#3a1f05" font-size="11.5" font-weight="700" font-family="Consolas,monospace">BALL</text>
+        <!-- 连线到顶点 -->
+        <g stroke="#4a6488" stroke-width="1" stroke-dasharray="3 4" opacity=".8">
+          <path d="M370 152 L250 90 M370 152 L430 90 M370 152 L250 250 M370 152 L430 250"/>
+          <path d="M370 152 L310 55 M370 152 L490 55 M370 152 L310 215 M370 152 L490 215"/>
+        </g>
+        <!-- 标注 -->
+        <text x="70" y="70" fill="#3ce0cf" font-size="13" font-weight="700">组 A（4 点）</text>
+        <text x="70" y="90" fill="#8ea0bb" font-size="12">正四面体 · 组内夹角 109.471°</text>
+        <text x="70" y="112" fill="#a78bfa" font-size="13" font-weight="700">组 B（4 点）</text>
+        <text x="70" y="132" fill="#8ea0bb" font-size="12">对映正四面体 · 与 A 组互为镜像</text>
+        <text x="70" y="170" fill="#8ea0bb" font-size="12.4">顶点坐标 (±1,±1,±1)/√3 · R</text>
+        <text x="70" y="190" fill="#8ea0bb" font-size="12.4">按坐标符号乘积分组：星形八面体</text>
+        <text x="70" y="222" fill="#54d98c" font-size="12.6" font-weight="600">单组 4 点 = 球面 2-design</text>
+        <text x="70" y="242" fill="#54d98c" font-size="12.6" font-weight="600">全部 8 点 = 球面 3-design ✅</text>
+        <text x="70" y="272" fill="#6c7f9b" font-size="12">线圈 Ø10–15 mm，距球面 5–10 mm</text>
+        <text x="70" y="290" fill="#6c7f9b" font-size="12">外接立方体边长 ≈ 46.2 mm</text>
+        <text x="640" y="290" fill="#6c7f9b" font-size="12">跨组夹角 70.529°</text>
+        <text x="640" y="272" fill="#6c7f9b" font-size="12">对映 180°</text>
+      </svg>
+      <div class="svgcap">图｜八点立方体阵列。8 个点构成<b>球面 3-design</b>——意味着它能精确积分到 3 阶球谐，把球壳最低阶模态的盲区消掉</div>
+    </div>
+
+    <div class="grid2 reveal">
+      <div class="card">
+        <h4 style="margin-top:0">为什么不能只用 1 个传感器</h4>
+        <ul style="font-size:14px">
+          <li>球壳的<b>模态有节线</b>——单点可能正好压在节点上，<b>什么都测不到</b>（这叫模态盲区）</li>
+          <li>单个线圈也无法区分<b>平移</b>与<b>呼吸</b>模态</li>
+          <li>8 点的对称布局使各阶模态的采样权重可预测、可反解</li>
+          <li>两组四面体互为对映，用于做<b>宇称分离</b>（区分奇／偶模态）</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4 style="margin-top:0">采集的硬性要求</h4>
+        <div class="kv">
+          <span>通道：<b>8 路相位相干</b></span>
+          <span>共享时钟与本振</span>
+          <span>位移帧率 <b>≥ 100 Hz</b></span>
+          <span>滚动测量 <b>1000 Hz</b></span>
+          <span>位置噪声 <b>&lt; 10 μm</b></span>
+        </div>
+        <p style="font-size:13.7px;color:var(--dim)">「相位相干」是关键——8 路必须同一时基，否则跨通道的相位差没有意义，而<b>相位正是我们提升灵敏度的主战场</b>。</p>
+      </div>
+    </div>
+
+    <h3 class="reveal">7.3 开环扫描协议：不知道频率在哪，就全扫一遍</h3>
+    <div class="p">
+      <div class="tw reveal">
+        <table>
+          <thead><tr><th>参数</th><th>取值</th><th>说明</th></tr></thead>
+          <tbody>
+            <tr><td class="k">频率范围</td><td>一期 <b>20–2000 Hz</b>（声学）；二期加 20–40 kHz</td><td>覆盖超薄球壳弯曲模所在频段</td></tr>
+            <tr><td class="k">总范围</td><td>20–4000 Hz</td><td>含高频对照</td></tr>
+            <tr><td class="k">网格</td><td><b>对数网格 N = 200</b>（相邻比 1.027）</td><td>共振峰在低频更密，对数网格更合理</td></tr>
+            <tr><td class="k">驻留时间</td><td><b>2–3 s（≥ 5τ）</b></td><td>保证 ring-down 充分衰减，避免上一频点残留</td></tr>
+            <tr><td class="k">单轮时长</td><td>7–10 分钟</td><td>与热漂移尺度相称</td></tr>
+            <tr><td class="k">扫速上限</td><td>0.8–12.6 Hz/s</td><td>过快会激发瞬态，伪造出「峰」</td></tr>
+            <tr><td class="k">静息率目标</td><td><b>p₀ ≤ 0.03</b></td><td>假阳性率控制</td></tr>
+            <tr><td class="k">多重比较校正</td><td>Bonferroni：n = 20 需命中 <b>≥ 7 次</b></td><td>防止「200 个频点里总有几个像峰」</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="tip reveal">
+      <div class="t">💡 为什么叫「开环」</div>
+      <p>闭环是「测到差值 → 反馈调整」；开环是<b>「不知道频率在哪，先不加判断地全扫，事后统一分析」</b>。</p>
+      <p>这是从第 9 轮推演开始的路线转折：<b>从「测量」转向「扫描」</b>——因为在没建立基线之前，任何「测量」都可能只是在测环境噪声。开环扫描是让<b>数据自己暴露峰值</b>，而不是我们预设一个频率去找它。</p>
+    </div>
+
+    <h3 class="reveal">7.4 关键公式</h3>
+    <div class="grid2 reveal">
+      <div class="card">
+        <h4 style="margin-top:0">Ring-down 拟合（每次敲击／激励）</h4>
+        <div class="fml">s(t) = A·e^(−t/τ)·sin(2πf₀t + φ)
+<span class="n">输出三个量：中心频率 f₀、衰减时间 τ、拟合优度 R²</span></div>
+        <div class="fml">Q = π·f₀·τ
+<span class="n">Q 值 = 品质因数。Q 越高，频率读数越锐、越能分辨微小频差</span></div>
+      </div>
+      <div class="card">
+        <h4 style="margin-top:0">球壳的本征频率</h4>
+        <div class="fml">f_ring = c_L / (2πR)
+<span class="n">c_L = √(E / (ρ(1−ν²))) = 3843 m/s（铜的纵波声速）</span></div>
+        <div class="fml">f_弯曲 ∝ (t/R) · f_ring
+<span class="n">t/R = 0.002–0.01 → 弯曲模落到 100–1000 Hz；Ø80×0.4 实测预期 ≈ 60–230 Hz</span></div>
+        <p style="font-size:13.6px;color:var(--dim);margin-top:10px">呼吸模（n=0）铜球约 <b>125.8 kHz</b>——远在音频段之上。这就是<b>为什么必须选超薄壁</b>：只有把壁做薄，弯曲模才会落进「每秒几百周」的音频段，才可能用声学波束驱动、用麦克风采集。</p>
+      </div>
+    </div>
+
+    <div class="grid2 reveal">
+      <div class="card" style="border-color:var(--cyan2)">
+        <h4 style="margin-top:0">双球交换法：抵消球个体差异</h4>
+        <div class="fml">P_A − P_B = (Δ₁ − Δ₂) / 2
+<span class="n">Δ₁、Δ₂ 是两只球各自在 A/B 的频差。球的个体差异在相减中被消掉，
+剩下的是纯位置效应——这是全案最优雅的一招</span></div>
+      </div>
+      <div class="card" style="border-color:var(--violet)">
+        <h4 style="margin-top:0">拍频放大判据：把灵敏度搬进相位</h4>
+        <div class="fml">δf ≈ 1 / (T · f₀)
+<span class="n">T = 观测时长。用「打死一个拍」来标定最小可分辨频差</span></div>
+        <div class="fml">进动速率 = ε · f₀
+<span class="n">2.618 GHz、ε = 10⁻⁸ → 26.18 Hz 的进动信号，
+比直接测幅度灵敏约 2.6×10⁴ 倍</span></div>
+        <p style="font-size:13.6px;color:var(--dim);margin-top:8px"><b>核心思想</b>：从「测幅度」搬到「测时间与相位」。dφ/df = 2Q/f₀——Q 越高，同样的频差造成的相位变化越大。</p>
+      </div>
+    </div>
+
+    <details class="reveal">
+      <summary>📐 Harmonograph 公式：八路信号怎么合成一张图</summary>
+      <div class="body">
+        <div class="fml">x(t) = Σ aᵢ·sin(fᵢt + pᵢ)·e^(−dᵢt)　，　d = πf/Q
+<span class="n">每个阻尼正弦对应一个振动模态；三维版本用三个「圆盘」的 cos/sin 对</span></div>
+        <p>八点阵列采到的 8 路信号，可以合成一张 <b>harmonograph（谐音图）</b>——一个随时间缓慢进动的复杂曲线。</p>
+        <p><b>它的用处</b>：如果 A 点和 B 点的 harmonograph <b>形状／进动速率不同</b>，那是比单点频率更丰富的指纹；如果有 T₂ 劈裂（模态简并分裂），图上会出现可识别的<b>进动花瓣</b>。</p>
+        <p style="color:var(--dim);font-size:13.6px">相关图见下一页图库的 <code>图02_harmonograph与T2劈裂进动</code>。</p>
+      </div>
+    </details>
+  </div>
+</section>
+
+<!-- ================= 8 误差 ================= -->
+<section id="err">
+  <div class="wrap">
+    <div class="shead reveal">
+      <span class="snum">08 / ERROR BUDGET</span>
+      <h2>误差预算：谁在伪装成「位置签名」<span class="s">带量级，可直接用于设计</span></h2>
+      <p class="sdesc">第 5 章说「系统误差才是瓶颈」。这一章把每个混淆源<b>换算成相对频率量级</b>——你可以直接拿它决定：恒温箱要控到多少、桌子要调多平。</p>
+    </div>
+
+    <div class="tw reveal">
+      <table>
+        <thead><tr><th>混淆源</th><th>灵敏度／量级</th><th>换算到 Δf/f</th><th>处理</th></tr></thead>
+        <tbody>
+          <tr><td class="k">温度（铜腔振动）</td><td>16.5 ppm/K</td><td class="mono" style="color:var(--red)"><b>1 mK → 1.65×10⁻⁸</b></td><td>恒温 + 多点测温，<b>首要任务</b></td></tr>
+          <tr><td class="k">温度（机械模）</td><td>−150 ppm/K</td><td class="mono" style="color:var(--red)"><b>1 K → 1.5×10⁻⁴</b></td><td>机械通道温度敏感度暴涨约 10⁴ 倍，必须优先隔离</td></tr>
+          <tr><td class="k">接触点／Q 泄漏</td><td>Q 可低至 50–500</td><td>—</td><td><b>最大的伪影源</b>。支撑方式与接触面积需专门设计</td></tr>
+          <tr><td class="k">桌面微倾</td><td>1 μrad</td><td>3.048 m 上 → <b>3.05 μm 高差</b></td><td>调平 + 实时倾角监测；会制造真实的滚动力</td></tr>
+          <tr><td class="k">声反射</td><td>第一反射声压 = 直达波的 <b>40.5%</b></td><td>—</td><td>吸声处理；反射会与直达波干涉出虚假驻波</td></tr>
+          <tr><td class="k">地面微动</td><td>1–10 Hz</td><td>—</td><td>隔振台；与球壳弯曲模频段重叠，必须压</td></tr>
+          <tr><td class="k">工频干扰</td><td>50 / 60 Hz 及谐波</td><td>—</td><td>三轴磁场探头同步记录，事后做相关分析</td></tr>
+          <tr><td class="k">气压</td><td>1 hPa</td><td class="mono">1×10⁻¹¹</td><td>记录即可，量级可忽略</td></tr>
+          <tr><td class="k">湿度</td><td>1 %RH</td><td class="mono">5×10⁻¹²</td><td>记录即可</td></tr>
+          <tr><td class="k">地磁涡流阻尼</td><td>Q_mag ~ 10⁸</td><td>—</td><td><b>可忽略</b>（比机械 Q 高十几个数量级）</td></tr>
+          <tr style="background:rgba(255,114,114,.05)"><td class="k">引力红移</td><td>33 cm 高度差</td><td class="mono">4×10⁻¹⁷</td><td><b>物理存在，但现有方案测不到</b>——它是真实效应，只是小得离谱</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="grid3 reveal">
+      <div class="card">
+        <div class="tag t-no">最高风险</div>
+        <p style="font-size:14px;margin-top:10px">把<b>普通声辐射力／微倾／电磁泄漏</b>误报为「地点签名」——这是整个项目的头号风险，也是 Betz 球故事的现代版。</p>
+      </div>
+      <div class="card">
+        <div class="tag t-mid">第二风险</div>
+        <p style="font-size:14px;margin-top:10px"><b>薄壳做不出来、或在测试中被压凹</b>。0.4 mm 壁厚的球，屈曲强度只有理论值的 30%–70%。</p>
+      </div>
+      <div class="card">
+        <div class="tag t-info">第三风险</div>
+        <p style="font-size:14px;margin-top:10px">环境振动、清洁度、人员操作差异、<b>供应商质量波动</b>——工程性风险，靠 SOP 与检查清单控制。</p>
+      </div>
+    </div>
+
+    <div class="tip warn reveal">
+      <div class="t">⚖️ 核心工程矛盾（没有完美解，只有排序）</div>
+      <p>要同时满足：<b>低滚动阻力</b> ＋ <b>高平面度</b> ＋ <b>振动隔离</b> ＋ <b>声场均匀</b> ＋ <b>可校准测力</b>。</p>
+      <p>这五项互相拉扯——例如：为了降低滚动阻力要把球做轻做硬，但为了可测力又要它够重；为了隔振要把桌子做软，但为了平面度又要它够刚。<b>项目档案的做法是逐项量化、明确排序，而不是追求全部最优。</b></p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 9 资产 ================= -->
+<section id="assets">
+  <div class="wrap">
+    <div class="shead reveal">
+      <span class="snum">09 / ASSETS</span>
+      <h2>这个项目里已经有什么<span class="s">全部数字均从磁盘实时计算</span></h2>
+      <p class="sdesc">档案不是零散的笔记，而是<b>一份结构化的研究包</b>：原始出处、语录、推演过程、正式产出、工具与图。</p>
+    </div>
+
+    <div class="grid4 reveal">
+      <div class="card" style="text-align:center"><div class="v" style="font-size:30px;font-weight:800;color:var(--cyan)">110</div><div style="font-size:13px;color:var(--dim)">篇 md 文档</div></div>
+      <div class="card" style="text-align:center"><div class="v" style="font-size:30px;font-weight:800;color:var(--cyan)">39</div><div style="font-size:13px;color:var(--dim)">篇视频语录（V01–V39）</div></div>
+      <div class="card" style="text-align:center"><div class="v" style="font-size:30px;font-weight:800;color:var(--cyan)">13</div><div style="font-size:13px;color:var(--dim)">篇主题综述</div></div>
+      <div class="card" style="text-align:center"><div class="v" style="font-size:30px;font-weight:800;color:var(--cyan)">22</div><div style="font-size:13px;color:var(--dim)">轮方案推演</div></div>
+      <div class="card" style="text-align:center"><div class="v" style="font-size:30px;font-weight:800;color:var(--amber)">9</div><div style="font-size:13px;color:var(--dim)">篇正式产出文档</div></div>
+      <div class="card" style="text-align:center"><div class="v" style="font-size:30px;font-weight:800;color:var(--amber)">10</div><div style="font-size:13px;color:var(--dim)">张图、海报与封面图</div></div>
+      <div class="card" style="text-align:center"><div class="v" style="font-size:30px;font-weight:800;color:var(--violet)">83</div><div style="font-size:13px;color:var(--dim)">份字幕 vtt</div></div>
+      <div class="card" style="text-align:center"><div class="v" style="font-size:30px;font-weight:800;color:var(--violet)">13</div><div style="font-size:13px;color:var(--dim)">个视频原件（本地）</div></div>
+    </div>
+
+    <h3 class="reveal">图库（点击放大）</h3>
+    <div class="gal reveal">
+      <div class="gi cover" data-zoom="YouTube 上的巴夏视频 · 视频来源总览"><img src="图/youtube上的bashar视频.jpg" alt="YouTube 上的巴夏视频封面总览" loading="lazy"><div class="c"><div class="n">YouTube 上的巴夏视频</div><div class="s">1251×2308</div></div></div>
+      <div class="gi poster" data-zoom="海报04 · 深色科幻概念风"><img src="图/海报04_深色科幻概念风.png" alt="概念海报 深色科幻概念风" loading="lazy"><div class="c"><div class="n">概念海报 · 深色科幻概念风</div><div class="s">1328×1776</div></div></div>
+      <div class="gi poster" data-zoom="海报03 · 等轴测工程制图风"><img src="图/海报03_等轴测工程制图风.png" alt="概念海报 等轴测工程制图风" loading="lazy"><div class="c"><div class="n">概念海报 · 等轴测工程制图风</div><div class="s">1328×1776</div></div></div>
+      <div class="gi poster" data-zoom="海报02 · 极简产品渲染风"><img src="图/海报02_极简产品渲染风.png" alt="概念海报 极简产品渲染风" loading="lazy"><div class="c"><div class="n">概念海报 · 极简产品渲染风</div><div class="s">1328×1776</div></div></div>
+      <div class="gi poster" data-zoom="海报01 · 写实摄影风"><img src="图/海报01_写实摄影风.png" alt="概念海报 写实摄影风" loading="lazy"><div class="c"><div class="n">概念海报 · 写实摄影风</div><div class="s">1328×1776</div></div></div>
+
+      <div class="gi" data-zoom="分析图 01 · 八点阵列几何与模态可见性盲区"><img src="图/图01_八点阵列几何与模态可见性盲区.png" alt="八点阵列几何" loading="lazy"><div class="c"><div class="n">八点阵列几何与模态盲区</div><div class="s">1963×1493</div></div></div>
+      <div class="gi" data-zoom="分析图 02 · harmonograph 与 T2 劈裂进动"><img src="图/图02_harmonograph与T2劈裂进动.png" alt="harmonograph" loading="lazy"><div class="c"><div class="n">harmonograph 与 T₂ 劈裂进动</div><div class="s">1912×1615</div></div></div>
+      <div class="gi" data-zoom="分析图 03 · 拍频放大判据"><img src="图/图03_拍频放大判据.png" alt="拍频放大判据" loading="lazy"><div class="c"><div class="n">拍频放大判据</div><div class="s">2161×810</div></div></div>
+      <div class="gi" data-zoom="分析图 04 · 灵敏度提升路径"><img src="图/图04_灵敏度提升路径.png" alt="灵敏度提升路径" loading="lazy"><div class="c"><div class="n">灵敏度提升路径</div><div class="s">2224×1381</div></div></div>
+      <div class="gi" data-zoom="分析图 05 · 超薄球壳物理分析"><img src="图/图05_超薄球壳物理分析.png" alt="超薄球壳物理分析" loading="lazy"><div class="c"><div class="n">超薄球壳物理分析</div><div class="s">2213×1384</div></div></div>
+    </div>
+
+    <h3 class="reveal">工具与模板</h3>
+    <div class="grid2 reveal">
+      <div class="card">
+        <h4 style="margin-top:0">可直接使用的文件</h4>
+        <ul style="font-size:14px">
+          <li><b>铜球实验分析工具.py</b>（14.7 KB）——ring-down 拟合与频谱分析</li>
+          <li><b>工艺检查清单.csv</b>（46 条检查项）</li>
+          <li><b>实验记录模板.csv</b> + <b>字段说明.txt</b></li>
+          <li><b>铜球实验完整工艺规范.docx</b>——可打印版工艺文件</li>
+        </ul>
+        <p style="font-size:13.5px;color:var(--dim)">路径：<code>工具与模板\</code>、项目根目录</p>
+      </div>
+      <div class="card">
+        <h4 style="margin-top:0">文档导航（点开阅读）</h4>
+        <ul style="font-size:13.8px">
+          <li><a href="bashar科技系列/00_系列总览.md">系列总览</a>——13 篇主题的入口</li>
+          <li><a href="bashar科技系列/01_金属球位置频率实验_原始出处与原话.md">01 · 原始出处与原话</a>——本页的主要依据</li>
+          <li><a href="bashar科技系列/03_瞬移科技_位置变量与wrap drive.md">03 · 位置变量与 wrap drive</a></li>
+          <li><a href="铜球位置共振实验可行性报告与三阶段方案.md">可行性报告与三阶段方案</a></li>
+          <li><a href="产出文档/铜球实验完整工艺规范.md">铜球实验完整工艺规范（v3.0）</a></li>
+          <li><a href="产出文档/八点立方体传感阵列设计分析.md">八点立方体传感阵列设计分析</a></li>
+          <li><a href="产出文档/开环扫描协议.md">开环扫描协议</a></li>
+          <li><a href="产出文档/灵敏度提升方法清单.md">灵敏度提升方法清单</a></li>
+          <li><a href="勘误与修订_巴夏铜球原始尺寸原话与首球选型表.md">勘误与修订：尺寸原话与首球选型</a></li>
+          <li><a href="补充报告_可焊接性_钢球替代_与80x0.4规格复核.md">补充报告：可焊接性 · 钢球替代 · Ø80×0.4 复核</a></li>
+          <li><a href="对话记录/轮19_特斯拉「地表瞬移频谱地图」核查_不存在.md">轮 19 · 特斯拉「地表瞬移频谱地图」核查：不存在</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 10 边界 ================= -->
+<section id="edge">
+  <div class="wrap">
+    <div class="shead reveal">
+      <span class="snum">10 / BOUNDARY</span>
+      <h2>边界：这一页不主张什么<span class="s">诚实是最低成本的工程</span></h2>
+      <p class="sdesc">一个主题涉及通灵传讯的工程项目，最容易被误读成两种极端：狂热背书，或全盘嘲讽。本页选择第三条路——<b>把它当作一个待检验的工程命题处理</b>。</p>
+    </div>
+
+    <div class="grid2 reveal">
+      <div class="card" style="border-left:3px solid var(--green)">
+        <h4 style="margin-top:0">✅ 本页主张的</h4>
+        <ul style="font-size:14px">
+          <li>「同一物体在不同位置频率不同」<b>是一个可陈述、可设计实验、可被拒假的命题</b></li>
+          <li>实现它需要的是<b>计量学能力</b>，不是信仰</li>
+          <li>负结果（测不到）<b>同样是有价值的科学产出</b>，只要给出可信的上限</li>
+          <li>前人（Allais、NIST/JILA）留下了<b>可继承的方法与可警示的教训</b></li>
+        </ul>
+      </div>
+      <div class="card" style="border-left:3px solid var(--red)">
+        <h4 style="margin-top:0;color:var(--red)">❌ 本页不主张的</h4>
+        <ul style="font-size:14px">
+          <li>不声称巴夏的主张已被验证——<b>实验根本还没做</b></li>
+          <li>不声称外星科技、隔离场、零点能可用现有手段实现</li>
+          <li>不声称「位置是物体的属性」是对的——它<b>不可直接检验</b></li>
+          <li>不把第三层叙事（3000 年差距、混血、月球基地）<b>纳入任何判据</b></li>
+          <li>不认为 STA 线圈复现的功率数据<b>能支持或反对</b>本实验</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="tip reveal">
+      <div class="t">🔍 三条贯穿全案的纪律</div>
+      <p><b>① 三层分离</b>：可检验的物理陈述 / 机制解释 / 宇宙论叙事——混层即出错（25.4 mm 之误就是这么来的）。</p>
+      <p><b>② 原话与设计分开标注</b>：R1–R15 是巴夏说的；Ø80×0.4、八点阵列、对数扫描都是我们的补法。本页全程用颜色区分。</p>
+      <p><b>③ 先定量，后定性</b>：任何「异常」在给出量级、置信区间、混淆源排除之前，不得称为发现。</p>
+    </div>
+
+    <div class="tip warn reveal">
+      <div class="t">📌 与特斯拉那条线索的关系（同项目已核查）</div>
+      <p>网络上常有把「特斯拉 + 地球共振 7.83 Hz + 标量波 + 空间频谱地图」拼成瞬移方案的说法。该项目第 19 轮对话已做过专项核查，结论是：<b>特斯拉的公开文献与专利里没有「地表瞬移频谱地图」这东西</b>；他留下的是「地球作为导体／谐振腔的低频驻波」思路。Schumann 共振（7.83 / 14.3 / 20.8 / 27.3 / 33.8 Hz）是可测的真实物理，但那是「地球—电离层腔体」的共振，<b>与移动物体无关</b>。</p>
+      <p>详细核查过程见 <a href="对话记录/轮19_特斯拉「地表瞬移频谱地图」核查_不存在.md">轮 19 文档</a>。</p>
+    </div>
+
+    <div class="tip good reveal" style="border-left-width:4px">
+      <div class="t" style="font-size:15.5px">🧭 最后一句</div>
+      <p style="font-size:15px">巴夏说这个实验「至今无人做过」。而本次检索确认：<b>到 2026 年 9 月 21 日为止，公开网络上依然找不到任何一处做过它的记录。</b></p>
+      <p style="font-size:15px">所以现在摆在这里的不是一个「已被证伪的玄学」，也不是一个「即将实现的科技」，而是一个<b>真的空着的桌面</b>。它值得被做，不因为它可能印证谁，而因为它<b>第一次把一个无限定的主张，逼成一条可以被测量、也可以被否定的边界</b>。</p>
+    </div>
+  </div>
+</section>
+
+
+<footer>
+  <div class="wrap">
+    <div class="fr">
+      <div>
+        <h5>本页依据</h5>
+        <ul>
+          <li>巴夏科技系列 · 13 篇主题综述 + 系列总览</li>
+          <li>视频语录 39 篇（V01–V39，字幕逐字转写）</li>
+          <li>方案推演对话 22 轮 · 正式产出 9 篇</li>
+          <li>工艺检查清单、实验记录模板、分析工具</li>
+        </ul>
+      </div>
+      <div>
+        <h5>外部检索（2026-09-21）</h5>
+        <ul>
+          <li>NIST / JILA 原子钟引力红移</li>
+          <li>Allais 视差摆（paraconical pendulum）</li>
+          <li>Pound–Rebka 实验、Gravity Probe A</li>
+          <li>Bashar STA 社区复现记录</li>
+        </ul>
+      </div>
+      <div>
+        <h5>边界声明</h5>
+        <ul>
+          <li>本页只做<b>结构化与路径规划</b>，不做真伪判定</li>
+          <li>「巴夏原话」与「我们的补充设计」全程分开标注</li>
+          <li>视频语录为自动字幕转写，引用前请回看原视频</li>
+          <li>第三层叙事内容<b>不进入任何验收标准</b></li>
+        </ul>
+      </div>
+    </div>
+    <p style="border-top:1px solid var(--line);padding-top:20px">
+      档案目录 <code>D:\AAA我的文件\bashar的实验\</code>　·　本页由项目档案汇总生成　·　
+      核验日期 2026-09-21　·　所有统计数字均从磁盘实时计算
+    </p>
+  </div>
+</footer>
+
+<div class="lb" id="lb"><img id="lbimg" alt=""><div class="cap" id="lbcap"></div></div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* 进度条 */
+  var pb = document.getElementById("pb");
+  function onScroll(){
+    var h = document.documentElement.scrollHeight - window.innerHeight;
+    var y = window.pageYOffset || document.documentElement.scrollTop;
+    pb.style.width = (h > 0 ? (y / h * 100) : 0) + "%";
+  }
+  window.addEventListener("scroll", onScroll, {passive:true});
+  onScroll();
+
+  /* 渐显 */
+  var reveals = document.querySelectorAll(".reveal");
+  if ("IntersectionObserver" in window){
+    var io = new IntersectionObserver(function(es){
+      es.forEach(function(e){
+        if (e.isIntersecting){ e.target.classList.add("in"); io.unobserve(e.target); }
+      });
+    }, {threshold:.12, rootMargin:"0px 0px -60px 0px"});
+    reveals.forEach(function(el){ io.observe(el); });
+  } else {
+    reveals.forEach(function(el){ el.classList.add("in"); });
+  }
+
+  /* 导航高亮 */
+  var links = Array.prototype.slice.call(document.querySelectorAll("#navlinks a"));
+  var secs = links.map(function(a){ return document.querySelector(a.getAttribute("href")); });
+  function mark(){
+    var y = window.pageYOffset + 110, cur = -1;
+    secs.forEach(function(s, i){ if (s && s.offsetTop <= y) cur = i; });
+    links.forEach(function(a, i){ a.classList.toggle("on", i === cur); });
+  }
+  window.addEventListener("scroll", mark, {passive:true});
+  mark();
+
+  /* 灯箱 */
+  var lb = document.getElementById("lb"), lbimg = document.getElementById("lbimg"), lbcap = document.getElementById("lbcap");
+  document.querySelectorAll("[data-zoom]").forEach(function(el){
+    el.addEventListener("click", function(){
+      var img = el.querySelector("img");
+      if (!img) return;
+      lbimg.src = img.getAttribute("src");
+      lbcap.textContent = el.getAttribute("data-zoom") || "";
+      lb.classList.add("on");
+    });
+  });
+  lb.addEventListener("click", function(){ lb.classList.remove("on"); });
+  document.addEventListener("keydown", function(e){ if (e.key === "Escape") lb.classList.remove("on"); });
+
+})();
+</script>
+</body>
+</html>
