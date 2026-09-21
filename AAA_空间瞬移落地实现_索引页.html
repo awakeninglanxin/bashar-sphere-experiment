@@ -128,6 +128,117 @@ nav .tgl:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
 nav .tgl .ti{font-size:13.5px;line-height:1;display:inline-block;transition:transform .3s}
 nav .tgl:hover .ti{transform:rotate(-18deg)}
 
+/* ---------- 读者标注：涂黄 / 下划线（localStorage 持久化） ----------
+   两套渲染引擎，优先 Custom Highlight API（不改 DOM、零副作用），
+   不支持时降级为 span 包裹。两者共用同一份偏移索引。
+   —— 偏移索引会跳过带 data-mk-ui 的节点（导航清除按钮 / 工具条 / 灯箱），
+      这样 UI 自身文案变化不会让已保存的标注位置漂移。 */
+:root{
+  --mk-hl:rgba(255,181,69,.34);
+  --mk-ul:#ffb545;
+  --mk-ui-bg:rgba(13,21,36,.97);
+  --mk-ui-bd:#2a3d5c;
+}
+html[data-theme="light"]{
+  --mk-hl:rgba(255,214,64,.58);
+  --mk-ul:#a15c07;
+  --mk-ui-bg:rgba(255,255,255,.99);
+  --mk-ui-bd:#cbd5e1;
+}
+::highlight(bh-hl){background-color:var(--mk-hl)}
+::highlight(bh-ul){
+  text-decoration-line:underline;
+  text-decoration-thickness:2px;
+  text-decoration-color:var(--mk-ul);
+  text-underline-offset:3px;
+}
+span.mk-hl{background-color:var(--mk-hl);border-radius:2px}
+span.mk-ul{
+  text-decoration-line:underline;
+  text-decoration-thickness:2px;
+  text-decoration-color:var(--mk-ul);
+  text-underline-offset:3px;
+}
+
+/* 置顶条最左：一键清空标注 */
+nav .mk-clear{
+  flex:0 0 auto;position:relative;display:inline-flex;align-items:center;gap:6px;
+  font-family:inherit;font-size:12.5px;font-weight:650;line-height:1;
+  color:var(--dim);background:var(--card);border:1px solid var(--line2);
+  border-radius:999px;padding:7px 11px;cursor:pointer;white-space:nowrap;
+  transition:.2s;user-select:none
+}
+nav .mk-clear:hover{color:var(--red);border-color:var(--red)}
+nav .mk-clear:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+nav .mk-clear.has{color:var(--amber);border-color:var(--amber)}
+nav .mk-clear .ni{font-size:12.5px;line-height:1}
+nav .mk-clear .cnt{
+  min-width:16px;height:16px;padding:0 4px;border-radius:999px;
+  background:var(--amber);color:#1a1206;font-size:10.5px;font-weight:800;
+  display:none;align-items:center;justify-content:center;line-height:1
+}
+nav .mk-clear.has .cnt{display:inline-flex}
+/* 按钮只占一个图标位，说明文字走 hover 浮层（绝对定位，不占布局宽度），
+   免得把导航链接挤成两行 */
+nav .mk-clear::after{
+  content:"清空全部标注";position:absolute;left:0;top:calc(100% + 9px);
+  padding:6px 10px;border-radius:8px;background:var(--mk-ui-bg);
+  border:1px solid var(--mk-ui-bd);color:var(--txt);
+  font-size:11.5px;font-weight:600;letter-spacing:0;white-space:nowrap;
+  opacity:0;pointer-events:none;transform:translateY(-4px);
+  transition:opacity .18s,transform .18s;box-shadow:0 8px 24px var(--sh-1);z-index:6
+}
+nav .mk-clear:hover::after{opacity:1;transform:translateY(0)}
+/* 按钮只占一个图标位，说明文字走 hover 浮层（绝对定位，不占布局宽度），
+   免得把导航链接挤成两行 */
+nav .mk-clear::after{
+  content:"清空全部标注";position:absolute;left:0;top:calc(100% + 9px);
+  padding:6px 10px;border-radius:8px;background:var(--mk-ui-bg);
+  border:1px solid var(--mk-ui-bd);color:var(--txt);
+  font-size:11.5px;font-weight:600;letter-spacing:0;white-space:nowrap;
+  opacity:0;pointer-events:none;transform:translateY(-4px);
+  transition:opacity .18s,transform .18s;box-shadow:0 8px 24px var(--sh-1);z-index:6
+}
+nav .mk-clear:hover::after{opacity:1;transform:translateY(0)}
+
+/* 选中文字后浮出的工具条 */
+.mktb{
+  position:fixed;left:0;top:0;z-index:80;display:none;align-items:center;gap:2px;
+  padding:5px;border-radius:11px;background:var(--mk-ui-bg);
+  border:1px solid var(--mk-ui-bd);
+  box-shadow:0 10px 34px var(--sh-1);
+  backdrop-filter:blur(10px);user-select:none
+}
+.mktb.on{display:inline-flex}
+.mktb button{
+  font-family:inherit;font-size:12.5px;font-weight:650;line-height:1;
+  color:var(--txt);background:transparent;border:0;border-radius:7px;
+  padding:7px 10px;cursor:pointer;white-space:nowrap;
+  display:inline-flex;align-items:center;gap:6px;transition:.15s
+}
+.mktb button:hover{background:var(--hover);color:var(--cyan)}
+.mktb button[data-act="del"]:hover{color:var(--red)}
+.mktb .sw{width:12px;height:12px;border-radius:3px;display:inline-block}
+.mktb button[data-act="hl"] .sw{background:var(--mk-hl);border:1px solid var(--line2)}
+.mktb button[data-act="ul"] .sw{border-bottom:2.5px solid var(--mk-ul);border-radius:0}
+.mktb .sep{width:1px;height:18px;background:var(--line);margin:0 3px;flex:0 0 auto}
+
+/* 轻提示 */
+.mk-toast{
+  position:fixed;left:50%;bottom:26px;transform:translate(-50%,14px);
+  z-index:90;padding:10px 16px;border-radius:11px;
+  background:var(--mk-ui-bg);border:1px solid var(--mk-ui-bd);
+  color:var(--txt);font-size:13px;font-weight:600;
+  box-shadow:0 12px 34px var(--sh-1);
+  opacity:0;pointer-events:none;transition:opacity .22s,transform .22s;
+  backdrop-filter:blur(10px);user-select:none
+}
+.mk-toast.on{opacity:1;transform:translate(-50%,0)}
+
+@media(max-width:760px){
+  nav .mk-clear{padding:7px 10px}
+}
+
 /* ---------- Hero ---------- */
 header.hero{padding:150px 0 76px;position:relative}
 .kicker{
@@ -135,7 +246,9 @@ header.hero{padding:150px 0 76px;position:relative}
   color:var(--cyan);border:1px solid var(--line2);border-radius:999px;
   padding:6px 15px;background:rgba(60,224,207,.06);margin-bottom:26px
 }
-h1{font-size:clamp(30px,5.2vw,58px);line-height:1.14;font-weight:800;letter-spacing:-.5px}
+h1{font-size:clamp(23px,2.9vw,42px);line-height:1.2;font-weight:800;letter-spacing:-.4px}
+h1 .pre{display:block;font-size:.82em;font-weight:700;letter-spacing:0;line-height:1.34;margin-bottom:.16em}
+h1 .main{display:block}
 h1 .g{background:linear-gradient(100deg,var(--cyan),var(--violet) 55%,var(--amber));-webkit-background-clip:text;background-clip:text;color:transparent}
 .lede{max-width:820px;margin-top:22px;font-size:17px;color:var(--t-lede)}
 .lede b{color:var(--txt);font-weight:600}
@@ -365,6 +478,7 @@ footer li{margin:5px 0;font-size:12.9px}
 @media(max-width:1120px){
   .hero-grid{grid-template-columns:minmax(0,1fr);gap:34px}
   .hero-fig{max-width:430px;margin:0 auto}
+  h1{font-size:clamp(25px,4.3vw,40px)}
 }
 /* 导航链接：窄屏改回单行横向滚动，右侧渐隐提示「还有更多」 */
 @media(max-width:760px){
@@ -393,6 +507,9 @@ footer li{margin:5px 0;font-size:12.9px}
 
 <nav>
   <div class="inner">
+    <button class="mk-clear" id="mkclear" type="button" data-mk-ui title="还没有任何标注（选中文字即可涂黄或加下划线）" aria-label="清空本页所有标注">
+      <span class="ni">&#10005;</span><span class="cnt" id="mkcnt">0</span>
+    </button>
     <div class="brand"><span class="dot"></span><span class="bt"><span>空间瞬移<b>·落地路径</b></span><span class="bs">巴夏金属球位置频率实验</span></span></div>
     <div class="links" id="navlinks">
       <a href="#thesis">命题</a>
@@ -422,12 +539,12 @@ footer li{margin:5px 0;font-size:12.9px}
     <div class="hero-grid">
       <div class="hero-main">
         <div class="kicker">巴夏科技系列 ｜ 唯一桌面可做的可证伪实验</div>
-        <h1>把「空间瞬移」<br>翻译成<span class="g">一张桌面实验台</span></h1>
+        <h1><span class="pre">果克星球的全球人工运动场扫描技术</span><span class="main">始于 Bashar 设计的屏蔽外源电磁信号的<span class="g">铜球桌面实验台</span></span></h1>
         <p class="lede">
           巴夏（Bashar）说：<b>位置不是物体所处的容器，而是物体的一个属性</b>。改掉这个变量，物体就不必穿越中间的距离——它从 A 停止存在，在 B 立即开始存在。
           飞船尺度无从检验。但同一原理，他给了一个<b>降维到音频段</b>的版本：一只空心导电球，一条 10 英尺长的平桌，两端各测一次共振。</p>
         <p class="lede">
-          本页把 <b>110 篇档案</b>里的重点串成一条落地路径：命题 → 原话 → 装置 → <b>前人已经走到哪一步</b> → 难点 → 三阶段方案 → 规格与误差预算 → 边界。<br>
+          本页把 <b>110 篇档案</b>里的重点串成一条落地路径：命题 → 原话 → 装置 → <b>前人已经走到哪一步</b> → 难点 → 三阶段方案 → 规格与误差预算 → 已有资产 → 边界，再接三章延伸：远景、这笔账、升级实验与挑战清单。<br>
           其中第 4 章是一份<b>独立检索结果</b>：科学界其实早已做过「同一物体在不同位置频率不同」的测量，而巴夏这只铜球的实验——<b>至今无人做过</b>。</p>
 
         <div class="quote-hero">
@@ -658,7 +775,7 @@ footer li{margin:5px 0;font-size:12.9px}
           <circle cx="150" cy="167" r="20" fill="url(#ballg)" stroke="#ffd591" stroke-width="1.2"/>
           <circle cx="143" cy="160" r="4.2" fill="#fff8e6" opacity=".55"/>
           <text x="150" y="212" text-anchor="middle"  font-size="11.6" font-family="Consolas,monospace" style="fill:var(--amber)">hollow Cu ball</text>
-          <text x="150" y="227" text-anchor="middle"  font-size="10.5" style="fill:var(--dim2)">Ø80 × 0.4 mm</text>
+          <text x="150" y="227" text-anchor="middle"  font-size="10.5" style="fill:var(--dim2)">Ø80 × 0.8 mm</text>
         </g>
 
         <!-- B 端虚影球（预期落点） -->
@@ -1107,7 +1224,7 @@ footer li{margin:5px 0;font-size:12.9px}
 
     <div class="tip warn reveal">
       <div class="t">⚠️ 先说清一件容易误会的事：升级到「不同高度」不是为了测引力红移</div>
-      <p>引力红移在 <b>1 m</b> 落差上只有 <b>1.1×10⁻¹⁶</b>（g/c² = 1.09×10⁻¹⁶ per metre），而本项目在 Ø80×0.4 球壳上的最佳相对频率分辨约 <b>10⁻⁶</b> 量级——<b>比它小 10 个数量级，绝无可能测到</b>。</p>
+      <p>引力红移在 <b>1 m</b> 落差上只有 <b>1.1×10⁻¹⁶</b>（g/c² = 1.09×10⁻¹⁶ per metre），而本项目在 Ø80×0.8 球壳上的最佳相对频率分辨约 <b>10⁻⁶</b> 量级——<b>比它小 10 个数量级，绝无可能测到</b>。</p>
       <p>所以垂直方向那组实验的意义是<b>反过来的</b>：它不提供信号，它提供<b>一个「应该为零」的对照</b>。而这个零，恰恰是整个矩阵里信息量最大的一次测量——理由见下面第 ①② 条。</p>
     </div>
 
@@ -1128,7 +1245,7 @@ footer li{margin:5px 0;font-size:12.9px}
           <tr><td class="k">Z2 高度·换支撑方式</td><td>用<b>同一块板 + 不同垫块</b>改变高度（而非换桌子）</td><td>板、球、环境</td><td>同上，零</td><td>把「重力方向效应」与「支撑几何效应」分开 —— 这就是「控制变量」的具体含义</td></tr>
           <tr><td class="k">M1 材料</td><td>铜 → 钢（同尺寸、同位置）</td><td>位置、几何、外径、壁厚</td><td>若依赖导电性 → 应明显减弱</td><td>是否电磁起源（铜 ≥98% IACS，钢导电差得多）</td></tr>
           <tr><td class="k">M2 <b>非导电球</b></td><td>铜 → <b>同尺寸非导电球</b>（树脂/陶瓷；质量按需配平）</td><td>位置、几何、质量</td><td>若依赖导电 → <b>应消失</b></td><td><b>最干净的一条</b>：把「导电」这个变量从「位置」里拆出来，第一次触到机制方向</td></tr>
-          <tr><td class="k">T1 壁厚</td><td>0.4 → 0.8 mm（同材料、同外径、同位置）</td><td>位置、材料、外径</td><td>若效应改变模态频率 → 应按 f 的比例同步移动</td><td>效应是「改频率标尺」还是「改结构本身」</td></tr>
+          <tr><td class="k">T1 壁厚</td><td>0.8 → 1.2 mm（同材料、同外径、同位置）</td><td>位置、材料、外径</td><td>若效应改变模态频率 → 应按 f 的比例同步移动</td><td>效应是「改频率标尺」还是「改结构本身」</td></tr>
 
           <tr><td colspan="5" style="background:var(--hover);color:var(--violet);font-weight:700">第四层 · 环境与通道（查污染源，兼做交叉验证）</td></tr>
           <tr><td class="k">E1 电磁屏蔽</td><td>加法拉第笼 + 坡莫合金罩</td><td>位置、球、温度</td><td>若效应消失 → 是环境电磁污染</td><td>外部电磁场（STA 类耦合）</td></tr>
@@ -1295,14 +1412,14 @@ X 无、Z 有　→　属引力／支撑类效应，不是「位置签名」</di
       <div class="card" style="border-left:3px solid var(--red)">
         <div class="tag t-no">门槛一</div>
         <h4 style="margin-top:11px">球自己会变形<br>而形变直接改频率</h4>
-        <p style="font-size:13.9px">Ø80×0.4 紫铜球自重约 <b>90 g</b>。与桌面点接触的接触半径只有 <b>0.5–1 mm</b>，接触应力轻易超过 <b>300 MPa</b>——而软态紫铜屈服强度只有 <b>70–100 MPa</b>。<b>一定留坑。</b></p>
-        <p style="font-size:13.9px">永久压坑 = 壳形改变 = 本征频率改变。你测到的「位置频差」里，先混进了「壳形变化频差」——而后者往往更大。</p>
+        <p style="font-size:13.9px">Ø80×0.8 紫铜球自重 <b>1.39 N</b>（141 g）。与花岗岩桌面点接触，由 Hertz 接触算出：接触半径仅 <b>约 0.10 mm</b>，最大接触压力 <b>62 MPa</b>——已达退火紫铜初始屈服（≈1.6σ<sub>y</sub> ≈ 112 MPa）的 <b>55%</b>。<b>长期室温蠕变余量不足，所以必须走半硬态。</b></p>
+        <p style="font-size:13.9px">壳形一变，本征频率就变：你测到的「位置频差」里会先混进「壳形变化频差」。<b>注意：接触压力几乎与壁厚无关</b>（p₀ ∝ t<sup>1/3</sup>，0.4→0.8 mm 只从 54 升到 62 MPa）——<b>加厚救不了接触，只有把点接触换成面接触才降得下来。</b></p>
       </div>
       <div class="card" style="border-left:3px solid var(--amber)">
         <div class="tag t-mid">门槛二</div>
         <h4 style="margin-top:11px">壁厚同时决定<br>「不瘪」和「测哪段」</h4>
         <p style="font-size:13.9px">壁厚不是自由参数：一头挂着<b>屈曲</b>（整体会不会 snap-through），另一头挂着<b>趋肤深度</b>（交变磁场能不能穿过壳壁）。</p>
-        <p style="font-size:13.9px">0.4 mm 铜壳在 <b>1–10 kHz</b> 对磁场近乎透明；到 <b>50 kHz</b> 趋肤深度只剩 0.29 mm，球壳开始变成<b>短路环</b>，Q 值与灵敏度一起掉。<b>选壁厚，其实是在选频段。</b></p>
+        <p style="font-size:13.9px">0.8 mm 铜壳在 <b>≤5 kHz</b> 对磁场仍基本透明；到 <b>10 kHz</b> 趋肤深度（0.66 mm）已小于壁厚，球壳开始变成<b>短路环</b>，Q 值与灵敏度一起掉。<b>选壁厚，其实是在选频段</b>——好在弯曲模所在的一百多到四百多 Hz，趋肤深度还有 3.8 mm，完全不受影响。</p>
       </div>
       <div class="card" style="border-left:3px solid var(--violet)">
         <div class="tag t-v">门槛三</div>
@@ -1314,12 +1431,12 @@ X 无、Z 有　→　属引力／支撑类效应，不是「位置签名」</di
 
     <div class="tw reveal">
       <table>
-        <thead><tr><th>门槛</th><th>物理量</th><th>量级（Ø80 × 0.4 紫铜）</th><th>不解决的后果</th><th>最省的解法</th></tr></thead>
+        <thead><tr><th>门槛</th><th>物理量</th><th>量级（Ø80 × 0.8 紫铜）</th><th>不解决的后果</th><th>最省的解法</th></tr></thead>
         <tbody>
-          <tr><td class="k">① 接触压坑</td><td>软态屈服 vs 接触应力</td><td>70–100 MPa <span style="color:var(--red)">&lt;</span> 300 MPa</td><td>球底留坑 → 频率漂移</td><td>软硅胶／绒布环（<b>最先做</b>）</td></tr>
-          <tr><td class="k">② 整体屈曲</td><td>临界压力 p_cr</td><td>理想 14.2 kPa／经验 4–5 kPa</td><td>snap-through 塌陷</td><td>半球深冲 + 赤道小法兰</td></tr>
-          <tr><td class="k">③ 局部弯曲</td><td>t / R</td><td>0.4 / 40 = 0.01</td><td>模态频率落不进音频段</td><td>薄壁——这是唯一办法</td></tr>
-          <tr><td class="k">④ 涡流短路</td><td>趋肤深度 δ</td><td>10 kHz → 0.66 mm；50 kHz → 0.29 mm</td><td>Q 掉、灵敏度掉</td><td>工作频率 <b>≤20 kHz</b>，或内贴坡莫合金箔 0.1 mm</td></tr>
+          <tr><td class="k">① 接触压坑</td><td>半硬屈服 vs 点接触压力</td><td>200 MPa &gt; 62 MPa（长期蠕变余量不足）</td><td>点接触蠕变 → 球底留坑 → 频率漂移</td><td>软硅胶／绒布环（<b>最先做</b>）</td></tr>
+          <tr><td class="k">② 整体屈曲</td><td>临界压力 p_cr</td><td>理想 58 MPa／经验 17 MPa</td><td>snap-through 塌陷（自重等效仅 276 Pa，不是风险）</td><td>半球深冲 + 赤道小法兰</td></tr>
+          <tr><td class="k">③ 局部弯曲</td><td>t / R</td><td>0.8 / 40 = 0.02</td><td>模态频率落不进音频段</td><td>保持薄壁（t/R=0.02 仍在薄壳区）——这是唯一办法</td></tr>
+          <tr><td class="k">④ 涡流短路</td><td>趋肤深度 δ</td><td>10 kHz → 0.66 mm（已小于 0.8）；50 kHz → 0.29 mm</td><td>Q 掉、灵敏度掉</td><td>工作频率 <b>≤5 kHz</b>，或内贴坡莫合金箔 0.1 mm</td></tr>
           <tr><td class="k">⑤ 焊接失圆</td><td>热输入 / 装配间隙</td><td>激光 300–500 W；间隙 ≤0.05 mm</td><td>椭圆化 → 模态劈裂假信号</td><td>激光焊（优于 TIG）+ 仿形胎具分段焊</td></tr>
         </tbody>
       </table>
@@ -1397,7 +1514,7 @@ X 无、Z 有　→　属引力／支撑类效应，不是「位置签名」</di
       <table>
         <thead><tr><th>阶段一实物</th><th>本项目选型</th><th>巴夏原话给了什么</th><th>我们自己补了什么</th></tr></thead>
         <tbody>
-          <tr><td class="k">① 铜球</td><td>Ø80 mm × 0.4 mm <b>无氧铜 TU1</b>（半硬态）；另备 3 只同规格 + 2 只对照球</td><td>直径 <b>3–6 in（76.2–152.4 mm）</b>、壁厚 <b>≤1/16 in（1.59 mm）</b>、空心、铜或钢、高度平衡、尽可能球形、与支撑面摩擦尽可能小</td><td>Ø80 × 0.4 这个具体点、牌号 TU1、半硬态、圆度 ≤0.02 mm、底部 Ø6 mm 微平面 —— 见 <a href="#spec">7.1b–7.1d</a></td></tr>
+          <tr><td class="k">① 铜球</td><td>Ø80 mm × 0.8 mm <b>无氧铜 TU1</b>（半硬态）；另备 3 只同规格 + 2 只对照球</td><td>直径 <b>3–6 in（76.2–152.4 mm）</b>、壁厚 <b>≤1/16 in（1.59 mm）</b>、空心、铜或钢、高度平衡、尽可能球形、与支撑面摩擦尽可能小</td><td>Ø80 × 0.8 这个具体点、牌号 TU1、半硬态、圆度 ≤0.02 mm、底部 Ø6 mm 微平面 —— 见 <a href="#spec">7.1b–7.1d</a></td></tr>
           <tr><td class="k">② 超平桌面</td><td>3.20 m × 0.90 m × 0.20 m <b>细晶花岗石或人造陶瓷参考平板</b>；平面度 ≤10 μm（全量程）；阶段一倾角 &lt;10 μrad</td><td>长度 <b>≥10 ft（3.048 m）</b>、<b>as flat as you can make it</b>（尽可能平）、宽度不必那么宽、但 <b>约 3 ft</b> 会更舒服</td><td><b>材料完全由我们选</b>（巴夏从未提桌面材料，见下）；「≤10 μm」「&lt;10 μrad」这两个量化门槛；3.20 m 的两端超程余量</td></tr>
           <tr><td class="k">③ 隔离舱</td><td>隔绝一切外部电磁与机械振动；双层电磁屏蔽；地下或低楼层</td><td><b>isolated chamber</b>：<span class="mono">isolated from any other vibrations electromagnetic in nature other than the ones you wish to impose</span></td><td>具体屏蔽结构；0.1–200 Hz 振动监测；地线路径记录</td></tr>
           <tr><td class="k">④ 基线与 SOP</td><td>≥30 min 无激励基线；静息滚动率分布；预注册 + 盲分析</td><td>仅一句原则：<span class="mono">double check to make sure that the difference you may find is not the product of something leaking in</span></td><td>全部（这是计量学部分，原话没有）</td></tr>
@@ -1514,8 +1631,8 @@ X 无、Z 有　→　属引力／支撑类效应，不是「位置签名」</di
       <table>
         <thead><tr><th>项</th><th>巴夏原话</th><th>本项目选型</th><th>理由</th></tr></thead>
         <tbody>
-          <tr><td class="k">直径</td><td class="mono">3–6 in　(76.2–152.4 mm)</td><td><b>Ø80 或 Ø100 mm</b>（工艺规范 v3.0 取 <b>Ø80</b>）</td><td>贴近下界，质量与频率便于处理</td></tr>
-          <tr><td class="k">壁厚</td><td class="mono">≤ 1/16 in　(1.59 mm)</td><td><b>0.4–0.6 mm</b>（取 0.4）</td><td>t/R = 0.01，把弯曲模压进音频段</td></tr>
+          <tr><td class="k">直径</td><td class="mono">3–6 in　(76.2–152.4 mm)</td><td><b>Ø80 或 Ø100 mm</b>（现行工艺规范取 <b>Ø80</b>）</td><td>贴近下界，质量与频率便于处理</td></tr>
+          <tr><td class="k">壁厚</td><td class="mono">≤ 1/16 in　(1.59 mm)</td><td><b>0.6–0.8 mm</b>（取 0.8）</td><td>t/R = 0.02，把弯曲模压进音频段，并留出抗接触／抗凹余量</td></tr>
           <tr><td class="k">主球材料</td><td class="mono">copper / steel</td><td>无氧铜 <b>TU1 / TU2</b>，或低磷脱氧铜 SW-Cu / Cu-DLP</td><td>导电率高、可焊、球形度好</td></tr>
           <tr><td class="k">对照球</td><td>—</td><td><b>304L / 316L</b>（钢球首选 305L）</td><td>不同材料/阻尼对照，排除材料单一性</td></tr>
           <tr><td class="k">形位公差</td><td class="mono">highly balanced, as spherical as you can</td><td>圆度 ≤ 0.02 mm；壁厚差 ≤ 0.02 mm</td><td>质心偏心是最大的伪位移源</td></tr>
@@ -1523,17 +1640,17 @@ X 无、Z 有　→　属引力／支撑类效应，不是「位置签名」</di
       </table>
     </div>
 
-    <h3 class="reveal">7.1b 做多大、做多厚：五个互相打架的约束，解出 Ø80 × 0.4</h3>
-    <p>「多大、多厚」不能拍脑袋——有 <b>5 个约束互相拉扯</b>。下表把它们拉到一起，<b>Ø80 × 0.4 是这 5 个约束的交集里最便宜的那一点</b>。</p>
+    <h3 class="reveal">7.1b 做多大、做多厚：五个互相打架的约束，解出 Ø80 × 0.8</h3>
+    <p>「多大、多厚」不能拍脑袋——有 <b>5 个约束互相拉扯</b>。下表把它们拉到一起：<b>外径被「装下 8 个线圈」与「巴夏给的 3–6 in 区间」一起定在 Ø80；壁厚则由抗接触、公差与工艺把它推到 0.8 mm</b>。</p>
     <div class="tw reveal">
       <table>
         <thead><tr><th>约束</th><th>它推着你往哪走</th><th>量化依据</th></tr></thead>
         <tbody>
-          <tr><td class="k">要装下 8 个线圈</td><td>球要<b>大</b></td><td>Ø80 外径 → 内径 79.2 mm、容积约 <b>258 cm³</b>；8 个 Ø10–15 mm 线圈放得下且互不干涉</td></tr>
-          <tr><td class="k">弯曲模要落进音频段</td><td>球要小、壁要<b>薄</b></td><td>f_弯曲 ∝ (t/R)·f_ring；t/R = 0.01 → 预期 <b>60–230 Hz</b>（Ø80 × 0.4）</td></tr>
-          <tr><td class="k">放桌上不许留坑</td><td>壁要<b>厚</b>，或改接触</td><td>软态紫铜必出坑 → 改走 <b>半硬态（屈服 ≥200 MPa）+ 底部 Ø6 mm 微平面</b>，比加厚便宜得多</td></tr>
-          <tr><td class="k">磁场别被球壳短路</td><td>频率<b>别太高</b></td><td>趋肤深度 δ：10 kHz → 0.66 mm；<b>50 kHz → 0.29 mm（小于 0.4）</b> → 50 kHz 以上壳壁成短路环</td></tr>
-          <tr><td class="k">巴夏给的尺寸区间</td><td>不能小于 3 in</td><td>原话 <b>3–6 in = 76.2–152.4 mm</b>；Ø80 贴着下界（25.4 mm 方案已勘误作废）</td></tr>
+          <tr><td class="k">要装下 8 个线圈</td><td>球要<b>大</b></td><td>Ø80 外径、壁厚 0.8 → 内径 78.4 mm、容积约 <b>252 cm³</b>；8 个 Ø10–15 mm 线圈放得下且互不干涉</td></tr>
+          <tr><td class="k">弯曲模要落进音频段</td><td>球要小、壁要<b>薄</b></td><td>f_弯曲 ∝ (t/R)·f_ring；t/R = 0.02 → 预期 <b>120–460 Hz</b>（Ø80 × 0.8）。仍在音频段内，但已是这条约束给出的<b>上限</b></td></tr>
+          <tr><td class="k">放桌上不许留坑</td><td>壁要<b>厚</b>，或改接触</td><td>自重 1.39 N 下抗凹余量已有 1400 倍，但<b>点接触压力 62 MPa 与壁厚无关</b> → 必须走 <b>半硬态（屈服 ≥200 MPa）+ 底部 Ø6 mm 微平面／软环</b></td></tr>
+          <tr><td class="k">磁场别被球壳短路</td><td>频率<b>别太高</b></td><td>趋肤深度 δ：<b>10 kHz → 0.66 mm（已小于 0.8）</b>；50 kHz → 0.29 mm → 10 kHz 以上壳壁渐成短路环</td></tr>
+          <tr><td class="k">巴夏给的尺寸区间</td><td>不能小于 3 in</td><td>原话 <b>3–6 in = 76.2–152.4 mm</b>，壁厚 <b>≤1/16 in (1.59 mm)</b>；Ø80 × 0.8 <b>两条都在区间内</b>（25.4 mm 方案已勘误作废）</td></tr>
         </tbody>
       </table>
     </div>
@@ -1543,26 +1660,26 @@ X 无、Z 有　→　属引力／支撑类效应，不是「位置签名」</di
         <h4 style="margin-top:0">壁厚 → 频段 → 仪器（一张换算）</h4>
         <div class="tw" style="margin:10px 0">
           <table style="min-width:0">
-            <thead><tr><th>频率</th><th>趋肤深度</th><th>vs 0.4 mm 壁</th><th>含义</th></tr></thead>
+            <thead><tr><th>频率</th><th>趋肤深度</th><th>vs 0.8 mm 壁</th><th>含义</th></tr></thead>
             <tbody>
-              <tr><td class="mono">1 kHz</td><td class="mono">2.07 mm</td><td><b>&gt;&gt; 0.4</b></td><td>磁场近乎全穿透，涡流损耗可忽略</td></tr>
-              <tr><td class="mono">10 kHz</td><td class="mono">0.66 mm</td><td>&gt; 0.4</td><td>仍有部分穿透，可接受</td></tr>
-              <tr><td class="mono">50 kHz</td><td class="mono">0.29 mm</td><td>&lt; 0.4</td><td>电流集中表层，开始当短路环</td></tr>
-              <tr><td class="mono">100 kHz</td><td class="mono">0.21 mm</td><td><b>&lt;&lt; 0.4</b></td><td>Q 值与灵敏度明显下降</td></tr>
+              <tr><td class="mono">300 Hz</td><td class="mono">3.81 mm</td><td><b>&gt;&gt; 0.8</b></td><td>弯曲模所在频段——磁场几乎全穿透</td></tr>
+              <tr><td class="mono">1 kHz</td><td class="mono">2.07 mm</td><td><b>&gt; 0.8</b></td><td>仍近乎全穿透，涡流损耗可忽略</td></tr>
+              <tr><td class="mono">10 kHz</td><td class="mono">0.66 mm</td><td>&lt; 0.8</td><td>已小于壁厚，电流集中表层、涡流损耗上升</td></tr>
+              <tr><td class="mono">50 kHz</td><td class="mono">0.29 mm</td><td><b>&lt;&lt; 0.8</b></td><td>完全短路环，Q 值与灵敏度明显下降</td></tr>
             </tbody>
           </table>
         </div>
-        <p style="font-size:13.7px;color:var(--dim)">δ = √(ρ/(πfμ₀μr))，紫铜 ρ ≈ 1.72×10⁻⁸ Ω·m、μr ≈ 1。<b>结论：0.4 mm 紫铜的舒适区是 ≤20 kHz</b>；要更高频，须内贴坡莫合金箔，或改用高电阻率材料。</p>
+        <p style="font-size:13.7px;color:var(--dim)">δ = √(ρ/(πfμ₀μr))，紫铜 ρ ≈ 1.72×10⁻⁸ Ω·m、μr ≈ 1。<b>结论：0.8 mm 紫铜的电磁舒适区是 ≤5 kHz</b>（δ = t 对应 6.8 kHz）；弯曲模频段（δ ≈ 3.8 mm）不受影响。要更高频，须内贴坡莫合金箔，或改用高电阻率材料。</p>
       </div>
       <div class="card">
         <h4 style="margin-top:0">「不瘪」有两条失效路径，要分开算</h4>
         <div class="fml">p_cr ≈ 1.21 · E · (t/R)²
-<span class="n">理想球壳（Zoelly）——判「整体会不会突然塌」。铜 E≈120 GPa，R=40、t=0.4 时约 14.2 kPa</span></div>
+<span class="n">理想球壳（Zoelly）均匀外压——判「整体会不会突然塌」。铜 E≈117 GPa，R=40、t=0.8 时约 58 MPa</span></div>
         <div class="fml">p_cr,工程 ≈ 0.365 · E · (t/R)²
-<span class="n">含几何缺陷／焊缝的降阶经验值 ≈ 4–5 kPa——真实球壳常只有理想值的几分之一</span></div>
-        <div class="fml">σ_c ~ F / a
-<span class="n">桌面是点接触，a 只有 0.5–1 mm → 局部接触应力远高于均匀外压</span></div>
-        <p style="font-size:13.7px"><b>整体屈曲不是主要风险</b>（90 g 自重远达不到 4–5 kPa 对应载荷）；<b>局部压坑才是</b>——这也是第 5 章把「改接触」排在「加厚」前面的原因。</p>
+<span class="n">含几何缺陷／焊缝的降阶经验值 ≈ 17 MPa——真实球壳常只有理想值的几分之一</span></div>
+        <div class="fml">P_凹 ≈ 1.3 · E · t³ / R
+<span class="n">局部凹陷（snap-through）临界集中力：t=0.8 时约 1950 N，而自重只有 1.39 N → 余量 1400 倍</span></div>
+        <p style="font-size:13.7px"><b>整体屈曲与自重凹陷都不是风险</b>（自重等效均匀外压仅 276 Pa，凹陷余量 1400 倍）；<b>真正的短板是点接触压力</b>——它与壁厚无关，所以第 5 章把「改接触」排在「加厚」前面是对的。</p>
       </div>
     </div>
 
@@ -1571,17 +1688,17 @@ X 无、Z 有　→　属引力／支撑类效应，不是「位置签名」</di
       <table>
         <thead><tr><th>路线</th><th>材料牌号</th><th>规格</th><th>关键工艺</th><th>强项</th><th>代价</th></tr></thead>
         <tbody>
-          <tr><td class="k">① 单材料铜<br><span class="tag t-ok">先做这个</span></td><td>无氧铜 TU1／TU2，或低磷脱氧铜 SW-Cu／Cu-DLP，<b>半硬态</b></td><td>Ø80 × 0.4 mm</td><td>软态深冲两半 → 冷作 10–15% 半硬化 → 激光焊赤道 → 200 ℃ 去应力 → 底部磨 Ø6 mm 微平面</td><td>导电最好（≥98% IACS）、紫铜外观、可焊性成熟</td><td>软态必出坑（须半硬 + 改接触）；激光焊需外协</td></tr>
-          <tr><td class="k">② 磷青铜<br>抗坑优先</td><td>C51000／C52100</td><td>Ø80 × 0.35–0.4 mm</td><td>同上，焊接以软钎／银钎／激光点焊为主</td><td>屈服 380–620 MPa，抗压坑最强</td><td>导电仅十几～二十几 %IACS；铜磷钎缝偏脆</td></tr>
-          <tr><td class="k">③ 钢球<br>不必导电时</td><td>304L／316L；深冲性最好用 <b>305L</b>；要更硬可选 301B（1/2H）</td><td>R 30–50 → t 0.3–0.5 mm</td><td>两半深冲（LDR 1.8–2.2）→ 切 0.4 mm 法兰边 → 脉冲 TIG 或激光 → 150–250 ℃ 低温消应力</td><td>E ≈ 193–200 GPa，同厚度更抗屈曲；料便宜、易焊</td><td>导电差；须防锈；深冲道次多</td></tr>
-          <tr><td class="k">④ 双金属夹层<br>极薄展示</td><td>外铜 0.15–0.2 + 内钛／不锈钢 0.1–0.2</td><td>总 0.3–0.4 mm</td><td>分别成形 → 银基／AgCuTi 真空钎 → 外皮激光封赤道</td><td>刚度 ≈ 单层 0.4–0.5，外观仍薄</td><td>铜–钛会生成脆相；门槛高，<b>首件不建议做</b></td></tr>
+          <tr><td class="k">① 单材料铜<br><span class="tag t-ok">先做这个</span></td><td>无氧铜 TU1／TU2，或低磷脱氧铜 SW-Cu／Cu-DLP，<b>半硬态</b></td><td>Ø80 × 0.8 mm</td><td>软态深冲两半 → 冷作 10–15% 半硬化 → 激光焊赤道 → 200 ℃ 去应力 → 底部磨 Ø6 mm 微平面</td><td>导电最好（≥98% IACS）、紫铜外观、可焊性成熟</td><td>软态必出坑（须半硬 + 改接触）；激光焊需外协</td></tr>
+          <tr><td class="k">② 磷青铜<br>抗坑优先</td><td>C51000／C52100</td><td>Ø80 × 0.7–0.8 mm</td><td>同上，焊接以软钎／银钎／激光点焊为主</td><td>屈服 380–620 MPa，抗压坑最强</td><td>导电仅十几～二十几 %IACS；铜磷钎缝偏脆</td></tr>
+          <tr><td class="k">③ 钢球<br>不必导电时</td><td>304L／316L；深冲性最好用 <b>305L</b>；要更硬可选 301B（1/2H）</td><td>R 30–50 → t 0.6–0.9 mm（同频段换算）</td><td>两半深冲（LDR 1.8–2.2）→ 切 0.6 mm 法兰边 → 脉冲 TIG 或激光 → 150–250 ℃ 低温消应力</td><td>E ≈ 193–200 GPa，同厚度更抗屈曲；料便宜、易焊</td><td>导电差；须防锈；深冲道次多</td></tr>
+          <tr><td class="k">④ 双金属夹层<br>极薄展示</td><td>外铜 0.3–0.4 + 内钛／不锈钢 0.2–0.3</td><td>总 0.6–0.8 mm</td><td>分别成形 → 银基／AgCuTi 真空钎 → 外皮激光封赤道</td><td>刚度 ≈ 单层 0.8–1.0，外观仍薄</td><td>铜–钛会生成脆相；门槛高，<b>首件不建议做</b></td></tr>
         </tbody>
       </table>
     </div>
     <div class="tip reveal">
       <div class="t">💡 一个容易踩的坑</div>
       <p><b>铜磷钎料禁用于钢件</b>——磷与铁会生成脆性相。铜–铜之间可以自钎（纯铜甚至免钎剂），铜–钢、铜–不锈钢则必须换银基钎料或加镍中间层。</p>
-      <p style="color:var(--dim);font-size:13.7px">三套「可直接试」的小样（出自补充对话）：<b>A</b> 单铜 0.4 mm 半硬 + 底部微平面；<b>B</b> 外 TU1 0.15 + 内 C52100 0.2（或全 C51000 0.35）；<b>C</b> 外铜 0.1–0.15 电铸／旋压 + 内钛箔 0.1（首件不要做）。</p>
+      <p style="color:var(--dim);font-size:13.7px">三套「可直接试」的小样（出自补充对话）：<b>A</b> 单铜 0.8 mm 半硬 + 底部微平面；<b>B</b> 外 TU1 0.3 + 内 C52100 0.4（或全 C51000 0.7）；<b>C</b> 外铜 0.4 电铸／旋压 + 内钛箔 0.2（首件不要做）。</p>
     </div>
 
     <h3 class="reveal">7.1d 工艺怎么落实才划算：整条工艺链 + 三处省钱替换</h3>
@@ -1592,15 +1709,15 @@ X 无、Z 有　→　属引力／支撑类效应，不是「位置签名」</di
       <div class="step"><div class="h">装配与焊接</div><div class="d">装配间隙 <b>≤0.05 mm</b>。首选 <b>光纤激光脉冲焊 300–500 W</b>（热影响区 &lt;0.2 mm，变形最小）；若用 TIG 必须超小电流 <b>20–30 A</b> + 脉冲 + 铜背衬散热，否则烧穿。<b>分段跳焊</b>，不要一圈连续满焊——连续焊的收缩会让球椭圆化。</div></div>
       <div class="step"><div class="h">去应力</div><div class="d"><b>180–220 ℃ 保温 1–2 h</b>。<em>不要超过 250 ℃</em>：紫铜会退回软态，前面半硬化的努力全部作废。</div></div>
       <div class="step"><div class="h">整形与检测</div><div class="d">圆度按<b>直径的 0.1–0.2%</b> 管控（Ø80 → ≤0.08–0.16 mm）；超标用液压胀形或旋压微整形修正。这一步不能省——圆度缺陷会直接变成模态劈裂的假信号。</div></div>
-      <div class="step"><div class="h">开孔与线圈安装</div><div class="d">引线孔 <b>Ø3–5 mm</b>（0.4 mm 壁厚下<b>不要超过 5–8 mm</b>，否则孔边凹陷）。开孔产生应力集中 → <b>先开小孔再焊接</b>，或焊后用精密钻／电火花。8 个线圈按八面体顶点方向贴内壁，或用 3D 打印骨架，减少涡流耦合。</div></div>
-      <div class="step"><div class="h">桌面防护（最省的一步）</div><div class="d">底部磨 <b>Ø6 mm 微平面</b>，或贴软硅胶／绒布环，把点接触变成面接触——接触应力可降一个数量级。<b>这比把壁厚从 0.4 加到 0.8 便宜得多，而且不减灵敏度。</b></div></div>
+      <div class="step"><div class="h">开孔与线圈安装</div><div class="d">引线孔 <b>Ø3–5 mm</b>（0.8 mm 壁厚下<b>不要超过 8–12 mm</b>，否则孔边凹陷）。开孔产生应力集中 → <b>先开小孔再焊接</b>，或焊后用精密钻／电火花。8 个线圈按八面体顶点方向贴内壁，或用 3D 打印骨架，减少涡流耦合。</div></div>
+      <div class="step"><div class="h">桌面防护（最省的一步）</div><div class="d">底部磨 <b>Ø6 mm 微平面</b>，或贴软硅胶／绒布环，把点接触变成面接触——接触压力可降 <b>100 倍以上</b>（62 MPa → 约 0.4 MPa）。<b>这是唯一能压住接触应力的手段——加厚壁厚对它无效。</b></div></div>
     </div>
 
     <div class="grid3 reveal">
       <div class="card" style="border-color:var(--green)">
         <div class="tag t-ok">省钱替换 1</div>
         <h4 style="margin-top:11px">软接触环<br>代替加厚壁</h4>
-        <p style="font-size:13.9px">加厚要重做模具、增重量，还可能把弯曲模推出音频段。<b>一圈硅胶／绒布环的成本可以忽略</b>，却把「必出坑」变成「看不出来」。</p>
+        <p style="font-size:13.9px">加厚能提高抗凹陷与抗人为接触，但<b>点接触压力与壁厚无关</b>（p₀ ∝ t<sup>1/3</sup>），加厚甚至略微升高它。<b>一圈硅胶／绒布环成本可以忽略，却能把 62 MPa 压到 0.4 MPa</b>——这件事加厚做不到。</p>
       </div>
       <div class="card" style="border-color:var(--green)">
         <div class="tag t-ok">省钱替换 2</div>
@@ -1710,10 +1827,10 @@ X 无、Z 有　→　属引力／支撑类效应，不是「位置签名」</di
       <table>
         <thead><tr><th>硬约束</th><th>量化门槛</th><th>为什么这么严</th></tr></thead>
         <tbody>
-          <tr><td class="k">① 加载质量可忽略</td><td>附加质量 <b>&lt; 10 mg</b><br>（球质量 90 g 的 10⁻⁴）</td><td>要找的可能是 <b>10⁻⁸ 量级</b>的相对频差；一只 2 g 的加速度计就是 2.2% 质量扰动、直接把模态频率挪走约 1%——<b>比待测效应大 6 个数量级</b>。这一条淘汰了所有接触式传感器</td></tr>
+          <tr><td class="k">① 加载质量可忽略</td><td>附加质量 <b>&lt; 10 mg</b><br>（球质量 141 g 的 10⁻⁴）</td><td>要找的可能是 <b>10⁻⁸ 量级</b>的相对频差；一只 2 g 的加速度计就是 1.4% 质量扰动、直接把模态频率挪走约 0.7%——<b>比待测效应大 6 个数量级</b>。这一条淘汰了所有接触式传感器</td></tr>
           <tr><td class="k">② 位移分辨到亚微米</td><td>单点噪声 <b>&lt; 10 μm</b><br>目标 <b>&lt; 0.1 μm</b></td><td>§7.4 的拍频法把灵敏度搬进相位，前端位移噪声会被 Q 值放大成频率抖动</td></tr>
           <tr><td class="k">③ 相位可测 · 8 路相干</td><td><b>8 路共享时基</b><br>通道间相位一致性好于 0.1°</td><td>相位是主战场；8 路若不同源，跨通道相位差就没有意义</td></tr>
-          <tr><td class="k">④ 频段匹配</td><td>主战场 <b>60–230 Hz</b><br>辅助 <b>≤ 20 kHz</b></td><td>低于 20 Hz 会被桌面／房间低频扰动吃掉；高于 50 kHz 铜壳已成涡流短路环</td></tr>
+          <tr><td class="k">④ 频段匹配</td><td>主战场 <b>120–460 Hz</b><br>辅助 <b>≤ 5 kHz</b></td><td>低于 20 Hz 会被桌面／房间低频扰动吃掉；高于 10 kHz 铜壳渐成涡流短路环</td></tr>
           <tr><td class="k">⑤ 对环境不挑</td><td>室温 · 普通桌面<br><b>无磁屏蔽 · 无隔振台</b></td><td>这是「一张桌子就能做」的底线。要求真空／洁净室／低温的方案，第一版直接出局</td></tr>
         </tbody>
       </table>
@@ -1741,7 +1858,7 @@ X 无、Z 有　→　属引力／支撑类效应，不是「位置签名」</di
         <circle cx="380" cy="195" r="42" fill="url(#cu2)" stroke="#ffd591" stroke-width="1.4"/>
         <text x="380" y="192" text-anchor="middle" font-size="13" font-weight="700" fill="#3a1f05" font-family="Consolas,monospace">Cu</text>
         <text x="380" y="208" text-anchor="middle" font-size="9.5" fill="#5a3a10" font-family="Consolas,monospace">ball</text>
-        <text x="380" y="256" text-anchor="middle" font-size="12.2" style="fill:var(--dim)">Ø80 × 0.4 · 90 g · 薄壁导电球</text>
+        <text x="380" y="256" text-anchor="middle" font-size="12.2" style="fill:var(--dim)">Ø80 × 0.8 · 141 g · 薄壁导电球</text>
         <text x="380" y="274" text-anchor="middle" font-size="11.8" style="fill:var(--dim2)">曲面 R40 · 非磁性 · 抛光面</text>
 
         <!-- 左上：电磁 -->
@@ -1875,7 +1992,7 @@ X 无、Z 有　→　属引力／支撑类效应，不是「位置签名」</di
       </div>
       <div class="card" style="border-color:var(--green)">
         <h4 style="margin-top:0">③ 测量传声器阵列<span class="tag t-ok" style="margin-left:6px">本项目的设计目标</span></h4>
-        <p style="font-size:14px">整条方案的起点就是「<b>把壁做薄，让弯曲模落进音频段</b>」（§7.4：Ø80×0.4 预期 60–230 Hz）。频段既然是自己挑的，麦克风就是<b>与设计目标天生匹配</b>的传感器。</p>
+        <p style="font-size:14px">整条方案的起点就是「<b>把壁做薄，让弯曲模落进音频段</b>」（§7.4：Ø80×0.8 预期 120–460 Hz）。频段既然是自己挑的，麦克风就是<b>与设计目标天生匹配</b>的传感器。</p>
         <div class="fml">p ≈ ρ · c · ω · u　⟹　u_min = p_min / (ρcω)
 <span class="n">f = 100 Hz（ω = 628）、ρc = 415、p_min = 20 μPa（0 dB SPL）
 → u_min ≈ 7.7 × 10⁻¹¹ m ≈ 77 pm</span></div>
@@ -1894,7 +2011,7 @@ X 无、Z 有　→　属引力／支撑类效应，不是「位置签名」</di
       <table>
         <thead><tr><th>一票否决</th><th>它为什么诱人</th><th>为什么在本项目出局</th></tr></thead>
         <tbody>
-          <tr><td class="k">压电加速度计</td><td>成熟、便宜、带宽宽、信噪比好，是工业模态分析的标准件</td><td><b>螺栓／胶粘＝质量加载</b>。一只 2 g 的传感器装到 90 g 球上就是 2.2% 扰动 → 频率偏移约 1%，<b>比待测效应（10⁻⁸）大 6 个数量级</b>。只能贴在外壳上做<b>激励标定</b>，不能当测量通道</td></tr>
+          <tr><td class="k">压电加速度计</td><td>成熟、便宜、带宽宽、信噪比好，是工业模态分析的标准件</td><td><b>螺栓／胶粘＝质量加载</b>。一只 2 g 的传感器装到 141 g 球上就是 1.4% 扰动 → 频率偏移约 0.7%，<b>比待测效应（10⁻⁸）大 6 个数量级</b>。只能贴在外壳上做<b>激励标定</b>，不能当测量通道</td></tr>
           <tr><td class="k">电阻应变片</td><td>1 με 分辨、便宜、可布多点</td><td>必须胶粘 + 8 处引线（引线质量与胶层阻尼连仿真都难做）。而且应变片测的是<b>局部面内应变</b>，不是我们要的模态位移</td></tr>
           <tr><td class="k">电容位移探头</td><td>nm 级、100 kHz、非接触的教科书答案</td><td>要求靶面<b>平坦且面积 ≥ 3× 探头直径</b>。Ø80 曲面做不到——除非动用 §7.1d 那只<b>底部 Ø6 mm 微平面</b>，但那只够装 1 个点</td></tr>
           <tr><td class="k">标准涡流位移探头</td><td>0.1 μm、40 kHz、非接触，且铜是良导体</td><td>同样要求平坦靶面 ≥ 3× 探头径；曲面会把标定曲线拉弯。适合做<b>单点标定</b>，不适合 8 点阵列</td></tr>
@@ -1911,7 +2028,7 @@ X 无、Z 有　→　属引力／支撑类效应，不是「位置签名」</di
       <div class="fml">电磁（ΔL 涡流）　＋　光学（Δd 腔长）　＋　声学（Δp 声压）
 <span class="n">三者同时给出同一频移 → 一次性排除掉「这只是某一种仪器的耦合假象」这一整类解释</span></div>
       <p>反过来，如果<b>只有线圈看得到、光学与声学都看不到</b>——那它更可能是线圈自身的漂移或互耦，而不是球的「位置频率」。</p>
-      <p style="color:var(--dim);font-size:13.6px"><b>第一版的建议配置</b>：<b>主</b> = 8 点线圈阵列（激励＋拾取一体）　＋　<b>辅</b> = 2 路光纤 F-P 或 SMI（独立光学验证）　＋　<b>旁证</b> = 1 台高速相机（看得见的运动）。传声器阵列留到第二阶段——等壁厚确实调到 60–230 Hz 之后，它会成为性价比最高的一路。</p>
+      <p style="color:var(--dim);font-size:13.6px"><b>第一版的建议配置</b>：<b>主</b> = 8 点线圈阵列（激励＋拾取一体）　＋　<b>辅</b> = 2 路光纤 F-P 或 SMI（独立光学验证）　＋　<b>旁证</b> = 1 台高速相机（看得见的运动）。传声器阵列留到第二阶段——等壁厚确实调到 120–460 Hz 之后，它会成为性价比最高的一路。</p>
     </div>
 
     <h3 class="reveal">7.3 开环扫描协议：不知道频率在哪，就全扫一遍</h3>
@@ -1952,7 +2069,7 @@ X 无、Z 有　→　属引力／支撑类效应，不是「位置签名」</di
         <div class="fml">f_ring = c_L / (2πR)
 <span class="n">c_L = √(E / (ρ(1−ν²))) = 3843 m/s（铜的纵波声速）</span></div>
         <div class="fml">f_弯曲 ∝ (t/R) · f_ring
-<span class="n">t/R = 0.002–0.01 → 弯曲模落到 100–1000 Hz；Ø80×0.4 实测预期 ≈ 60–230 Hz</span></div>
+<span class="n">t/R = 0.002–0.02 → 弯曲模落到 100–2000 Hz；Ø80×0.8 实测预期 ≈ 120–460 Hz</span></div>
         <p style="font-size:13.6px;color:var(--dim);margin-top:10px">呼吸模（n=0）铜球约 <b>125.8 kHz</b>——远在音频段之上。这就是<b>为什么必须选超薄壁</b>：只有把壁做薄，弯曲模才会落进「每秒几百周」的音频段，才可能用声学波束驱动、用麦克风采集。</p>
       </div>
     </div>
@@ -1995,7 +2112,7 @@ X 无、Z 有　→　属引力／支撑类效应，不是「位置签名」</di
       <table>
         <thead><tr><th>信号情形</th><th>是否适用</th><th>做法</th></tr></thead>
         <tbody>
-          <tr><td class="k">球壳机械弯曲模<br>（100–400 Hz）</td><td><span class="tag t-ok">✅ 直接适用</span></td><td>Ø80 × 0.4 薄壳的低阶弯曲模正落在这个频段——<b>整套协议原样上</b></td></tr>
+          <tr><td class="k">球壳机械弯曲模<br>（100–400 Hz）</td><td><span class="tag t-ok">✅ 直接适用</span></td><td>Ø80 × 0.8 薄壳的低阶弯曲模（预计 120–460 Hz）基本落在这个频段（高端略超）——<b>整套协议原样上</b>，低阶模的绝对频率按实测重新标定</td></tr>
           <tr><td class="k">结构振动／支座共振<br>（同频段）</td><td><span class="tag t-mid">⚠️ 需分离</span></td><td>先做模态识别（见下「模态灵敏度矩阵」），确认<b>转的不是支座</b></td></tr>
           <tr><td class="k">电磁腔模／谐振峰<br>（MHz–GHz）</td><td><span class="tag t-no">❌ 不可直接用</span></td><td>先用 NanoVNA 测 S21 取峰，<b>下混频到音频／中频</b>后再送进 harmonograph</td></tr>
         </tbody>
@@ -2050,7 +2167,7 @@ A₁ = (s₁ + s₂ + s₃ + s₄) / 2</div>
     </div>
 
     <h4 class="reveal" style="margin:28px 0 6px;font-size:16px;color:var(--t-strong)">🔴 可测性红线（本节最重要的一张表）</h4>
-    <p class="reveal" style="font-size:14.3px">取载波 f₀ = 300 Hz（Ø80 × 0.4 薄壳弯曲模量级），把「进动法到底能分辨多小」算到底：</p>
+    <p class="reveal" style="font-size:14.3px">取载波 f₀ = 300 Hz（Ø80 × 0.8 薄壳弯曲模量级，预计 120–460 Hz），把「进动法到底能分辨多小」算到底：</p>
     <div class="tw reveal">
       <table>
         <thead><tr><th>相对频差 Δf/f₀</th><th>绝对频差 Δf</th><th>进动周期 T = 1/Δf</th><th>工程可行性</th></tr></thead>
@@ -2156,7 +2273,7 @@ A₁ = (s₁ + s₂ + s₃ + s₄) / 2</div>
       </div>
       <div class="card">
         <div class="tag t-mid">第二风险</div>
-        <p style="font-size:14px;margin-top:10px"><b>薄壳做不出来、或在测试中被压凹</b>。0.4 mm 壁厚的球，屈曲强度只有理论值的 30%–70%。</p>
+        <p style="font-size:14px;margin-top:10px"><b>薄壳做不出来、或在测试中被压凹</b>。0.8 mm 壁厚的球，屈曲强度只有理论值的 30%–70%。</p>
       </div>
       <div class="card">
         <div class="tag t-info">第三风险</div>
@@ -2164,26 +2281,13 @@ A₁ = (s₁ + s₂ + s₃ + s₄) / 2</div>
       </div>
     </div>
 
-    <h3 class="reveal">8.1 三项「带着图形签名」的伪影来源</h3>
-    <p class="reveal">上一张表列的是<b>物理混淆源</b>。还有三个来源会主动<b>伪装成信号</b>——它们各自的图形长相是固定的，所以可以照长相认出来、照着办法压下去。（读数器本身见 <a href="#spec">第 7 章 7.5</a>。）</p>
-    <div class="tw reveal">
-      <table>
-        <thead><tr><th>伪影来源</th><th>表现形式（图形签名）</th><th>抑制手段</th></tr></thead>
-        <tbody>
-          <tr><td class="k">校准残差</td><td>图形出现<b>固定不变</b>的畸变——<b>每次都在同一相位</b></td><td>重做 7.5 的每路幅相校准（参考信号注入法）；提高注入信号的信噪比</td></tr>
-          <tr><td class="k">温度与接触漂移</td><td>进动周期<b>单向单调变化</b>（像在慢慢转，实为漂移）</td><td>压住第 3 章条件；做「<b>假移动</b>」对照——只动支座、不动球</td></tr>
-          <tr><td class="k">参考源不稳定</td><td>7 对信号<b>同向、同速率</b>进动</td><td>改用<b>双通道互比</b>；或换更高稳定度的参考源</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <div class="tip bad reveal">
-      <div class="t">🔎 判伪口诀 —— 固定畸变 = 校准；单向漂移 = 温度／接触；同向同步 = 参考源</div>
-      <p>真效应应当是<b>位置相关</b>的——<b>换个位置才出现，换回来就消失</b>。三句口诀的完整版与「本协议不能做什么」见 7.5。</p>
-    </div>
+    <h3 class="reveal">8.1 三类会「伪装成信号」的伪影</h3>
+    <p class="reveal">上一张表列的是<b>物理混淆源</b>。另有<b>三类来源会主动伪装成信号</b>——<b>校准残差</b>（图形出现固定不变、每次同相位的畸变）、<b>温度与接触漂移</b>（进动周期单向单调变化）、<b>参考源不稳定</b>（7 对信号同向同速率进动）。它们不表现为随机噪声，而是<b>有固定的图形长相</b>，所以可以照长相认出来。</p>
+    <p class="reveal">这三类的识别与处置已并入 <a href="#spec">第 7 章 7.5</a> 的读数规则（口诀：<b>固定畸变 = 校准；单向漂移 = 温度／接触；同向同步 = 参考源</b>），本节不重复展开。要记住的只有一句：真效应应当是<b>位置相关</b>的——<b>换个位置才出现，换回来就消失</b>。</p>
 
     <div class="tip warn reveal">
-      <div class="t">⚖️ 核心工程矛盾（没有完美解，只有排序）</div>
-      <p>要同时满足：<b>低滚动阻力</b> ＋ <b>高平面度</b> ＋ <b>振动隔离</b> ＋ <b>声场均匀</b> ＋ <b>可校准测力</b>。</p>
+      <div class="t">⚖️ 于是工程上无法两全（没有完美解，只有排序）</div>
+      <p>把上面这些混淆源逐项压下去，最后必然撞上一个几乎无解的组合——<b>低滚动阻力</b> ＋ <b>高平面度</b> ＋ <b>振动隔离</b> ＋ <b>声场均匀</b> ＋ <b>可校准测力</b>，这五项必须同时满足。</p>
       <p>这五项互相拉扯——例如：为了降低滚动阻力要把球做轻做硬，但为了可测力又要它够重；为了隔振要把桌子做软，但为了平面度又要它够刚。<b>项目档案的做法是逐项量化、明确排序，而不是追求全部最优。</b></p>
     </div>
   </div>
@@ -2243,7 +2347,7 @@ A₁ = (s₁ + s₂ + s₃ + s₄) / 2</div>
           <li><a href="bashar科技系列/01_金属球位置频率实验_原始出处与原话.md">01 · 原始出处与原话</a>——本页的主要依据</li>
           <li><a href="bashar科技系列/03_瞬移科技_位置变量与wrap drive.md">03 · 位置变量与 wrap drive</a></li>
           <li><a href="铜球位置共振实验可行性报告与三阶段方案.md">可行性报告与三阶段方案</a></li>
-          <li><a href="产出文档/铜球实验完整工艺规范.md">铜球实验完整工艺规范（v3.0）</a></li>
+          <li><a href="产出文档/铜球实验完整工艺规范.md">铜球实验完整工艺规范</a></li>
           <li><a href="产出文档/八点立方体传感阵列设计分析.md">八点立方体传感阵列设计分析</a></li>
           <li><a href="产出文档/开环扫描协议.md">开环扫描协议</a></li>
           <li><a href="产出文档/灵敏度提升方法清单.md">灵敏度提升方法清单</a></li>
@@ -2290,7 +2394,7 @@ A₁ = (s₁ + s₂ + s₃ + s₄) / 2</div>
     <div class="tip reveal">
       <div class="t">🔍 三条贯穿全案的纪律</div>
       <p><b>① 三层分离</b>：可检验的物理陈述 / 机制解释 / 宇宙论叙事——混层即出错（25.4 mm 之误就是这么来的）。</p>
-      <p><b>② 原话与设计分开标注</b>：R1–R15 是巴夏说的；Ø80×0.4、八点阵列、对数扫描都是我们的补法。本页全程用颜色区分。</p>
+      <p><b>② 原话与设计分开标注</b>：R1–R15 是巴夏说的；Ø80×0.8、八点阵列、对数扫描都是我们的补法。本页全程用颜色区分。</p>
       <p><b>③ 先定量，后定性</b>：任何「异常」在给出量级、置信区间、混淆源排除之前，不得称为发现。</p>
     </div>
 
@@ -2826,10 +2930,9 @@ A₁ = (s₁ + s₂ + s₃ + s₄) / 2</div>
         <p style="font-size:14px">换句话说：<b>这不需要新增大科学装置，只需要在存量装置上换一个问题。</b>成本曲线与新建一台完全不同。</p>
       </div>
       <div class="card">
-        <h4 style="margin-top:0">② 全人类的公共量，不是谁的私产</h4>
-        <p style="font-size:14px">「位置频率」如果成为一项可计量的量纲，它应当像米、秒、开尔文一样，<b>由全人类共同定义、共同使用</b>，而<b>不该被谁抢先注册成私产去收租</b>。</p>
-        <p style="font-size:14px">这不是一句姿态，而是它的来源决定的：<b>这项技术源自 Bashar 的通灵信息</b>——它从来不是某个实验室、某家公司或某个国家的发明，而是<b>递交给整个人类的一份公共知识</b>。所以它天然是一个<b>公益项目</b>：<b>参与的人越多，验证越快、误差越小、落地越早</b>。</p>
-        <p style="font-size:14px">它要兑现的也不是市场份额，而是那句话——<b>当「距离」从成本表里消失，地球村才第一次真正成为现实。</b></p>
+        <h4 style="margin-top:0">② 定义权之争会先于技术落地</h4>
+        <p style="font-size:14px">「位置频率」若成为一项可计量的量纲，<b>由谁来定义</b>会比技术本身更早浮出水面——因为定义方决定全世界的换算口径。</p>
+        <p style="font-size:14px">本项目的立场是：它应当像米、秒、开尔文一样<b>由全人类共同定义、共同使用</b>，而不该被谁抢先注册成私产去收租。这条立场的完整理由见本章开头的定位声明，此处不重复。</p>
       </div>
       <div class="card">
         <h4 style="margin-top:0">③ 不可及 → 可及</h4>
@@ -2841,7 +2944,7 @@ A₁ = (s₁ + s₂ + s₃ + s₄) / 2</div>
 
     <div class="tip bad reveal">
       <div class="t">⚠️ 一、效应一个字都还没被验证</div>
-      <p>本页 §7 的第一道判据是「规格达标」——<b>把两只 Ø80×0.4 的球做出来，把基线稳上三十分钟</b>。这一道都还没过。本章所有数字的性质是<b>「如果」</b>，不是「将要」。</p>
+      <p>本页 §7 的第一道判据是「规格达标」——<b>把两只 Ø80×0.8 的球做出来，把基线稳上三十分钟</b>。这一道都还没过。本章所有数字的性质是<b>「如果」</b>，不是「将要」。</p>
     </div>
 
     <div class="tip warn reveal">
@@ -2877,7 +2980,7 @@ A₁ = (s₁ + s₂ + s₃ + s₄) / 2</div>
 
     <div class="tip warn reveal">
       <div class="t">📐 本章性质声明：全部是<b>升级实验设计</b>，不是已验证结论</div>
-      <p>与 §11 同级：本章的用途是<b>规划下一步测什么、怎么测、看到什么算什么</b>。所有标度律都是<b>可检验的预言</b>。任何一条与实测冲突，以实测为准。</p>
+      <p>本章属于<b>设计与执行层</b>（不含任何远景推演，这一点与 §11 不同）：用途是<b>规划下一步测什么、怎么测、看到什么算什么</b>。所有标度律都是<b>可检验的预言</b>。任何一条与实测冲突，以实测为准。</p>
     </div>
 
     <h3 class="reveal">13.1　把「地点频率」拆成四个因子：方程第一步该怎么改</h3>
@@ -2899,7 +3002,7 @@ A₁ = (s₁ + s₂ + s₃ + s₄) / 2</div>
       </div>
       <div class="fml">f = f_n( L_eff, c_s, Σ_n ) · ( 1 + ε_温 + ε_撑 + ε_loc )
 <span class="n">位置项是「乘性」时写成 1+ε_loc；是「加性」时写成 f_n + δf_loc —— 这两种情况必须由实验分开（见 13.6）</span></div>
-      <p style="font-size:13.8px;color:var(--dim)">注意：<b>「位置」不在 L_eff 里，也不在 c_s 里</b>——它只能待在微扰项。这句看着是废话，但它决定了整个升级实验怎么设计：<b>要看清微扰项，就必须把另外三个因子按住不动。</b></p>
+      <p style="font-size:13.8px;color:var(--dim)">注意：<b>「位置」不在 L_eff 里，也不在 c_s 里</b>——它只能待在微扰项。这句听着平淡，但它决定了整个升级实验怎么设计：<b>要看清微扰项，就必须把另外三个因子按住不动。</b></p>
     </div>
 
     <h3 class="reveal">13.1b　比较之前先统一「模态类型」：薄壳型 vs 体波型</h3>
@@ -2910,7 +3013,7 @@ A₁ = (s₁ + s₂ + s₃ + s₄) / 2</div>
       <table>
         <thead><tr><th>形态</th><th>归一化式</th><th>Ø80 铜的量级</th><th>对表面／边界</th><th>适不适合做位置实验</th></tr></thead>
         <tbody>
-          <tr><td class="k">薄壳型<br>（空心，t/R ≤ 0.05）</td><td class="mono">f_n = (c_s/2πR)·η·Φ_n<br>η = t / ( R·√(12(1−ν²)) )</td><td class="mono">60–230 Hz</td><td><b>极敏感</b></td><td><span class="tag t-ok">✅ 首选</span></td></tr>
+          <tr><td class="k">薄壳型<br>（空心，t/R ≤ 0.05）</td><td class="mono">f_n = (c_s/2πR)·η·Φ_n<br>η = t / ( R·√(12(1−ν²)) )</td><td class="mono">120–460 Hz</td><td><b>极敏感</b></td><td><span class="tag t-ok">✅ 首选</span></td></tr>
           <tr><td class="k">体波型<br>（实心／厚壳）</td><td class="mono">f_n = (c_s/2L)·λ_n</td><td class="mono">kHz–MHz 级</td><td>不敏感</td><td><span class="tag t-no">✗ 只作对照</span></td></tr>
         </tbody>
       </table>
@@ -3168,7 +3271,7 @@ A₁ = (s₁ + s₂ + s₃ + s₄) / 2</div>
 
     <div class="tip reveal">
       <div class="t">🔗 与本章配套的文件</div>
-      <p>本章是<b>设计层</b>。落到纸面的操作协议见 <code>产出文档/第07章_Harmonograph八路微小频差检测协议.md</code>（读数器与可测性红线）与 <code>产出文档/铜球实验完整工艺规范.md</code>（第 7 章＝进动检测、第 8 章＝总体流程、第 9 章＝判定矩阵）。<b>升级实验的判据，最终要合并进第 9 章判定矩阵的第二版。</b></p>
+      <p>本章是<b>设计层</b>。落到纸面的操作协议见 <code>产出文档/第07章_Harmonograph八路微小频差检测协议.md</code>（读数器与可测性红线）与 <code>产出文档/铜球实验完整工艺规范.md</code>（第 7 章＝进动检测、第 8 章＝总体流程、第 9 章＝判定矩阵、第 10 章＝升级实验设计、第 11 章＝挑战与未知）。<b>升级实验的判据，最终要合并进第 9 章判定矩阵的第二版。</b></p>
     </div>
   </div>
 </section>
@@ -3189,7 +3292,7 @@ A₁ = (s₁ + s₂ + s₃ + s₄) / 2</div>
     </div>
 
     <h3 class="reveal">14.1　最根本的一条：方程不是「一条」，是「一族」，而且会一直改</h3>
-    <p class="reveal">本页 <a href="#upgrade">§13.1</a> 写下的 <code>f_n = (c_s / L_eff) · Σ_n</code>，<b>不是答案，是 v1</b>。它的成立条件其实很窄：<b>球对称、均质、各向同性、无阻尼、边界条件固定</b>。每放开一个变量，方程就必须长出一项——这就是老师说的那句「<b>地点频率方程会逐步根据实验的升级而完善，可能会有一系列方程</b>」。</p>
+    <p class="reveal">本页 <a href="#upgrade">§13.1</a> 写下的 <code>f_n = (c_s / L_eff) · Σ_n</code>，<b>不是答案，是 v1</b>。它的成立条件其实很窄：<b>球对称、均质、各向同性、无阻尼、边界条件固定</b>。每放开一个变量，方程就必须长出一项。这正是本项目的出发点：<b>地点频率方程会随实验升级逐步完善，最终可能是一族方程，而不是一条</b>。</p>
     <p class="reveal">而且不同<b>材料属性</b>会逼出不同的频谱地点方程：各向同性的金属是一条式子，正交各向异性的木材是另一条（<code>c_s</code> 变成张量 <code>c_s(θ)</code>），吸湿材料还要多一个湿度项——<b>不是「同一个方程的参数不同」，而是「方程的形式本身不同」</b>。这一层，是本项目目前最少人认真对待的地方。</p>
 
     <div class="tw reveal">
@@ -3216,7 +3319,7 @@ A₁ = (s₁ + s₂ + s₃ + s₄) / 2</div>
 
     <h3 class="reveal">14.2　在变化中找不变量：唯一能证伪的路径</h3>
     <p class="reveal">换尺寸、换材质、换几何，<b>什么都在变</b>——这最容易让人滑进「怎么解释都行」的泥潭。要跳出泥潭只有一条路：<b>先声明什么不该变，然后看它到底变不变。</b></p>
-    <p class="reveal">这就是老师那句话的完整含义：<b>「在变化中找不变的规律」</b>。变的是 <code>f_n</code>（尺寸／材质／几何全都会把它改掉），要找的是那些<b>理论承诺「不该动」的量</b>。下面这张表，是本项目目前能想到的不变量候选——<b>每一条都是一个可以独立被证伪的命题</b>。</p>
+    <p class="reveal">这正是本项目的方法论核心：<b>在变化中找不变的规律</b>。变的是 <code>f_n</code>（尺寸／材质／几何全都会把它改掉），要找的是那些<b>理论承诺「不该动」的量</b>。下面这张表，是本项目目前能想到的不变量候选——<b>每一条都是一个可以独立被证伪的命题</b>。</p>
 
     <div class="tw reveal">
       <table>
@@ -3512,10 +3615,21 @@ A₁ = (s₁ + s₂ + s₃ + s₄) / 2</div>
       <b style="color:var(--txt)">⚖️ 使用方式</b>：本仓库供<b>查阅与下载</b>，不供改动——欢迎阅读、保存，并在<b>注明来源</b>后原样引用；
       <b>修改、改编、衍生、未注明来源的转载、商业用途一律不允许</b>。修改权限仅归作者本人与持有访问密钥者。完整条款见仓库根目录 <code>LICENSE</code>。
     </p>
+    <p style="margin-top:12px">
+      <b style="color:var(--txt)">&#128397; 随手标注</b>：选中页面上任意一句话，会浮出工具条——可「涂黄」或「加下划线」；标注自动存在<b>本机浏览器缓存</b>里，刷新、关掉再打开都还在，点一下已有标注还能删除它。
+      <b>置顶条最左侧的 &#10005; 按钮可一键清空全部标注</b>（只清本机缓存，网页内容本身不受影响）。
+    </p>
   </div>
 </footer>
 
-<div class="lb" id="lb"><img id="lbimg" alt=""><div class="cap" id="lbcap"></div></div>
+<div class="mktb" id="mktb" data-mk-ui role="toolbar" aria-label="标注工具">
+  <button type="button" data-act="hl"><span class="sw"></span>涂黄</button>
+  <button type="button" data-act="ul"><span class="sw"></span>下划线</button>
+  <span class="sep"></span>
+  <button type="button" data-act="del">&#10005; 删除标注</button>
+</div>
+
+<div class="lb" id="lb" data-mk-ui><img id="lbimg" alt=""><div class="cap" id="lbcap"></div></div>
 
 <script>
 (function(){
@@ -3569,6 +3683,21 @@ A₁ = (s₁ + s₂ + s₃ + s₄) / 2</div>
   lb.addEventListener("click", function(){ lb.classList.remove("on"); });
   document.addEventListener("keydown", function(e){ if (e.key === "Escape") lb.classList.remove("on"); });
 
+  /* 顶栏是 fixed，锚点跳转靠 scroll-padding 留白避开它。导航换行时栏高会变
+     （加了「清除标注」按钮后宽屏由 1 行变 2 行），所以按实测高度动态同步；
+     CSS 里的 78px 只当单行顶栏的兜底，JS 一失效也不会完全没留白。 */
+  function syncScrollPad(){
+    var nav = document.querySelector("nav");
+    if (!nav) return;
+    var pad = Math.round(nav.getBoundingClientRect().height) + 16;
+    /* 窄屏顶栏只有 54px（54+16=70 < 78），别去盖 CSS 里预设的 78px；
+       只有顶栏真的长高了（宽屏换行后 96px）才接管。 */
+    document.documentElement.style.scrollPaddingTop = pad > 78 ? pad + "px" : "";
+  }
+  syncScrollPad();
+  window.addEventListener("resize", syncScrollPad);
+  if (document.fonts && document.fonts.ready){ document.fonts.ready.then(syncScrollPad); }
+
 })();
 
 /* ---------- 白天 / 暗黑 主题切换 ---------- */
@@ -3607,6 +3736,433 @@ A₁ = (s₁ + s₂ + s₃ + s₄) / 2</div>
   } catch(e){}
 
   sync();
+})();
+
+/* ---------- 读者标注：涂黄 / 下划线 · 自动存本机缓存 ----------
+   索引方案：把正文所有文本节点按 DOM 顺序拼成一条「全文」，标注记录
+   { k:涂黄/下划线, s:起偏移, e:止偏移, t:原文 }。恢复时先用 s/e 定位，
+   再用 t 校验；校验不过时按 t 在全文中回找（取最接近 s 的一次），
+   这样即使页面日后增删了文字，旧标注也不会整片丢失。
+   UI 节点（导航按钮 / 工具条 / 灯箱 / 提示）都带 data-mk-ui，不进入索引。 */
+(function(){
+  "use strict";
+
+  var KEY = "bashar-marks-v1";
+  var CH = !!(window.CSS && CSS.highlights && window.Highlight);
+
+  var tb = document.getElementById("mktb");
+  var bClear = document.getElementById("mkclear");
+  var cEl = document.getElementById("mkcnt");
+  if (!tb || !bClear) return;
+
+  var pendingRange = null;   // 待处理的 Range（选区 或 点中的已有标注）
+  var pendingMode = "";      // "sel" | "mark"
+  var toastEl = null;
+
+  /* ============ 1. 文本索引 ============ */
+  function collect(){
+    var nodes = [], starts = [], map = new Map(), acc = 0;
+    var w = document.createTreeWalker(
+      document.body,
+      NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT,
+      { acceptNode: function(n){
+          if (n.nodeType === 1){
+            var t = n.tagName;
+            if (t === "SCRIPT" || t === "STYLE" || t === "NOSCRIPT") return NodeFilter.FILTER_REJECT;
+            if (n.hasAttribute("data-mk-ui")) return NodeFilter.FILTER_REJECT;
+          }
+          return NodeFilter.FILTER_ACCEPT;
+        } }
+    );
+    var n;
+    while ((n = w.nextNode())){
+      if (n.nodeType === 3){
+        map.set(n, nodes.length);
+        nodes.push(n);
+        starts.push(acc);
+        acc += n.nodeValue.length;
+      }
+    }
+    return { nodes: nodes, starts: starts, map: map, total: acc };
+  }
+
+  /* 节点内位置 → 全文偏移 */
+  function offsetAt(idx, node, off){
+    if (!node) return null;
+    if (node.nodeType !== 3){
+      // 选中的是整个元素：起点取第一个文本后代，终点取最后一个
+      var i, t;
+      if (off > 0){
+        for (i = idx.nodes.length - 1; i >= 0; i--){
+          if (node.contains(idx.nodes[i])){
+            t = idx.nodes[i];
+            return idx.starts[idx.map.get(t)] + t.nodeValue.length;
+          }
+        }
+      }
+      for (i = 0; i < idx.nodes.length; i++){
+        if (node.contains(idx.nodes[i])){
+          t = idx.nodes[i];
+          return idx.starts[idx.map.get(t)];
+        }
+      }
+      return null;
+    }
+    var k = idx.map.get(node);
+    if (k === undefined) return null;
+    return idx.starts[k] + off;
+  }
+
+  /* 全文偏移 → Range */
+  function rangeAt(idx, s, e){
+    var nodes = idx.nodes;
+    if (!nodes.length) return null;
+    function loc(off){
+      var lo = 0, hi = nodes.length - 1;
+      while (lo < hi){
+        var mid = (lo + hi + 1) >> 1;
+        if (idx.starts[mid] <= off) lo = mid; else hi = mid - 1;
+      }
+      var node = nodes[lo], inner = off - idx.starts[lo];
+      if (inner < 0) inner = 0;
+      if (inner > node.nodeValue.length) inner = node.nodeValue.length;
+      return { n: node, o: inner };
+    }
+    var a = loc(s), b = loc(e);
+    if (!a || !b) return null;
+    try {
+      var r = document.createRange();
+      r.setStart(a.n, a.o);
+      r.setEnd(b.n, b.o);
+      return r;
+    } catch(err){ return null; }
+  }
+
+  /* 按原文回找（偏移漂移时的兜底） */
+  function searchRange(idx, t, near){
+    if (!t || t.length < 2) return null;
+    var full = "";
+    for (var i = 0; i < idx.nodes.length; i++) full += idx.nodes[i].nodeValue;
+    var hits = [], p = full.indexOf(t);
+    while (p !== -1 && hits.length < 80){ hits.push(p); p = full.indexOf(t, p + 1); }
+    if (!hits.length) return null;
+    var pick = hits[0];
+    if (typeof near === "number"){
+      var best = Infinity;
+      for (var j = 0; j < hits.length; j++){
+        var d = Math.abs(hits[j] - near);
+        if (d < best){ best = d; pick = hits[j]; }
+      }
+    }
+    return rangeAt(idx, pick, pick + t.length);
+  }
+
+  /* 当前所有 Range（校验通过的） */
+  function resolve(list){
+    var idx = collect(), ok = [];
+    list.forEach(function(m){
+      var r = rangeAt(idx, m.s, m.e);
+      if (r && r.toString() === m.t) { ok.push({ m: m, r: r }); return; }
+      var r2 = searchRange(idx, m.t, m.s);
+      if (r2) ok.push({ m: m, r: r2 });
+    });
+    return ok;
+  }
+
+  /* ============ 2. 存储 ============ */
+  function load(){
+    try {
+      var s = localStorage.getItem(KEY);
+      if (!s) return [];
+      var a = JSON.parse(s);
+      if (!Array.isArray(a)) return [];
+      return a.filter(function(m){
+        return m && (m.k === "hl" || m.k === "ul") &&
+               typeof m.s === "number" && typeof m.e === "number" && m.e > m.s;
+      });
+    } catch(e){ return []; }
+  }
+  function save(list){
+    try { localStorage.setItem(KEY, JSON.stringify(list)); } catch(e){}
+  }
+
+  /* ============ 3. 渲染 ============ */
+  function render(list){
+    if (CH) renderCH(list); else renderSP(list);
+    var n = list.length;
+    if (cEl) cEl.textContent = n;
+    if (n){
+      bClear.classList.add("has");
+      bClear.title = "清空本页 " + n + " 处「涂黄 / 下划线」标注记忆";
+    } else {
+      bClear.classList.remove("has");
+      bClear.title = "还没有任何标注（选中文字即可涂黄或加下划线）";
+    }
+  }
+
+  function renderCH(list){
+    var rs = resolve(list), hl = [], ul = [];
+    rs.forEach(function(o){ (o.m.k === "ul" ? ul : hl).push(o.r); });
+    try {
+      CSS.highlights.delete("bh-hl");
+      CSS.highlights.delete("bh-ul");
+      if (hl.length){
+        var h1 = new Highlight();
+        hl.forEach(function(r){ h1.add(r); });
+        CSS.highlights.set("bh-hl", h1);
+      }
+      if (ul.length){
+        var h2 = new Highlight();
+        ul.forEach(function(r){ h2.add(r); });
+        CSS.highlights.set("bh-ul", h2);
+      }
+    } catch(e){}
+  }
+
+  function renderSP(list){
+    var olds = document.querySelectorAll("span.mk-hl,span.mk-ul");
+    for (var i = 0; i < olds.length; i++){
+      var sp = olds[i], p = sp.parentNode;
+      if (!p) continue;
+      while (sp.firstChild) p.insertBefore(sp.firstChild, sp);
+      p.removeChild(sp);
+    }
+    if (document.body.normalize) document.body.normalize();
+    if (!list.length) return;
+    // 从后往前包，避免前面的包裹影响后面的偏移（文本内容不变，偏移本就稳定）
+    list.slice().sort(function(a, b){ return b.s - a.s; }).forEach(function(m){
+      var idx = collect();
+      var r = rangeAt(idx, m.s, m.e);
+      if (!r || r.toString() !== m.t) r = searchRange(idx, m.t, m.s);
+      if (r) wrapText(r, m.k === "ul" ? "mk-ul" : "mk-hl");
+    });
+  }
+
+  function wrapText(r, cls){
+    // TreeWalker 不遍历自己的 root：选区落在单个文本节点里时，
+    // commonAncestorContainer 就是那个文本节点本身，必须直接收下它。
+    var tn = [], host = r.commonAncestorContainer, w, n;
+    if (host.nodeType === 3){
+      if (r.intersectsNode(host)) tn.push(host);
+    } else {
+      w = document.createTreeWalker(host, NodeFilter.SHOW_TEXT, null);
+      while ((n = w.nextNode())){ if (r.intersectsNode(n)) tn.push(n); }
+    }
+    // 先快照，再逐个包裹（surroundContents 会拆分文本节点）
+    var jobs = [];
+    tn.forEach(function(t){
+      var s = (t === r.startContainer) ? r.startOffset : 0;
+      var e = (t === r.endContainer) ? r.endOffset : t.nodeValue.length;
+      if (e > s) jobs.push({ n: t, s: s, e: e });
+    });
+    jobs.forEach(function(j){
+      try {
+        var sub = document.createRange();
+        sub.setStart(j.n, j.s);
+        sub.setEnd(j.n, j.e);
+        var sp = document.createElement("span");
+        sp.className = cls;
+        sub.surroundContents(sp);
+      } catch(err){}
+    });
+  }
+
+  /* ============ 4. 工具条 ============ */
+  function hideTB(){
+    tb.classList.remove("on");
+    pendingRange = null;
+    pendingMode = "";
+  }
+
+  function showTB(rect, canAdd){
+    tb.classList.add("on");
+    var w = tb.offsetWidth, h = tb.offsetHeight;
+    var cx = rect.left + rect.width / 2;
+    var minX = w / 2 + 8, maxX = window.innerWidth - w / 2 - 8;
+    if (cx < minX) cx = minX;
+    if (cx > maxX) cx = maxX;
+    var top = rect.top - 10, below = false;
+    if (top - h < 8){ top = rect.bottom + 10; below = true; }
+    tb.style.left = Math.round(cx) + "px";
+    tb.style.top = Math.round(top) + "px";
+    tb.style.transform = below ? "translate(-50%,0)" : "translate(-50%,-100%)";
+    var bs = tb.querySelectorAll('button[data-act="hl"],button[data-act="ul"]');
+    for (var i = 0; i < bs.length; i++) bs[i].style.display = canAdd ? "" : "none";
+  }
+
+  function inBlocked(el){
+    if (!el || !el.closest) return false;
+    return !!(el.closest("nav") || el.closest("#lb") || el.closest("[data-mk-ui]"));
+  }
+
+  function markAtPoint(x, y){
+    // Chrome/Edge/Safari 用 caretRangeFromPoint，Firefox 用 caretPositionFromPoint
+    var cr = document.caretRangeFromPoint ? document.caretRangeFromPoint(x, y) : null;
+    if (!cr && document.caretPositionFromPoint){
+      var cp = document.caretPositionFromPoint(x, y);
+      if (cp && cp.offsetNode){
+        try {
+          cr = document.createRange();
+          cr.setStart(cp.offsetNode, cp.offset);
+          cr.setEnd(cp.offsetNode, cp.offset);
+        } catch(err){ cr = null; }
+      }
+    }
+    if (!cr) return null;
+    var idx = collect();
+    var off = offsetAt(idx, cr.startContainer, cr.startOffset);
+    if (off == null) return null;
+    var list = load();
+    for (var i = list.length - 1; i >= 0; i--){
+      if (off > list[i].s && off < list[i].e) return list[i];
+    }
+    return null;
+  }
+
+  function handleUp(x, y){
+    var sel = window.getSelection();
+    if (sel && sel.rangeCount && !sel.isCollapsed){
+      var r = sel.getRangeAt(0);
+      var txt = r.toString();
+      if (!txt || !txt.replace(/\s+/g, "")){ hideTB(); return; }
+      var anc = r.commonAncestorContainer;
+      var el = anc.nodeType === 1 ? anc : anc.parentNode;
+      if (inBlocked(el)){ hideTB(); return; }
+      pendingRange = r.cloneRange();
+      pendingMode = "sel";
+      // 选区跨了多个块（整段很多）时不再往上撑，以免工具条跑到屏幕外
+      showTB(r.getBoundingClientRect(), true);
+      return;
+    }
+    hideTB();
+    if (typeof x !== "number") return;
+    var hit = markAtPoint(x, y);
+    if (!hit) return;
+    var idx = collect();
+    var rr = rangeAt(idx, hit.s, hit.e);
+    if (!rr || !rr.toString()) return;
+    pendingRange = rr;
+    pendingMode = "mark";
+    showTB(rr.getBoundingClientRect(), false);
+  }
+
+  document.addEventListener("mouseup", function(e){
+    if (tb.contains(e.target) || bClear.contains(e.target)) return;
+    var x = e.clientX, y = e.clientY;
+    setTimeout(function(){ handleUp(x, y); }, 0);
+  });
+  document.addEventListener("touchend", function(e){
+    if (tb.contains(e.target) || bClear.contains(e.target)) return;
+    var t = e.changedTouches && e.changedTouches[0];
+    var x = t ? t.clientX : undefined, y = t ? t.clientY : undefined;
+    setTimeout(function(){ handleUp(x, y); }, 12);
+  });
+
+  // 按住工具条不能丢选区
+  tb.addEventListener("mousedown", function(e){ e.preventDefault(); });
+  tb.addEventListener("touchstart", function(e){ e.preventDefault(); }, {passive:false});
+
+  tb.addEventListener("click", function(e){
+    var b = (e.target && e.target.closest) ? e.target.closest("button[data-act]") : null;
+    if (!b) return;
+    var act = b.getAttribute("data-act");
+    var list = load();
+    if (act === "hl" || act === "ul") addMark(act, list);
+    else if (act === "del") delMark(list);
+  });
+
+  function clearSel(){
+    var sel = window.getSelection();
+    if (sel && sel.removeAllRanges) sel.removeAllRanges();
+  }
+
+  function addMark(kind, list){
+    var r = pendingRange;
+    if (!r) return;
+    var idx = collect();
+    var s = offsetAt(idx, r.startContainer, r.startOffset);
+    var e = offsetAt(idx, r.endContainer, r.endOffset);
+    if (s == null || e == null || e <= s){ toast("这段文字的位置没算出来，换一句试试"); return; }
+    var t = r.toString();
+    var dup = false;
+    list = list.filter(function(m){
+      if (m.s === s && m.e === e && m.k === kind){ dup = true; return false; }
+      return true;
+    });
+    if (!dup) list.push({ k: kind, s: s, e: e, t: t, ts: Date.now() });
+    save(list);
+    render(list);
+    toast(dup
+      ? "这一句已经是「" + (kind === "ul" ? "下划线" : "涂黄") + "」了"
+      : (kind === "ul" ? "已加下划线" : "已涂黄") + " · 自动保存在本机浏览器");
+    clearSel();
+    hideTB();
+  }
+
+  function delMark(list){
+    var r = pendingRange;
+    if (!r){ hideTB(); return; }
+    var idx = collect();
+    var s = offsetAt(idx, r.startContainer, r.startOffset);
+    var e = offsetAt(idx, r.endContainer, r.endOffset);
+    if (s == null || e == null){ hideTB(); return; }
+    var before = list.length;
+    if (pendingMode === "mark"){
+      // 点中的是一条已知标注，按起点精确删除
+      list = list.filter(function(m){ return m.s !== s; });
+    } else {
+      if (e <= s){ hideTB(); return; }
+      list = list.filter(function(m){ return !(m.e > s && m.s < e); });
+    }
+    save(list);
+    render(list);
+    var d = before - list.length;
+    toast(d ? "已删除 " + d + " 处标注" : "这段里没有标注");
+    clearSel();
+    hideTB();
+  }
+
+  /* ============ 5. 一键清空 ============ */
+  bClear.addEventListener("click", function(e){
+    e.preventDefault();
+    e.stopPropagation();
+    var list = load();
+    if (!list.length){ toast("本机还没有任何标注"); return; }
+    var ok = window.confirm(
+      "确定清空全部 " + list.length + " 处「涂黄 / 下划线」标注吗？\n\n" +
+      "只清本机浏览器里的标注记忆，网页内容本身不受影响。\n" +
+      "此操作不可撤销。"
+    );
+    if (!ok) return;
+    try { localStorage.removeItem(KEY); } catch(err){}
+    if (CH){
+      try { CSS.highlights.delete("bh-hl"); CSS.highlights.delete("bh-ul"); } catch(err){}
+    }
+    render([]);
+    toast("已清空 " + list.length + " 处标注记忆");
+  });
+
+  /* ============ 6. 轻提示 ============ */
+  function toast(msg){
+    if (!toastEl){
+      toastEl = document.createElement("div");
+      toastEl.className = "mk-toast";
+      toastEl.setAttribute("data-mk-ui", "");
+      document.body.appendChild(toastEl);
+    }
+    toastEl.textContent = msg;
+    toastEl.classList.add("on");
+    if (toast._t) clearTimeout(toast._t);
+    toast._t = setTimeout(function(){ toastEl.classList.remove("on"); }, 2400);
+  }
+
+  /* ============ 7. 环境变化 ============ */
+  window.addEventListener("scroll", function(){ if (pendingRange) hideTB(); }, {passive:true});
+  window.addEventListener("resize", function(){ if (pendingRange) hideTB(); });
+  document.addEventListener("keydown", function(e){ if (e.key === "Escape") hideTB(); });
+
+  /* ============ 8. 启动 ============ */
+  render(load());
 })();
 </script>
 </body>
